@@ -1,0 +1,33 @@
+{
+  "name": "AminoUser",
+  "plural": "AminoUsers",
+  "base": "User",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "forceId": false,
+  "properties": {
+    "fullname": {
+      "type": "string",
+      "required": true
+    },
+    "userId":{
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$unauthenticated",
+      "permission": "ALLOW",
+      "property": "*",
+      "model": "*"
+    }
+  ],
+  "methods": {}
+}
