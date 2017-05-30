@@ -1,0 +1,25 @@
+{
+  "description"               : "NPM install Client",
+  "options"                   : {
+    "displayExecutionGraphDescription": true
+  },
+  "asynchronousCommands"      : [
+  ],
+  "serialSynchronizedCommands": [
+    {
+      "description"                : "npm install",
+      "suppressOutput"             : false,
+      "showDiagnostics"            : false,
+      "showPreAndPostSpawnMessages": true,
+      "outputColor"                : "",
+      "useSudo"                    : false,
+      "workingDirectory"           : "../client/source",
+      "command"                    : "/usr/bin/env",
+      "args"                       : [
+        "bash",
+        "-c",
+        "npm install"
+      ]
+    }
+  ]
+}

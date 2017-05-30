@@ -1,0 +1,25 @@
+{
+  "description"               : "NB Build Client",
+  "options"                   : {
+    "displayExecutionGraphDescription": true
+  },
+  "asynchronousCommands"      : [
+  ],
+  "serialSynchronizedCommands": [
+    {
+      "description"                : "ng build",
+      "suppressOutput"             : false,
+      "showDiagnostics"            : false,
+      "showPreAndPostSpawnMessages": true,
+      "outputColor"                : "",
+      "useSudo"                    : false,
+      "workingDirectory"           : "../client/source",
+      "command"                    : "/usr/bin/env",
+      "args"                       : [
+        "bash",
+        "-c",
+        "node_modules/.bin/ng build --output-path ../dist"
+      ]
+    }
+  ]
+}

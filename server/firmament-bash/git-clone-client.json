@@ -1,0 +1,25 @@
+{
+  "description"               : "Git Clone Client",
+  "options"                   : {
+    "displayExecutionGraphDescription": true
+  },
+  "asynchronousCommands"      : [
+  ],
+  "serialSynchronizedCommands": [
+    {
+      "description"                : "git clone amino3-client",
+      "suppressOutput"             : false,
+      "showDiagnostics"            : false,
+      "showPreAndPostSpawnMessages": true,
+      "outputColor"                : "",
+      "useSudo"                    : false,
+      "workingDirectory"           : "../client",
+      "command"                    : "/usr/bin/env",
+      "args"                       : [
+        "bash",
+        "-c",
+        "git clone https://github.com/jreeme/amino3-client --branch hack-testClientDebug source && rm -rf source/.git"
+      ]
+    }
+  ]
+}
