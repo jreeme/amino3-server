@@ -18,6 +18,11 @@
       "args"                       : [
         "bash",
         "-c",
+        "git clone https://github.com/jreeme/amino3-client --branch hack-testClientDebug source"
+      ],
+      "opt-args"                       : [
+        "bash",
+        "-c",
         "git clone https://github.com/jreeme/amino3-client --branch hack-testClientDebug source && rm -rf source/.git"
       ]
     }

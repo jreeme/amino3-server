@@ -2,7 +2,6 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {RebuildClient} from "../interfaces/rebuild-client";
-import kernel from '../../inversify.config';
 import {ProcessCommandJson} from "firmament-bash/js/interfaces/process-command-json";
 import path = require('path');
 import fs = require('fs');
@@ -14,16 +13,7 @@ export class RebuildClientImpl implements RebuildClient {
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('IPostal') private postal: IPostal) {
-    this.baseService.server.on('started', () => {
-      const me = this;
-      me.postal.publish({
-        channel: 'System',
-        topic: 'RebuildClient',
-        data: {
-          prop: 'help'
-        }
-      });
-    });
+    //this.baseService.server.on('started', () => { });
   }
 
   get server(): any {
@@ -71,6 +61,15 @@ export class RebuildClientImpl implements RebuildClient {
   }
 
   init(cb: (err: Error, result: any) => void) {
+    const me = this;
+    this.baseService.server.get('/system-ctl/rebuild-client', (req, res) => {
+      me.postal.publish({
+        channel: 'System',
+        topic: 'RebuildClient',
+        data: {}
+      });
+      return res.status(200).json({status: 'OK'});
+    });
     cb(null, {message: 'Initialized RebuildClient'});
   }
 }
