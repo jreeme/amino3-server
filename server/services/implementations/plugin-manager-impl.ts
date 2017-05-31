@@ -1,7 +1,6 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
-import {RebuildClient} from '../interfaces/rebuild-client';
 import path = require('path');
 import fs = require('fs');
 import async = require('async');

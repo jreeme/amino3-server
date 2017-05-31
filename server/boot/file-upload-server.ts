@@ -23,6 +23,7 @@ module.exports = function (app) {
   app.post('/upload', function (req, res) {
     uploader.post(req, res, function (err, obj) {
       let o = obj;
+
 /*      async.each(obj.files,
         (fileInfo, cb) => {
           let filePath = path.resolve(fileInfo.options.uploadDir, fileInfo.name);
