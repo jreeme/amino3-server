@@ -1,2 +1,5 @@
-export interface _ {
+interface WebSocketConn {
+  sendText(text:string),
+  close()
 }
+

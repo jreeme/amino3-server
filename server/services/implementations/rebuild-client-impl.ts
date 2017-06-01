@@ -13,7 +13,7 @@ export class RebuildClientImpl implements RebuildClient {
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('IPostal') private postal: IPostal) {
-    //this.baseService.server.on('started', () => { });
+    //this.server.on('started', () => { });
   }
 
   get server(): any {
@@ -62,7 +62,7 @@ export class RebuildClientImpl implements RebuildClient {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    this.baseService.server.get('/system-ctl/rebuild-client', (req, res) => {
+    this.server.get('/system-ctl/rebuild-client', (req, res) => {
       me.postal.publish({
         channel: 'System',
         topic: 'RebuildClient',

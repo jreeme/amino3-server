@@ -4,14 +4,26 @@ import {BaseService} from '../interfaces/base-service';
 import path = require('path');
 import fs = require('fs');
 import async = require('async');
+import tar = require('tar');
 import {PluginManager} from "../interfaces/plugin-manager";
 
 @injectable()
 export class PluginManagerImpl implements PluginManager {
 
+  private static fileUploaderOptions = {
+    tmpDir: path.resolve(__dirname, '../../amino3-plugins/tmp'),
+    uploadDir: path.resolve(__dirname, '../../amino3-plugins/files'),
+    uploadUrl: '/amino3-plugins/files',
+    storage: {
+      type: 'local'
+    }
+  };
+
+  private static fileUploader = require('../../util/blueimp-file-upload-expressjs/fileupload')(PluginManagerImpl.fileUploaderOptions);
+
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('IPostal') private postal: IPostal) {
-    //this.baseService.server.on('started', () => { });
+    //this.server.on('started', () => { });
   }
 
   get server(): any {
@@ -20,33 +32,56 @@ export class PluginManagerImpl implements PluginManager {
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
-/*    me.postal.subscribe({
-      channel: 'System',
-      topic: 'RebuildClient',
-      callback: () => {
-        const clientFolder = path.resolve(__dirname, '../../../client');
-        if (!fs.existsSync(clientFolder)) {
-          fs.mkdirSync(clientFolder);
-        }
-        const clientSourceFolder = path.resolve(__dirname, '../../../client/source');
-        const fnArray = [];
-        if (!fs.existsSync(clientSourceFolder)) {
-          fnArray.push(me.gitCloneClient.bind(me));
-          fnArray.push(me.npmInstallClient.bind(me));
-        }
-        fnArray.push(me.ngBuildClient.bind(me));
-        async.mapSeries(fnArray,
-          (fn, cb) => {
-            fn(cb);
-          }, (err, results) => {
-            let e = err;
-          });
+    me.postal.subscribe({
+      channel: 'PluginManager',
+      topic: 'LoadPlugins',
+      callback: (data) => {
+        const tarTargetFolder = path.resolve(__dirname, '../client/source/src/app/pages/plugins');
+        tar.x({
+          file: data.fileFullPath,
+          C: tarTargetFolder
+        }).then(() => {
+
+        });
       }
-    });*/
+    });
     cb(null, {message: 'Initialized PluginManager Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
+    const me = this;
+    me.server.get('/upload', function (req, res) {
+      PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
+        res.send(JSON.stringify(obj));
+      });
+    });
+    me.server.post('/upload', function (req, res) {
+      PluginManagerImpl.fileUploader.post(req, res, function (err, uploadedFileInfo) {
+        if (err) {
+          return res.status(200).send({status: 'error', error: err});
+        }
+        async.each(uploadedFileInfo.files, (file, cb) => {
+          try {
+            const fileFullPath = path.resolve(file.options.uploadDir, file.name);
+/*            me.postal.publish({
+              channel: 'PluginManager',
+              topic: 'LoadPlugins',
+              data: {fileFullPath}
+            });*/
+          } catch (err) {
+            console.log(err);
+            cb();
+          }
+        }, (err) => {
+          return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+        });
+      });
+    });
+    me.server.delete('/uploaded/files/:name', function (req, res) {
+      PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
+        res.send(JSON.stringify(result));
+      });
+    });
     cb(null, {message: 'Initialized PluginManager'});
   }
 }
