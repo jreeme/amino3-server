@@ -9,10 +9,11 @@ import {PluginManager} from "../interfaces/plugin-manager";
 
 @injectable()
 export class PluginManagerImpl implements PluginManager {
+  private static folderToMonitor = path.resolve(__dirname, '../../amino3-plugins/files');
 
   private static fileUploaderOptions = {
     tmpDir: path.resolve(__dirname, '../../amino3-plugins/tmp'),
-    uploadDir: path.resolve(__dirname, '../../amino3-plugins/files'),
+    uploadDir: PluginManagerImpl.folderToMonitor,
     uploadUrl: '/amino3-plugins/files',
     storage: {
       type: 'local'
@@ -20,6 +21,8 @@ export class PluginManagerImpl implements PluginManager {
   };
 
   private static fileUploader = require('../../util/blueimp-file-upload-expressjs/fileupload')(PluginManagerImpl.fileUploaderOptions);
+
+  private pluginList: FileWatcherPayload[] = [];
 
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('IPostal') private postal: IPostal) {
@@ -33,16 +36,31 @@ export class PluginManagerImpl implements PluginManager {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
     me.postal.subscribe({
+      channel: 'FolderMonitor',
+      topic: PluginManagerImpl.folderToMonitor,
+      callback: (fileWatcherPayload: FileWatcherPayload) => {
+        me.pluginList.push(fileWatcherPayload);
+        me.broadcastPluginList();
+      }
+    });
+    me.postal.subscribe({
+      channel: 'PluginManager',
+      topic: 'GetPluginList',
+      callback: (/*data*/) => {
+        me.broadcastPluginList();
+      }
+    });
+    me.postal.subscribe({
       channel: 'PluginManager',
       topic: 'LoadPlugins',
       callback: (data) => {
-        const tarTargetFolder = path.resolve(__dirname, '../client/source/src/app/pages/plugins');
-        tar.x({
-          file: data.fileFullPath,
-          C: tarTargetFolder
-        }).then(() => {
+        /*        const tarTargetFolder = path.resolve(__dirname, '../client/source/src/app/pages/plugins');
+         tar.x({
+         file: data.fileFullPath,
+         C: tarTargetFolder
+         }).then(() => {
 
-        });
+         });*/
       }
     });
     cb(null, {message: 'Initialized PluginManager Subscriptions'});
@@ -50,31 +68,42 @@ export class PluginManagerImpl implements PluginManager {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
+    me.postal.publish({
+      channel: 'FolderMonitor',
+      topic: 'AddFolderToMonitor',
+      data: {
+        folderMonitorPath: PluginManagerImpl.folderToMonitor,
+        watcherConfig: {
+          ignoreInitial: false
+        }
+      }
+    });
     me.server.get('/upload', function (req, res) {
       PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
         res.send(JSON.stringify(obj));
       });
     });
     me.server.post('/upload', function (req, res) {
-      PluginManagerImpl.fileUploader.post(req, res, function (err, uploadedFileInfo) {
-        if (err) {
-          return res.status(200).send({status: 'error', error: err});
-        }
-        async.each(uploadedFileInfo.files, (file, cb) => {
-          try {
-            const fileFullPath = path.resolve(file.options.uploadDir, file.name);
-/*            me.postal.publish({
-              channel: 'PluginManager',
-              topic: 'LoadPlugins',
-              data: {fileFullPath}
-            });*/
-          } catch (err) {
-            console.log(err);
-            cb();
-          }
-        }, (err) => {
-          return res.status(200).send({status: err ? 'error' : 'OK', error: err});
-        });
+      PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
+        return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+        /*        if (err) {
+         return res.status(200).send({status: 'error', error: err});
+         }
+         async.each(uploadedFileInfo.files, (file, cb) => {
+         try {
+         const fileFullPath = path.resolve(file.options.uploadDir, file.name);
+         me.postal.publish({
+         channel: 'PluginManager',
+         topic: 'LoadPlugins',
+         data: {fileFullPath}
+         });
+         } catch (err) {
+         console.log(err);
+         cb();
+         }
+         }, (err) => {
+         return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+         });*/
       });
     });
     me.server.delete('/uploaded/files/:name', function (req, res) {
@@ -83,5 +112,23 @@ export class PluginManagerImpl implements PluginManager {
       });
     });
     cb(null, {message: 'Initialized PluginManager'});
+  }
+
+  private broadcastPluginList() {
+    const me = this;
+    const clientPluginList = me.pluginList.map((plugin) => {
+      return {
+        pluginName: plugin.fullPath.split('\\').pop().split('/').pop()
+      }
+    });
+    me.postal.publish({
+      channel: 'WebSocket',
+      topic: 'Broadcast',
+      data: {
+        channel: 'PluginTable',
+        topic: 'PluginList',
+        data: clientPluginList
+      }
+    });
   }
 }

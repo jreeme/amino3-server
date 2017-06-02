@@ -8,6 +8,7 @@ import {Authentication} from "../interfaces/authentication";
 import {StaticService} from "../interfaces/static-service";
 import {RootService} from "../interfaces/root-service";
 import {WebSocketService} from "../interfaces/web-socket-service";
+import {FolderMonitor} from "../interfaces/folder-monitor";
 
 const async = require('async');
 
@@ -19,6 +20,7 @@ export class ServiceManagerImpl implements ServiceManager {
               @inject('Authentication') private authentication: Authentication,
               @inject('RootService') private rootService: RootService,
               @inject('StaticService') private staticService: StaticService,
+              @inject('FolderMonitor') private folderMonitor: FolderMonitor,
               @inject('WebSocketService') private webSocketService: WebSocketService,
               @inject('InitializeDatabase') private initializeDatabase: InitializeDatabase) {
   }
@@ -34,18 +36,21 @@ export class ServiceManagerImpl implements ServiceManager {
   init(cb: (err: Error, result: any) => void) {
     let fnArray = [
       this.initializeDatabase.initSubscriptions.bind(this.initializeDatabase)
-      , this.initializeDatabase.init.bind(this.initializeDatabase)
       , this.pluginManager.initSubscriptions.bind(this.pluginManager)
-      , this.pluginManager.init.bind(this.pluginManager)
       , this.rebuildClient.initSubscriptions.bind(this.rebuildClient)
-      , this.rebuildClient.init.bind(this.rebuildClient)
       , this.authentication.initSubscriptions.bind(this.authentication)
-      , this.authentication.init.bind(this.authentication)
       , this.webSocketService.initSubscriptions.bind(this.webSocketService)
-      , this.webSocketService.init.bind(this.webSocketService)
+      , this.folderMonitor.initSubscriptions.bind(this.folderMonitor)
       , this.staticService.initSubscriptions.bind(this.staticService)
-      , this.staticService.init.bind(this.staticService)
       , this.rootService.initSubscriptions.bind(this.rootService)
+
+      , this.initializeDatabase.init.bind(this.initializeDatabase)
+      , this.pluginManager.init.bind(this.pluginManager)
+      , this.rebuildClient.init.bind(this.rebuildClient)
+      , this.authentication.init.bind(this.authentication)
+      , this.webSocketService.init.bind(this.webSocketService)
+      , this.folderMonitor.init.bind(this.folderMonitor)
+      , this.staticService.init.bind(this.staticService)
       , this.rootService.init.bind(this.rootService)
     ];
     async.mapSeries(fnArray,

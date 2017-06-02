@@ -18,6 +18,8 @@ import {RootService} from "./services/interfaces/root-service";
 import {RootServiceImpl} from "./services/implementations/root-service-impl";
 import {WebSocketService} from "./services/interfaces/web-socket-service";
 import {WebSocketServiceImpl} from "./services/implementations/web-socket-service-impl";
+import {FolderMonitor} from "./services/interfaces/folder-monitor";
+import {FolderMonitorImpl} from "./services/implementations/folder-monitor-impl";
 
 kernel.bind<BaseService>('BaseService').to(BaseServiceImpl).inSingletonScope();
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -28,5 +30,6 @@ kernel.bind<PluginManager>('PluginManager').to(PluginManagerImpl).inSingletonSco
 kernel.bind<StaticService>('StaticService').to(StaticServiceImpl).inSingletonScope();
 kernel.bind<RootService>('RootService').to(RootServiceImpl).inSingletonScope();
 kernel.bind<WebSocketService>('WebSocketService').to(WebSocketServiceImpl).inSingletonScope();
+kernel.bind<FolderMonitor>('FolderMonitor').to(FolderMonitorImpl).inSingletonScope();
 
 export default kernel;
