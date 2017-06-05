@@ -7,6 +7,7 @@ import path = require('path');
 import fs = require('fs');
 import async = require('async');
 
+//noinspection JSUnusedGlobalSymbols
 @injectable()
 export class RebuildClientImpl implements RebuildClient {
 
@@ -20,30 +21,33 @@ export class RebuildClientImpl implements RebuildClient {
     return this.baseService.server;
   }
 
+  private rebuildClient() {
+    const me = this;
+    const clientFolder = path.resolve(__dirname, '../../../client');
+    if (!fs.existsSync(clientFolder)) {
+      fs.mkdirSync(clientFolder);
+    }
+    const clientSourceFolder = path.resolve(__dirname, '../../../client/source');
+    const fnArray = [];
+    if (!fs.existsSync(clientSourceFolder)) {
+      fnArray.push(me.gitCloneClient.bind(me));
+      fnArray.push(me.npmInstallClient.bind(me));
+    }
+    fnArray.push(me.ngBuildClient.bind(me));
+    async.mapSeries(fnArray,
+      (fn, cb) => {
+        fn(cb);
+      }, (/*err*/) => {
+      });
+
+  }
+
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
     me.postal.subscribe({
       channel: 'System',
       topic: 'RebuildClient',
-      callback: () => {
-        const clientFolder = path.resolve(__dirname, '../../../client');
-        if (!fs.existsSync(clientFolder)) {
-          fs.mkdirSync(clientFolder);
-        }
-        const clientSourceFolder = path.resolve(__dirname, '../../../client/source');
-        const fnArray = [];
-        if (!fs.existsSync(clientSourceFolder)) {
-          fnArray.push(me.gitCloneClient.bind(me));
-          fnArray.push(me.npmInstallClient.bind(me));
-        }
-        fnArray.push(me.ngBuildClient.bind(me));
-        async.mapSeries(fnArray,
-          (fn, cb) => {
-            fn(cb);
-          }, (err, results) => {
-            let e = err;
-          });
-      }
+      callback: me.rebuildClient.bind(me)
     });
     cb(null, {message: 'Initialized RebuildClient Subscriptions'});
   }
