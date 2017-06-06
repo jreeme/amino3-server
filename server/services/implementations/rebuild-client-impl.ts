@@ -21,6 +21,29 @@ export class RebuildClientImpl implements RebuildClient {
     return this.baseService.server;
   }
 
+  initSubscriptions(cb: (err: Error, result: any) => void) {
+    const me = this;
+    me.postal.subscribe({
+      channel: 'System',
+      topic: 'RebuildClient',
+      callback: me.rebuildClient.bind(me)
+    });
+    cb(null, {message: 'Initialized RebuildClient Subscriptions'});
+  }
+
+  init(cb: (err: Error, result: any) => void) {
+    const me = this;
+    this.server.get('/system-ctl/rebuild-client', (req, res) => {
+      me.postal.publish({
+        channel: 'System',
+        topic: 'RebuildClient',
+        data: {}
+      });
+      return res.status(200).json({status: 'OK'});
+    });
+    cb(null, {message: 'Initialized RebuildClient'});
+  }
+
   private rebuildClient() {
     const me = this;
     const clientFolder = path.resolve(__dirname, '../../../client');
@@ -38,42 +61,27 @@ export class RebuildClientImpl implements RebuildClient {
       (fn, cb) => {
         fn(cb);
       }, (/*err*/) => {
+        me.postal.publish({
+          channel: 'WebSocket',
+          topic: 'Broadcast',
+          data: {
+            channel: 'System',
+            topic: 'RefreshPage',
+            data: {}
+          }
+        });
       });
-
   }
 
-  initSubscriptions(cb: (err: Error, result: any) => void) {
-    const me = this;
-    me.postal.subscribe({
-      channel: 'System',
-      topic: 'RebuildClient',
-      callback: me.rebuildClient.bind(me)
-    });
-    cb(null, {message: 'Initialized RebuildClient Subscriptions'});
-  }
-
-  ngBuildClient(cb: (err: Error, result: any) => void) {
+  private ngBuildClient(cb: (err: Error, result: any) => void) {
     this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/ng-build-client.json'), cb);
   }
 
-  npmInstallClient(cb: (err: Error, result: any) => void) {
+  private npmInstallClient(cb: (err: Error, result: any) => void) {
     this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/npm-install-client.json'), cb);
   }
 
-  gitCloneClient(cb: (err: Error, result: any) => void) {
+  private gitCloneClient(cb: (err: Error, result: any) => void) {
     this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/git-clone-client.json'), cb);
-  }
-
-  init(cb: (err: Error, result: any) => void) {
-    const me = this;
-    this.server.get('/system-ctl/rebuild-client', (req, res) => {
-      me.postal.publish({
-        channel: 'System',
-        topic: 'RebuildClient',
-        data: {}
-      });
-      return res.status(200).json({status: 'OK'});
-    });
-    cb(null, {message: 'Initialized RebuildClient'});
   }
 }

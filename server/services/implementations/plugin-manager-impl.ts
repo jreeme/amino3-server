@@ -10,12 +10,19 @@ import mkdirp = require('mkdirp');
 import recursiveReaddir = require('recursive-readdir');
 import jsonfile = require('jsonfile');
 import {PluginManager} from "../interfaces/plugin-manager";
+import {Util} from "../../util/util";
+import ReadStream = NodeJS.ReadStream;
+import WriteStream = NodeJS.WriteStream;
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class PluginManagerImpl implements PluginManager {
   private static pluginUploadFolderToMonitor = path.resolve(__dirname, '../../amino3-plugins/files');
   private static extractedPluginFolder = path.resolve(__dirname, '../../../client/source/src/app/pages/plugins');
+  private static pagesRoutingTemplatePath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.routing.template.ts');
+  private static pagesRoutingPath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.routing.ts');
+  private static pagesMenuTemplatePath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.menu.template.ts');
+  private static pagesMenuPath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.menu.ts');
   private static tmpUploaderFolder = path.resolve(__dirname, '../../amino3-plugins/tmp');
   private static uploadedPluginUrl = '/amino3-plugins/files';
 
@@ -37,7 +44,6 @@ export class PluginManagerImpl implements PluginManager {
               @inject('IPostal') private postal: IPostal) {
     const me = this;
     me.server.on('started', () => {
-      const i = 3;
     });
   }
 
@@ -51,7 +57,17 @@ export class PluginManagerImpl implements PluginManager {
       channel: 'FolderMonitor',
       topic: PluginManagerImpl.pluginUploadFolderToMonitor,
       callback: (fileWatcherPayload: FileWatcherPayload) => {
-        //Update manifest
+        me.extractPlugins((err) => {
+          if (me.commandUtil.logError(err)) {
+            return;
+          }
+          me.catalogPlugins((err) => {
+            if (me.commandUtil.logError(err)) {
+              return;
+            }
+            me.broadcastPluginList();
+          });
+        });
       }
     });
     me.postal.subscribe({
@@ -61,12 +77,12 @@ export class PluginManagerImpl implements PluginManager {
         me.broadcastPluginList();
       }
     });
-    me.postal.subscribe({
-      channel: 'PluginManager',
-      topic: 'LoadPlugins',
-      callback: (data) => {
-      }
-    });
+    /*    me.postal.subscribe({
+     channel: 'PluginManager',
+     topic: 'LoadPlugins',
+     callback: (data) => {
+     }
+     });*/
     cb(null, {message: 'Initialized PluginManager Subscriptions'});
   }
 
@@ -80,38 +96,70 @@ export class PluginManagerImpl implements PluginManager {
         if (me.commandUtil.logError(err)) {
           return;
         }
-        me.postal.publish({
-          channel: 'FolderMonitor',
-          topic: 'AddFolderToMonitor',
-          data: {
-            folderMonitorPath: PluginManagerImpl.pluginUploadFolderToMonitor,
-            watcherConfig: {
-              ignoreInitial: false
-            }
+        me.modifyClientPagesRouting((err) => {
+          if (me.commandUtil.logError(err)) {
+            return;
           }
-        });
-        me.server.get('/upload', function (req, res) {
-          PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
-            res.send(JSON.stringify(obj));
+          me.postal.publish({
+            channel: 'FolderMonitor',
+            topic: 'AddFolderToMonitor',
+            data: {
+              folderMonitorPath: PluginManagerImpl.pluginUploadFolderToMonitor,
+              watcherConfig: {
+                ignoreInitial: false
+              }
+            }
           });
-        });
-        me.server.post('/upload', function (req, res) {
-          PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
-            return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+          me.server.get('/upload', function (req, res) {
+            PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
+              res.send(JSON.stringify(obj));
+            });
           });
-        });
-        me.server.delete('/uploaded/files/:name', function (req, res) {
-          PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
-            res.send(JSON.stringify(result));
+          me.server.post('/upload', function (req, res) {
+            PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
+              return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+            });
           });
+          me.server.delete('/uploaded/files/:name', function (req, res) {
+            PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
+              res.send(JSON.stringify(result));
+            });
+          });
+          cb(null, {message: 'Initialized PluginManager'});
         });
-        cb(null, {message: 'Initialized PluginManager'});
       });
     });
   }
 
+  private modifyClientPagesRouting(cb: (err?) => void) {
+    const me = this;
+    let newRoutingLines: string[] = [];
+    me.pluginManifests.forEach((pluginManifest) => {
+      pluginManifest.menuRoutes.forEach((menuRoute) => {
+        newRoutingLines.push(`\t\t\t, {path: '${menuRoute.path}', loadChildren: '${menuRoute.loadChildren}'}\n`);
+      });
+    });
+    let newMenuLines: string[] = [];
+    me.pluginManifests.forEach((pluginManifest) => {
+      pluginManifest.toolRoutes.forEach((toolRoute) => {
+        const json = JSON.stringify(toolRoute, null, 2);
+        newMenuLines.push(',' + json);
+      });
+    });
+    Util.addTextLinesArrayToFile(
+      fs.createReadStream(PluginManagerImpl.pagesRoutingTemplatePath),
+      fs.createWriteStream(PluginManagerImpl.pagesRoutingPath),
+      '// **** Put new lines here', newRoutingLines, () => {
+        Util.addTextLinesArrayToFile(
+          fs.createReadStream(PluginManagerImpl.pagesMenuTemplatePath),
+          fs.createWriteStream(PluginManagerImpl.pagesMenuPath),
+          '// **** Put new lines here', newMenuLines, cb);
+      });
+  }
+
   private catalogPlugins(cb: (err) => void) {
     const me = this;
+    me.pluginManifests = [];
     recursiveReaddir(PluginManagerImpl.extractedPluginFolder, (err, fullPaths) => {
       const manifestFiles = fullPaths.filter((fullPath) => {
         return path.basename(fullPath) === 'manifest.json';
@@ -177,11 +225,6 @@ export class PluginManagerImpl implements PluginManager {
 
   private broadcastPluginList() {
     const me = this;
-    /*    const clientPluginList = me.pluginManifests.map((pluginManifest) => {
-     return {
-     pluginManifest
-     }
-     });*/
     me.postal.publish({
       channel: 'WebSocket',
       topic: 'Broadcast',
@@ -189,7 +232,6 @@ export class PluginManagerImpl implements PluginManager {
         channel: 'PluginTable'
         , topic: 'PluginList'
         , data: me.pluginManifests
-        //data: clientPluginList
       }
     });
   }

@@ -38,16 +38,10 @@ export class FolderMonitorImpl implements FolderMonitor {
         });
 
         watcher.on('add', (fullPath, stats) => {
-          const size = stats.size.toString();
-          const createDate = stats.birthtime.toString();
-
-          me.postal.publish({
-            channel: 'FolderMonitor',
-            topic: fileWatcherConfig.folderMonitorPath,
-            data: {
-              fullPath, size, createDate
-            }
-          });
+          me.sendFolderMonitorMessage(fullPath, stats, fileWatcherConfig);
+        });
+        watcher.on('unlink', (fullPath, stats) => {
+          me.sendFolderMonitorMessage(fullPath, stats, fileWatcherConfig);
         });
         me.commandUtil.log(`config.folderMonitorPath: ${fileWatcherConfig.folderMonitorPath}`);
       }
@@ -57,5 +51,18 @@ export class FolderMonitorImpl implements FolderMonitor {
 
   init(cb: (err: Error, result: any) => void) {
     cb(null, {message: 'Initialized FolderMonitor'});
+  }
+
+  private sendFolderMonitorMessage(fullPath, stats, fileWatcherConfig) {
+    const me = this;
+    const size = stats ? stats.size.toString() : '';
+    const createDate = stats ? stats.birthtime.toString() : '';
+    me.postal.publish({
+      channel: 'FolderMonitor',
+      topic: fileWatcherConfig.folderMonitorPath,
+      data: {
+        fullPath, size, createDate
+      }
+    });
   }
 }

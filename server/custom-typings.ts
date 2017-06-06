@@ -34,6 +34,6 @@ interface PluginManifest {
   pluginId: string
   , pluginName: string
   , pluginDescription: string
-  , menuRoutes: PluginMenuRoutes
-  , toolRoutes: PluginToolRoutes
+  , menuRoutes: PluginMenuRoutes[]
+  , toolRoutes: PluginToolRoutes[]
 }
