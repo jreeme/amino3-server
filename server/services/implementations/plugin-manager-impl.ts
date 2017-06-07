@@ -13,6 +13,7 @@ import {PluginManager} from "../interfaces/plugin-manager";
 import {Util} from "../../util/util";
 import ReadStream = NodeJS.ReadStream;
 import WriteStream = NodeJS.WriteStream;
+import {ProcessCommandJson} from "firmament-bash/js/interfaces/process-command-json";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -40,6 +41,7 @@ export class PluginManagerImpl implements PluginManager {
   private pluginManifests: PluginManifest[] = [];
 
   constructor(@inject('BaseService') private baseService: BaseService,
+              @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('CommandUtil') private commandUtil: CommandUtil,
               @inject('IPostal') private postal: IPostal) {
     const me = this;
@@ -88,47 +90,80 @@ export class PluginManagerImpl implements PluginManager {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    me.extractPlugins((err) => {
+    me.gitClientCode((err) => {
       if (me.commandUtil.logError(err)) {
         return;
       }
-      me.catalogPlugins((err) => {
+      me.extractPlugins((err) => {
         if (me.commandUtil.logError(err)) {
           return;
         }
-        me.modifyClientPagesRouting((err) => {
+        me.catalogPlugins((err) => {
           if (me.commandUtil.logError(err)) {
             return;
           }
-          me.postal.publish({
-            channel: 'FolderMonitor',
-            topic: 'AddFolderToMonitor',
-            data: {
-              folderMonitorPath: PluginManagerImpl.pluginUploadFolderToMonitor,
-              watcherConfig: {
-                ignoreInitial: false
-              }
+          me.modifyClientPagesRouting((err) => {
+            if (me.commandUtil.logError(err)) {
+              return;
             }
-          });
-          me.server.get('/upload', function (req, res) {
-            PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
-              res.send(JSON.stringify(obj));
+            me.postal.publish({
+              channel: 'FolderMonitor',
+              topic: 'AddFolderToMonitor',
+              data: {
+                folderMonitorPath: PluginManagerImpl.pluginUploadFolderToMonitor,
+                watcherConfig: {
+                  ignoreInitial: false
+                }
+              }
             });
-          });
-          me.server.post('/upload', function (req, res) {
-            PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
-              return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+            me.server.get('/upload', function (req, res) {
+              PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
+                res.send(JSON.stringify(obj));
+              });
             });
-          });
-          me.server.delete('/uploaded/files/:name', function (req, res) {
-            PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
-              res.send(JSON.stringify(result));
+            me.server.post('/upload', function (req, res) {
+              PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
+                return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+              });
             });
+            me.server.delete('/uploaded/files/:name', function (req, res) {
+              PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
+                res.send(JSON.stringify(result));
+              });
+            });
+            cb(null, {message: 'Initialized PluginManager'});
           });
-          cb(null, {message: 'Initialized PluginManager'});
         });
       });
     });
+  }
+
+  private gitClientCode(cb: (err?) => void) {
+    const me = this;
+    const clientFolder = path.resolve(__dirname, '../../../client');
+    if (!fs.existsSync(clientFolder)) {
+      fs.mkdirSync(clientFolder);
+    }
+    const clientSourceFolder = path.resolve(__dirname, '../../../client/source');
+    const fnArray = [];
+    if (!fs.existsSync(clientSourceFolder)) {
+      fnArray.push(me.gitCloneClient.bind(me));
+      fnArray.push(me.npmInstallClient.bind(me));
+    }
+    async.mapSeries(fnArray,
+      (fn, cb) => {
+        fn(cb);
+      }, (err) => {
+        cb(err);
+      });
+  };
+
+  private gitCloneClient(cb: (err: Error, result: any) => void) {
+    this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/git-clone-client.json'), cb);
+  }
+
+  private npmInstallClient(cb: (err: Error, result: any) => void) {
+    this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/npm-install-client.json'), cb);
   }
 
   private modifyClientPagesRouting(cb: (err?) => void) {
