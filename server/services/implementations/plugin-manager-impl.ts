@@ -67,7 +67,12 @@ export class PluginManagerImpl implements PluginManager {
             if (me.commandUtil.logError(err)) {
               return;
             }
-            me.broadcastPluginList();
+            me.modifyClientPagesRouting((err) => {
+              if (me.commandUtil.logError(err)) {
+                return;
+              }
+              me.broadcastPluginList();
+            });
           });
         });
       }
