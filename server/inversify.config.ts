@@ -20,6 +20,8 @@ import {WebSocketService} from "./services/interfaces/web-socket-service";
 import {WebSocketServiceImpl} from "./services/implementations/web-socket-service-impl";
 import {FolderMonitor} from "./services/interfaces/folder-monitor";
 import {FolderMonitorImpl} from "./services/implementations/folder-monitor-impl";
+import {MosaicProxy} from "./services/interfaces/mosaic-proxy";
+import {MosaicProxyImpl} from "./services/implementations/mosaic-proxy-impl";
 
 kernel.bind<BaseService>('BaseService').to(BaseServiceImpl).inSingletonScope();
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -31,5 +33,7 @@ kernel.bind<StaticService>('StaticService').to(StaticServiceImpl).inSingletonSco
 kernel.bind<RootService>('RootService').to(RootServiceImpl).inSingletonScope();
 kernel.bind<WebSocketService>('WebSocketService').to(WebSocketServiceImpl).inSingletonScope();
 kernel.bind<FolderMonitor>('FolderMonitor').to(FolderMonitorImpl).inSingletonScope();
+kernel.bind<MosaicProxy>('MosaicProxy').to(MosaicProxyImpl).inSingletonScope();
 
+//noinspection JSUnusedGlobalSymbols
 export default kernel;

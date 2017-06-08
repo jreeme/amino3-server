@@ -9,6 +9,7 @@ import {StaticService} from "../interfaces/static-service";
 import {RootService} from "../interfaces/root-service";
 import {WebSocketService} from "../interfaces/web-socket-service";
 import {FolderMonitor} from "../interfaces/folder-monitor";
+import {MosaicProxy} from "../interfaces/mosaic-proxy";
 
 const async = require('async');
 
@@ -21,6 +22,7 @@ export class ServiceManagerImpl implements ServiceManager {
               @inject('RootService') private rootService: RootService,
               @inject('StaticService') private staticService: StaticService,
               @inject('FolderMonitor') private folderMonitor: FolderMonitor,
+              @inject('MosaicProxy') private mosaicProxy: MosaicProxy,
               @inject('WebSocketService') private webSocketService: WebSocketService,
               @inject('InitializeDatabase') private initializeDatabase: InitializeDatabase) {
   }
@@ -43,6 +45,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.folderMonitor.initSubscriptions.bind(this.folderMonitor)
       , this.staticService.initSubscriptions.bind(this.staticService)
       , this.rootService.initSubscriptions.bind(this.rootService)
+      , this.mosaicProxy.initSubscriptions.bind(this.mosaicProxy)
 
       , this.initializeDatabase.init.bind(this.initializeDatabase)
       , this.pluginManager.init.bind(this.pluginManager)
@@ -52,6 +55,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.folderMonitor.init.bind(this.folderMonitor)
       , this.staticService.init.bind(this.staticService)
       , this.rootService.init.bind(this.rootService)
+      , this.mosaicProxy.init.bind(this.mosaicProxy)
     ];
     async.mapSeries(fnArray,
       (fn, cb) => {
