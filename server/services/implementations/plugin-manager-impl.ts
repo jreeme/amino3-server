@@ -9,11 +9,11 @@ import async = require('async');
 import mkdirp = require('mkdirp');
 import recursiveReaddir = require('recursive-readdir');
 import jsonfile = require('jsonfile');
-import {PluginManager} from "../interfaces/plugin-manager";
-import {Util} from "../../util/util";
+import {PluginManager} from '../interfaces/plugin-manager';
+import {Util} from '../../util/util';
 import ReadStream = NodeJS.ReadStream;
 import WriteStream = NodeJS.WriteStream;
-import {ProcessCommandJson} from "firmament-bash/js/interfaces/process-command-json";
+import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -26,6 +26,11 @@ export class PluginManagerImpl implements PluginManager {
   private static pagesMenuPath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.menu.ts');
   private static tmpUploaderFolder = path.resolve(__dirname, '../../amino3-plugins/tmp');
   private static uploadedPluginUrl = '/amino3-plugins/files';
+  private static gitCloneClientExecutionGraph = path.resolve(__dirname, '../../firmament-bash/git-clone-client.json');
+  private static npmInstallClientExecutionGraph = path.resolve(__dirname, '../../firmament-bash/npm-install-client.json');
+  private static fileUploaderPath = path.resolve(__dirname, '../../util/blueimp-file-upload-expressjs/fileupload');
+  private static clientFolder = path.resolve(__dirname, '../../../client');
+  private static clientSourceFolder = path.resolve(__dirname, '../../../client/source');
 
   private static fileUploaderOptions = {
     tmpDir: PluginManagerImpl.tmpUploaderFolder,
@@ -36,17 +41,15 @@ export class PluginManagerImpl implements PluginManager {
     }
   };
 
-  private static fileUploader = require('../../util/blueimp-file-upload-expressjs/fileupload')(PluginManagerImpl.fileUploaderOptions);
+  private static fileUploader = require(PluginManagerImpl.fileUploaderPath)(PluginManagerImpl.fileUploaderOptions);
 
   private pluginManifests: PluginManifest[] = [];
+  private loadingPlugins = false;
 
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('CommandUtil') private commandUtil: CommandUtil,
               @inject('IPostal') private postal: IPostal) {
-    const me = this;
-    me.server.on('started', () => {
-    });
   }
 
   get server(): any {
@@ -58,22 +61,9 @@ export class PluginManagerImpl implements PluginManager {
     me.postal.subscribe({
       channel: 'FolderMonitor',
       topic: PluginManagerImpl.pluginUploadFolderToMonitor,
-      callback: (fileWatcherPayload: FileWatcherPayload) => {
-        me.extractPlugins((err) => {
-          if (me.commandUtil.logError(err)) {
-            return;
-          }
-          me.catalogPlugins((err) => {
-            if (me.commandUtil.logError(err)) {
-              return;
-            }
-            me.modifyClientPagesRouting((err) => {
-              if (me.commandUtil.logError(err)) {
-                return;
-              }
-              me.broadcastPluginList();
-            });
-          });
+      callback: (/*fileWatcherPayload: FileWatcherPayload*/) => {
+        me.loadPlugins((/*err*/) => {
+          me.broadcastPluginList();
         });
       }
     });
@@ -84,117 +74,91 @@ export class PluginManagerImpl implements PluginManager {
         me.broadcastPluginList();
       }
     });
-    /*    me.postal.subscribe({
-     channel: 'PluginManager',
-     topic: 'LoadPlugins',
-     callback: (data) => {
-     }
-     });*/
     cb(null, {message: 'Initialized PluginManager Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
     me.gitClientCode((err) => {
-      if (me.commandUtil.logError(err)) {
-        return;
-      }
-      me.extractPlugins((err) => {
-        if (me.commandUtil.logError(err)) {
-          return;
-        }
-        me.catalogPlugins((err) => {
-          if (me.commandUtil.logError(err)) {
-            return;
+      me.postal.publish({
+        channel: 'FolderMonitor',
+        topic: 'AddFolderToMonitor',
+        data: {
+          folderMonitorPath: PluginManagerImpl.pluginUploadFolderToMonitor,
+          watcherConfig: {
+            ignoreInitial: false
           }
-          me.modifyClientPagesRouting((err) => {
-            if (me.commandUtil.logError(err)) {
-              return;
-            }
-            me.postal.publish({
-              channel: 'FolderMonitor',
-              topic: 'AddFolderToMonitor',
-              data: {
-                folderMonitorPath: PluginManagerImpl.pluginUploadFolderToMonitor,
-                watcherConfig: {
-                  ignoreInitial: false
-                }
-              }
-            });
-            me.server.get('/upload', function (req, res) {
-              PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
-                res.send(JSON.stringify(obj));
-              });
-            });
-            me.server.post('/upload', function (req, res) {
-              PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
-                return res.status(200).send({status: err ? 'error' : 'OK', error: err});
-              });
-            });
-            me.server.delete('/uploaded/files/:name', function (req, res) {
-              PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
-                res.send(JSON.stringify(result));
-              });
-            });
-            cb(null, {message: 'Initialized PluginManager'});
-          });
+        }
+      });
+      me.server.get('/upload', function (req, res) {
+        PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
+          res.send(JSON.stringify(obj));
         });
       });
+      me.server.post('/upload', function (req, res) {
+        PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
+          return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+        });
+      });
+      me.server.delete('/uploaded/files/:name', function (req, res) {
+        PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
+          res.send(JSON.stringify(result));
+        });
+      });
+      cb(err, {message: 'Initialized PluginManager'});
     });
   }
 
   private gitClientCode(cb: (err?) => void) {
     const me = this;
-    const clientFolder = path.resolve(__dirname, '../../../client');
-    if (!fs.existsSync(clientFolder)) {
-      fs.mkdirSync(clientFolder);
+    if (!fs.existsSync(PluginManagerImpl.clientFolder)) {
+      fs.mkdirSync(PluginManagerImpl.clientFolder);
     }
-    const clientSourceFolder = path.resolve(__dirname, '../../../client/source');
-    const fnArray = [];
-    if (!fs.existsSync(clientSourceFolder)) {
-      fnArray.push(me.gitCloneClient.bind(me));
-      fnArray.push(me.npmInstallClient.bind(me));
+    if (!fs.existsSync(PluginManagerImpl.clientSourceFolder)) {
+      async.series([
+        (cb) => {
+          me.processCommandJson.processAbsoluteUrl(PluginManagerImpl.gitCloneClientExecutionGraph, cb);
+        },
+        (cb) => {
+          me.processCommandJson.processAbsoluteUrl(PluginManagerImpl.npmInstallClientExecutionGraph, cb);
+        }
+      ], cb);
+      return;
     }
-    async.mapSeries(fnArray,
-      (fn, cb) => {
-        fn(cb);
-      }, (err) => {
-        cb(err);
-      });
+    cb();
   };
 
-  private gitCloneClient(cb: (err: Error, result: any) => void) {
-    this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/git-clone-client.json'), cb);
-  }
-
-  private npmInstallClient(cb: (err: Error, result: any) => void) {
-    this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/npm-install-client.json'), cb);
-  }
-
-  private modifyClientPagesRouting(cb: (err?) => void) {
+  private modifyClientPagesRouting(cb: (err) => void) {
     const me = this;
-    let newRoutingLines: string[] = [];
-    me.pluginManifests.forEach((pluginManifest) => {
-      pluginManifest.menuRoutes.forEach((menuRoute) => {
-        newRoutingLines.push(`\t\t\t, {path: '${menuRoute.path}', loadChildren: '${menuRoute.loadChildren}'}\n`);
-      });
-    });
-    let newMenuLines: string[] = [];
-    me.pluginManifests.forEach((pluginManifest) => {
-      pluginManifest.toolRoutes.forEach((toolRoute) => {
-        const json = JSON.stringify(toolRoute, null, 2);
-        newMenuLines.push(',' + json);
-      });
-    });
-    Util.addTextLinesArrayToFile(
-      fs.createReadStream(PluginManagerImpl.pagesRoutingTemplatePath),
-      fs.createWriteStream(PluginManagerImpl.pagesRoutingPath),
-      '// **** Put new lines here', newRoutingLines, () => {
+    async.parallel([
+      (cb) => {
+        const newRoutingLines: string[] = [];
+        me.pluginManifests.forEach((pluginManifest) => {
+          pluginManifest.menuRoutes.forEach((menuRoute) => {
+            newRoutingLines.push(`\t\t\t, {path: '${menuRoute.path}', loadChildren: '${menuRoute.loadChildren}'}\n`);
+          });
+        });
+        Util.addTextLinesArrayToFile(
+          fs.createReadStream(PluginManagerImpl.pagesRoutingTemplatePath),
+          fs.createWriteStream(PluginManagerImpl.pagesRoutingPath),
+          '// **** Put new lines here',
+          newRoutingLines,
+          cb);
+      },
+      (cb) => {
+        const newMenuLines: string[] = [];
+        me.pluginManifests.forEach((pluginManifest) => {
+          pluginManifest.toolRoutes.forEach((toolRoute) => {
+            const json = JSON.stringify(toolRoute, null, 2);
+            newMenuLines.push(',' + json);
+          });
+        });
         Util.addTextLinesArrayToFile(
           fs.createReadStream(PluginManagerImpl.pagesMenuTemplatePath),
           fs.createWriteStream(PluginManagerImpl.pagesMenuPath),
           '// **** Put new lines here', newMenuLines, cb);
-      });
+      }
+    ], cb);
   }
 
   private catalogPlugins(cb: (err) => void) {
@@ -228,39 +192,62 @@ export class PluginManagerImpl implements PluginManager {
 
   private extractPlugins(cb: (err) => void) {
     const me = this;
-    //Blow away existing plugin extracts for a clean, fresh start
-    rimraf(PluginManagerImpl.extractedPluginFolder, (err) => {
-      if (me.commandUtil.logError(err)) {
-        return;
+    async.series([
+      (cb) => {
+        //Blow away existing plugin extracts for a clean, fresh start
+        rimraf(PluginManagerImpl.extractedPluginFolder, cb);
+      },
+      (cb) => {
+        mkdirp(PluginManagerImpl.extractedPluginFolder, cb);
+      },
+      (cb) => {
+        recursiveReaddir(PluginManagerImpl.pluginUploadFolderToMonitor, cb);
       }
-      mkdirp(PluginManagerImpl.extractedPluginFolder, (err) => {
-        if (me.commandUtil.logError(err)) {
-          return;
-        }
-        recursiveReaddir(PluginManagerImpl.pluginUploadFolderToMonitor, (err, files) => {
-          if (me.commandUtil.logError(err)) {
-            return;
-          }
-          async.map(files,
-            (file, cb) => {
-              tar.x({
-                file,
-                strict: true,
-                C: PluginManagerImpl.extractedPluginFolder
-              })
-                .then(() => {
-                  cb();
-                })
-                .catch((err) => {
-                  me.commandUtil.logError(err);
-                });
-            }, (err) => {
+    ], (err, results) => {
+      const files = results[2];
+      async.map(files,
+        (file, cb) => {
+          tar.x({
+            file,
+            strict: true,
+            C: PluginManagerImpl.extractedPluginFolder
+          })
+            .then(() => {
+              cb();
+            })
+            .catch((err) => {
               me.commandUtil.logError(err);
-              cb(err);
             });
-        })
-      });
+        }, (err) => {
+          me.commandUtil.logError(err);
+          cb(err);
+        });
     });
+  }
+
+  private loadPlugins(cb: (err?) => void) {
+    const me = this;
+    if (!me.loadingPlugins) {
+      me.loadingPlugins = true;
+      async.series([
+        (cb) => {
+          me.extractPlugins(cb);
+        },
+        (cb) => {
+          me.catalogPlugins(cb);
+        },
+        (cb) => {
+          me.modifyClientPagesRouting(cb);
+        }
+      ], (err) => {
+        setTimeout(() => {
+          me.loadingPlugins = false;
+        }, 5000);
+        cb(err);
+      });
+      return;
+    }
+    cb();
   }
 
   private broadcastPluginList() {
