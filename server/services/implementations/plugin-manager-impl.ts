@@ -105,7 +105,9 @@ export class PluginManagerImpl implements PluginManager {
           res.send(JSON.stringify(result));
         });
       });
-      cb(err, {message: 'Initialized PluginManager'});
+      me.loadPlugins((err)=>{
+        cb(err, {message: 'Initialized PluginManager'});
+      });
     });
   }
 

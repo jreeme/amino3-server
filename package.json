@@ -27,6 +27,7 @@
     "mkdirp": "^0.5.1",
     "nodejs-websocket": "^1.7.1",
     "recursive-readdir": "^2.2.1",
+    "request": "^2.81.0",
     "safe-json-parse": "^4.0.0",
     "serve-favicon": "^2.0.1",
     "strong-error-handler": "^2.0.0",

@@ -71,5 +71,6 @@ export class RebuildClientImpl implements RebuildClient {
 
   private ngBuildClient(cb: (err: Error, result: any) => void) {
     this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/ng-build-client.json'), cb);
+    //cb(null, null);
   }
 }
