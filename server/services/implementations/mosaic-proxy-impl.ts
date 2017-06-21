@@ -49,23 +49,23 @@ export class MosaicProxyImpl implements MosaicProxy {
      }
      });*/
     me.server.get('/dashboard', function (req, res) {
-      me.mosaicHttpGet(req, res);
+      me.mosaicHttpGet(MosaicProxyImpl.baseMosaicUrl + '/dashboard', res);
     });
     me.server.get('/static/images/:image', function (req, res) {
-      me.mosaicHttpGet(req, res);
+      me.mosaicHttpGet(MosaicProxyImpl.baseMosaicUrl + req.originalUrl, res);
     });
     me.server.get('/api/:apicall', function (req, res) {
-      me.mosaicHttpGet(req, res);
+      me.mosaicHttpGet(MosaicProxyImpl.baseMosaicUrl + req.originalUrl, res);
     });
     me.server.get('/static/bundles/:bundle', function (req, res) {
-      me.mosaicHttpGet(req, res);
+      me.mosaicHttpGet(MosaicProxyImpl.baseMosaicUrl + req.originalUrl, res);
     });
     cb(null, {message: 'Initialized MosaicProxy Subscriptions'});
   }
 
-  private mosaicHttpGet(req, outerRes) {
-    MosaicProxyImpl.mosaicHttpRequestOptions.url = MosaicProxyImpl.baseMosaicUrl + req.originalUrl;
-    httpRequest.get(MosaicProxyImpl.mosaicHttpRequestOptions).pipe(outerRes);
+  private mosaicHttpGet(url, res) {
+    MosaicProxyImpl.mosaicHttpRequestOptions.url = url;
+    httpRequest.get(MosaicProxyImpl.mosaicHttpRequestOptions).pipe(res);
   }
 
   init(cb: (err: Error, result: any) => void) {

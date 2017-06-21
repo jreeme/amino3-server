@@ -22,6 +22,8 @@ import {FolderMonitor} from "./services/interfaces/folder-monitor";
 import {FolderMonitorImpl} from "./services/implementations/folder-monitor-impl";
 import {MosaicProxy} from "./services/interfaces/mosaic-proxy";
 import {MosaicProxyImpl} from "./services/implementations/mosaic-proxy-impl";
+import {NewmanProxy} from "./services/interfaces/newman-proxy";
+import {NewmanProxyImpl} from "./services/implementations/newman-proxy-impl";
 
 kernel.bind<BaseService>('BaseService').to(BaseServiceImpl).inSingletonScope();
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -34,6 +36,7 @@ kernel.bind<RootService>('RootService').to(RootServiceImpl).inSingletonScope();
 kernel.bind<WebSocketService>('WebSocketService').to(WebSocketServiceImpl).inSingletonScope();
 kernel.bind<FolderMonitor>('FolderMonitor').to(FolderMonitorImpl).inSingletonScope();
 kernel.bind<MosaicProxy>('MosaicProxy').to(MosaicProxyImpl).inSingletonScope();
+kernel.bind<NewmanProxy>('NewmanProxy').to(NewmanProxyImpl).inSingletonScope();
 
 //noinspection JSUnusedGlobalSymbols
 export default kernel;
