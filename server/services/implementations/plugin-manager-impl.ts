@@ -18,19 +18,19 @@ import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-j
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class PluginManagerImpl implements PluginManager {
+  private static clientFolder = path.resolve(__dirname, '../../../client');
+  private static clientSourceFolder = PluginManagerImpl.clientFolder;
   private static pluginUploadFolderToMonitor = path.resolve(__dirname, '../../amino3-plugins/files');
-  private static extractedPluginFolder = path.resolve(__dirname, '../../../client/source/src/app/pages/plugins');
-  private static pagesRoutingTemplatePath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.routing.template.ts');
-  private static pagesRoutingPath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.routing.ts');
-  private static pagesMenuTemplatePath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.menu.template.ts');
-  private static pagesMenuPath = path.resolve(__dirname, '../../../client/source/src/app/pages/pages.menu.ts');
+  private static extractedPluginFolder = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/plugins');
+  private static pagesRoutingTemplatePath = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/pages.routing.template.ts');
+  private static pagesRoutingPath = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/pages.routing.ts');
+  private static pagesMenuTemplatePath = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/pages.menu.template.ts');
+  private static pagesMenuPath = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/pages.menu.ts');
   private static tmpUploaderFolder = path.resolve(__dirname, '../../amino3-plugins/tmp');
   private static uploadedPluginUrl = '/amino3-plugins/files';
   private static gitCloneClientExecutionGraph = path.resolve(__dirname, '../../firmament-bash/git-clone-client.json');
   private static npmInstallClientExecutionGraph = path.resolve(__dirname, '../../firmament-bash/npm-install-client.json');
   private static fileUploaderPath = path.resolve(__dirname, '../../util/blueimp-file-upload-expressjs/fileupload');
-  private static clientFolder = path.resolve(__dirname, '../../../client');
-  private static clientSourceFolder = path.resolve(__dirname, '../../../client/source');
 
   private static fileUploaderOptions = {
     tmpDir: PluginManagerImpl.tmpUploaderFolder,
@@ -105,7 +105,7 @@ export class PluginManagerImpl implements PluginManager {
           res.send(JSON.stringify(result));
         });
       });
-      me.loadPlugins((err)=>{
+      me.loadPlugins((err) => {
         cb(err, {message: 'Initialized PluginManager'});
       });
     });
@@ -113,9 +113,6 @@ export class PluginManagerImpl implements PluginManager {
 
   private gitClientCode(cb: (err?) => void) {
     const me = this;
-    if (!fs.existsSync(PluginManagerImpl.clientFolder)) {
-      fs.mkdirSync(PluginManagerImpl.clientFolder);
-    }
     if (!fs.existsSync(PluginManagerImpl.clientSourceFolder)) {
       async.series([
         (cb) => {

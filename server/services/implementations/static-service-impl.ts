@@ -25,8 +25,8 @@ export class StaticServiceImpl implements StaticService {
     let path = require('path');
     let loopback = require('loopback');
     let wwwPath = (process.env.NODE_ENV === 'production')
-      ? '../../../client/dist'
-      : '../../../client/dist';
+      ? '../../../dist/client'
+      : '../../../dist/client';
     console.log(path.resolve(__dirname, wwwPath));
     me.server.use(loopback.static(path.resolve(__dirname, wwwPath)));
     cb(null, {message: 'Initialized StaticService'});

@@ -10,7 +10,7 @@ import fs = require('fs');
 @injectable()
 export class MosaicProxyImpl implements MosaicProxy {
   private static mosaicSslCertPath = path.resolve(__dirname, '../../ssl-certs/cert.p12');
-  private static mosaicSslCert = fs.readFileSync(MosaicProxyImpl.mosaicSslCertPath);
+  private static mosaicSslCert;
   private static baseMosaicUrl = 'https://ec2-52-222-42-142.us-gov-west-1.compute.amazonaws.com';
   private static mosaicHttpRequestOptions = {
     url: '',
@@ -69,6 +69,11 @@ export class MosaicProxyImpl implements MosaicProxy {
   }
 
   init(cb: (err: Error, result: any) => void) {
+    try {
+      MosaicProxyImpl.mosaicSslCert = fs.readFileSync(MosaicProxyImpl.mosaicSslCertPath);
+    } catch (err) {
+      console.log(err.message);
+    }
     cb(null, {message: 'Initialized MosaicProxy'});
   }
 }

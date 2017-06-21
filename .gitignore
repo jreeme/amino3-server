@@ -17,4 +17,5 @@
 coverage
 node_modules
 client
+server/ssl-certs
 npm-debug.log
