@@ -13,12 +13,12 @@
       "showPreAndPostSpawnMessages": true,
       "outputColor"                : "",
       "useSudo"                    : false,
-      "workingDirectory"           : "..",
+      "workingDirectory"           : ".",
       "command"                    : "/usr/bin/env",
       "args"                       : [
         "bash",
         "-c",
-        "git clone https://github.com/jreeme/amino3-client --branch hack-testClientDebug client"
+        "pwd && git clone https://github.com/jreeme/amino3-client --branch hack-testClientDebug client"
       ],
       "opt-args"                       : [
         "bash",

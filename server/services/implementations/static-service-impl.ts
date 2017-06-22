@@ -2,6 +2,7 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {StaticService} from "../interfaces/static-service";
+import {Globals} from "../../globals";
 
 @injectable()
 export class StaticServiceImpl implements StaticService {
@@ -22,13 +23,8 @@ export class StaticServiceImpl implements StaticService {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    let path = require('path');
     let loopback = require('loopback');
-    let wwwPath = (process.env.NODE_ENV === 'production')
-      ? '../../../dist/client'
-      : '../../../dist/client';
-    console.log(path.resolve(__dirname, wwwPath));
-    me.server.use(loopback.static(path.resolve(__dirname, wwwPath)));
+    me.server.use(loopback.static(Globals.clientDistFolder));
     cb(null, {message: 'Initialized StaticService'});
   }
 }

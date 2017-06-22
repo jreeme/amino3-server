@@ -14,34 +14,21 @@ import {Util} from '../../util/util';
 import ReadStream = NodeJS.ReadStream;
 import WriteStream = NodeJS.WriteStream;
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
+import {Globals} from "../../globals";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class PluginManagerImpl implements PluginManager {
-  private static clientFolder = path.resolve(__dirname, '../../../client');
-  private static clientSourceFolder = PluginManagerImpl.clientFolder;
-  private static pluginUploadFolderToMonitor = path.resolve(__dirname, '../../amino3-plugins/files');
-  private static extractedPluginFolder = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/plugins');
-  private static pagesRoutingTemplatePath = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/pages.routing.template.ts');
-  private static pagesRoutingPath = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/pages.routing.ts');
-  private static pagesMenuTemplatePath = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/pages.menu.template.ts');
-  private static pagesMenuPath = path.resolve(PluginManagerImpl.clientSourceFolder, 'src/app/pages/pages.menu.ts');
-  private static tmpUploaderFolder = path.resolve(__dirname, '../../amino3-plugins/tmp');
-  private static uploadedPluginUrl = '/amino3-plugins/files';
-  private static gitCloneClientExecutionGraph = path.resolve(__dirname, '../../firmament-bash/git-clone-client.json');
-  private static npmInstallClientExecutionGraph = path.resolve(__dirname, '../../firmament-bash/npm-install-client.json');
-  private static fileUploaderPath = path.resolve(__dirname, '../../util/blueimp-file-upload-expressjs/fileupload');
-
   private static fileUploaderOptions = {
-    tmpDir: PluginManagerImpl.tmpUploaderFolder,
-    uploadDir: PluginManagerImpl.pluginUploadFolderToMonitor,
-    uploadUrl: PluginManagerImpl.uploadedPluginUrl,
+    tmpDir: Globals.tmpUploaderFolder,
+    uploadDir: Globals.pluginUploadFolderToMonitor,
+    uploadUrl: Globals.uploadedPluginUrl,
     storage: {
       type: 'local'
     }
   };
 
-  private static fileUploader = require(PluginManagerImpl.fileUploaderPath)(PluginManagerImpl.fileUploaderOptions);
+  private static fileUploader = require(Globals.fileUploaderPath)(PluginManagerImpl.fileUploaderOptions);
 
   private pluginManifests: PluginManifest[] = [];
   private loadingPlugins = false;
@@ -60,7 +47,7 @@ export class PluginManagerImpl implements PluginManager {
     const me = this;
     me.postal.subscribe({
       channel: 'FolderMonitor',
-      topic: PluginManagerImpl.pluginUploadFolderToMonitor,
+      topic: Globals.pluginUploadFolderToMonitor,
       callback: (/*fileWatcherPayload: FileWatcherPayload*/) => {
         me.loadPlugins((/*err*/) => {
           me.broadcastPluginList();
@@ -84,7 +71,7 @@ export class PluginManagerImpl implements PluginManager {
         channel: 'FolderMonitor',
         topic: 'AddFolderToMonitor',
         data: {
-          folderMonitorPath: PluginManagerImpl.pluginUploadFolderToMonitor,
+          folderMonitorPath: Globals.pluginUploadFolderToMonitor,
           watcherConfig: {
             ignoreInitial: false
           }
@@ -113,13 +100,15 @@ export class PluginManagerImpl implements PluginManager {
 
   private gitClientCode(cb: (err?) => void) {
     const me = this;
-    if (!fs.existsSync(PluginManagerImpl.clientSourceFolder)) {
+    if (!fs.existsSync(Globals.clientFolder)) {
+      //Make sure cwd is as expected by shell processes
+      process.chdir(Globals.projectRootPath);
       async.series([
         (cb) => {
-          me.processCommandJson.processAbsoluteUrl(PluginManagerImpl.gitCloneClientExecutionGraph, cb);
+          me.processCommandJson.processAbsoluteUrl(Globals.gitCloneClientExecutionGraph, cb);
         },
         (cb) => {
-          me.processCommandJson.processAbsoluteUrl(PluginManagerImpl.npmInstallClientExecutionGraph, cb);
+          me.processCommandJson.processAbsoluteUrl(Globals.npmInstallClientExecutionGraph, cb);
         }
       ], cb);
       return;
@@ -138,8 +127,8 @@ export class PluginManagerImpl implements PluginManager {
           });
         });
         Util.addTextLinesArrayToFile(
-          fs.createReadStream(PluginManagerImpl.pagesRoutingTemplatePath),
-          fs.createWriteStream(PluginManagerImpl.pagesRoutingPath),
+          fs.createReadStream(Globals.pagesRoutingTemplatePath),
+          fs.createWriteStream(Globals.pagesRoutingPath),
           '// **** Put new lines here',
           newRoutingLines,
           cb);
@@ -153,8 +142,8 @@ export class PluginManagerImpl implements PluginManager {
           });
         });
         Util.addTextLinesArrayToFile(
-          fs.createReadStream(PluginManagerImpl.pagesMenuTemplatePath),
-          fs.createWriteStream(PluginManagerImpl.pagesMenuPath),
+          fs.createReadStream(Globals.pagesMenuTemplatePath),
+          fs.createWriteStream(Globals.pagesMenuPath),
           '// **** Put new lines here', newMenuLines, cb);
       }
     ], cb);
@@ -163,7 +152,7 @@ export class PluginManagerImpl implements PluginManager {
   private catalogPlugins(cb: (err) => void) {
     const me = this;
     me.pluginManifests = [];
-    recursiveReaddir(PluginManagerImpl.extractedPluginFolder, (err, fullPaths) => {
+    recursiveReaddir(Globals.extractedPluginFolder, (err, fullPaths) => {
       const manifestFiles = fullPaths.filter((fullPath) => {
         return path.basename(fullPath) === 'manifest.json';
       });
@@ -194,13 +183,13 @@ export class PluginManagerImpl implements PluginManager {
     async.series([
       (cb) => {
         //Blow away existing plugin extracts for a clean, fresh start
-        rimraf(PluginManagerImpl.extractedPluginFolder, cb);
+        rimraf(Globals.extractedPluginFolder, cb);
       },
       (cb) => {
-        mkdirp(PluginManagerImpl.extractedPluginFolder, cb);
+        mkdirp(Globals.extractedPluginFolder, cb);
       },
       (cb) => {
-        recursiveReaddir(PluginManagerImpl.pluginUploadFolderToMonitor, cb);
+        recursiveReaddir(Globals.pluginUploadFolderToMonitor, cb);
       }
     ], (err, results) => {
       const files = results[2];
@@ -209,7 +198,7 @@ export class PluginManagerImpl implements PluginManager {
           tar.x({
             file,
             strict: true,
-            C: PluginManagerImpl.extractedPluginFolder
+            C: Globals.extractedPluginFolder
           })
             .then(() => {
               cb();

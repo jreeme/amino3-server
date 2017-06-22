@@ -13,7 +13,7 @@
       "showPreAndPostSpawnMessages": true,
       "outputColor"                : "",
       "useSudo"                    : false,
-      "workingDirectory"           : "../client",
+      "workingDirectory"           : ".",
       "command"                    : "/usr/bin/env",
       "args"                       : [
         "bash",

@@ -7,6 +7,7 @@ import path = require('path');
 import fs = require('fs');
 import async = require('async');
 import {Util} from "../../util/util";
+import {Globals} from "../../globals";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -46,31 +47,26 @@ export class RebuildClientImpl implements RebuildClient {
   private rebuildClient(cb?: (err) => void) {
     const me = this;
     cb = Util.checkCallback(cb);
-    const clientFolder = path.resolve(__dirname, '../../../client');
-    if (!fs.existsSync(clientFolder)) {
-      fs.mkdirSync(clientFolder);
-    }
-    const fnArray = [];
-    fnArray.push(me.ngBuildClient.bind(me));
-    async.mapSeries(fnArray,
-      (fn, cb) => {
-        fn(cb);
-      }, (err) => {
-        me.postal.publish({
-          channel: 'WebSocket',
-          topic: 'Broadcast',
-          data: {
-            channel: 'System',
-            topic: 'RefreshPage',
-            data: {}
-          }
-        });
-        cb(err);
+    async.series([
+      (cb) => {
+        me.ngBuildClient(cb);
+      }
+    ], (err) => {
+      me.postal.publish({
+        channel: 'WebSocket',
+        topic: 'Broadcast',
+        data: {
+          channel: 'System',
+          topic: 'RefreshPage',
+          data: {}
+        }
       });
+      cb(err);
+    });
   }
 
   private ngBuildClient(cb: (err: Error, result: any) => void) {
-    this.processCommandJson.processAbsoluteUrl(path.resolve(__dirname, '../../firmament-bash/ng-build-client.json'), cb);
-    //cb(null, null);
+    process.chdir(Globals.clientFolder);
+    this.processCommandJson.processAbsoluteUrl(Globals.ngBuildClientExecutionGraph, cb);
   }
 }

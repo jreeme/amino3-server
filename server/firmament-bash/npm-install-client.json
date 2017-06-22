@@ -13,12 +13,12 @@
       "showPreAndPostSpawnMessages": true,
       "outputColor"                : "",
       "useSudo"                    : false,
-      "workingDirectory"           : "../client",
+      "workingDirectory"           : "client",
       "command"                    : "/usr/bin/env",
       "args"                       : [
         "bash",
         "-c",
-        "npm install"
+        "pwd && npm install"
       ]
     }
   ]

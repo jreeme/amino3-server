@@ -5,11 +5,11 @@ import {MosaicProxy} from "../interfaces/mosaic-proxy";
 import path = require('path');
 import httpRequest = require('request');
 import fs = require('fs');
+import {Globals} from "../../globals";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class MosaicProxyImpl implements MosaicProxy {
-  private static mosaicSslCertPath = path.resolve(__dirname, '../../ssl-certs/cert.p12');
   private static mosaicSslCert;
   private static baseMosaicUrl = 'https://ec2-52-222-42-142.us-gov-west-1.compute.amazonaws.com';
   private static mosaicHttpRequestOptions = {
@@ -70,7 +70,7 @@ export class MosaicProxyImpl implements MosaicProxy {
 
   init(cb: (err: Error, result: any) => void) {
     try {
-      MosaicProxyImpl.mosaicSslCert = fs.readFileSync(MosaicProxyImpl.mosaicSslCertPath);
+      MosaicProxyImpl.mosaicSslCert = fs.readFileSync(Globals.mosaicSslCertPath);
     } catch (err) {
       console.log(err.message);
     }
