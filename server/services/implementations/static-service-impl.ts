@@ -17,14 +17,11 @@ export class StaticServiceImpl implements StaticService {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
-    const me = this;
     cb(null, {message: 'Initialized StaticService Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
-    const me = this;
-    let loopback = require('loopback');
-    me.server.use(loopback.static(Globals.clientDistFolder));
+    this.server.use(require('loopback').static(Globals.clientDistFolder));
     cb(null, {message: 'Initialized StaticService'});
   }
 }

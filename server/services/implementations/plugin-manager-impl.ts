@@ -215,6 +215,10 @@ export class PluginManagerImpl implements PluginManager {
 
   private loadPlugins(cb: (err?) => void) {
     const me = this;
+    if(Globals.suppressLoadPlugins){
+      cb();
+      return;
+    }
     if (!me.loadingPlugins) {
       me.loadingPlugins = true;
       async.series([

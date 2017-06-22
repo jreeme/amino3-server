@@ -10,12 +10,11 @@ import {Globals} from "../../globals";
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class MosaicProxyImpl implements MosaicProxy {
-  private static mosaicSslCert;
   private static baseMosaicUrl = 'https://ec2-52-222-42-142.us-gov-west-1.compute.amazonaws.com';
   private static mosaicHttpRequestOptions = {
     url: '',
     agentOptions: {
-      pfx: MosaicProxyImpl.mosaicSslCert,
+      pfx: null,
       passphrase: 'password',
       securityOptions: 'SSL_OP_NO_SSLv3'
     }
@@ -65,12 +64,16 @@ export class MosaicProxyImpl implements MosaicProxy {
 
   private mosaicHttpGet(url, res) {
     MosaicProxyImpl.mosaicHttpRequestOptions.url = url;
-    httpRequest.get(MosaicProxyImpl.mosaicHttpRequestOptions).pipe(res);
+    httpRequest.get(MosaicProxyImpl.mosaicHttpRequestOptions)
+      .on('error', (err) => {
+        console.log(err.message);
+      })
+      .pipe(res);
   }
 
   init(cb: (err: Error, result: any) => void) {
     try {
-      MosaicProxyImpl.mosaicSslCert = fs.readFileSync(Globals.mosaicSslCertPath);
+      MosaicProxyImpl.mosaicHttpRequestOptions.agentOptions.pfx = fs.readFileSync(Globals.mosaicSslCertPath);
     } catch (err) {
       console.log(err.message);
     }

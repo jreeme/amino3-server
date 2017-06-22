@@ -44,7 +44,7 @@ export class RebuildClientImpl implements RebuildClient {
     });
   }
 
-  private rebuildClient(cb?: (err) => void) {
+  private rebuildClient(cb?: (err?) => void) {
     const me = this;
     cb = Util.checkCallback(cb);
     async.series([

@@ -1,6 +1,7 @@
 import path = require('path');
 
 export class Globals {
+  static suppressLoadPlugins = false;
   static projectRootPath = path.resolve(__dirname, '..');
   static clientFolder = path.resolve(Globals.projectRootPath, 'client');
   static serverFolder = path.resolve(Globals.projectRootPath, 'server');
