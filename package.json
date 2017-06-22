@@ -8,7 +8,7 @@
   "scripts"        : {
     "lint"    : "eslint .",
     "start"   : "node .",
-    "build"   : "cd client/source && npm run build",
+    "build": "tsc --project server/tsconfig.json",
     "posttest": "npm run lint && nsp check"
   },
   "dependencies"   : {
