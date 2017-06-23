@@ -7,12 +7,16 @@ import async = require('async');
 import _ = require('lodash');
 import jwt = require('jsonwebtoken');
 import {Authentication} from "../interfaces/authentication";
+import {LogService} from "../interfaces/log-service";
 
+//noinspection JSUnusedGlobalSymbols
 @injectable()
 export class AuthenticationImpl implements Authentication {
   private aminoUser;
 
+  //noinspection JSUnusedLocalSymbols
   constructor(@inject('BaseService') private baseService: BaseService,
+              @inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal) {
     //this.server.on('started', () => { });
   }
@@ -22,7 +26,6 @@ export class AuthenticationImpl implements Authentication {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
-    const me = this;
     cb(null, {message: 'Initialized Authentication Subscriptions'});
   }
 
@@ -85,10 +88,11 @@ export class AuthenticationImpl implements Authentication {
   }
 
   private createToken(user) {
+    const me = this;
     try {
       return jwt.sign(_.omit(user, 'password'), 'mySecret', {expiresIn: '1 days'});
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      me.log.logIfError(err);
     }
   }
 }

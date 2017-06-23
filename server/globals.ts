@@ -19,4 +19,5 @@ export class Globals {
   static ngBuildClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client.json');
   static fileUploaderPath = path.resolve(Globals.serverFolder, 'util/blueimp-file-upload-expressjs/fileupload');
   static mosaicSslCertPath = path.resolve(Globals.serverFolder, 'ssl-certs/cert.p12');
+  static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
 }

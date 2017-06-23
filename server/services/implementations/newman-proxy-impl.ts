@@ -6,6 +6,7 @@ import path = require('path');
 import httpRequest = require('request');
 import fs = require('fs');
 import {Globals} from "../../globals";
+import {LogService} from "../interfaces/log-service";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -20,7 +21,9 @@ export class NewmanProxyImpl implements NewmanProxy {
     }
   };
 
+  //noinspection JSUnusedLocalSymbols
   constructor(@inject('BaseService') private baseService: BaseService,
+              @inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal) {
   }
 
@@ -91,23 +94,25 @@ export class NewmanProxyImpl implements NewmanProxy {
   }
 
   private newmanHttpGet(url, res) {
+    const me = this;
     NewmanProxyImpl.newmanHttpRequestOptions.url = url;
     try {
       httpRequest.get(NewmanProxyImpl.newmanHttpRequestOptions)
         .on('error', (err) => {
-          console.log(err.message);
+          me.log.logIfError(err);
         })
         .pipe(res);
     } catch (err) {
-      let e = err;
+      me.log.logIfError(err);
     }
   }
 
   init(cb: (err: Error, result: any) => void) {
+    const me = this;
     try {
       NewmanProxyImpl.newmanHttpRequestOptions.agentOptions.pfx = fs.readFileSync(Globals.mosaicSslCertPath);
     } catch (err) {
-      console.log(err.message);
+      me.log.logIfError(err);
     }
     cb(null, {message: 'Initialized NewmanProxy'});
   }

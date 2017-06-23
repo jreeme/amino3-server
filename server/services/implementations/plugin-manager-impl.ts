@@ -14,7 +14,8 @@ import {Util} from '../../util/util';
 import ReadStream = NodeJS.ReadStream;
 import WriteStream = NodeJS.WriteStream;
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
-import {Globals} from "../../globals";
+import {Globals} from '../../globals';
+import {LogService} from '../interfaces/log-service';
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -35,6 +36,7 @@ export class PluginManagerImpl implements PluginManager {
 
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
+              @inject('LogService') private log: LogService,
               @inject('CommandUtil') private commandUtil: CommandUtil,
               @inject('IPostal') private postal: IPostal) {
   }
@@ -204,10 +206,10 @@ export class PluginManagerImpl implements PluginManager {
               cb();
             })
             .catch((err) => {
-              me.commandUtil.logError(err);
+              me.log.logIfError(err);
             });
         }, (err) => {
-          me.commandUtil.logError(err);
+          me.log.logIfError(err);
           cb(err);
         });
     });

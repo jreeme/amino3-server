@@ -11,6 +11,7 @@ import {WebSocketService} from "../interfaces/web-socket-service";
 import {FolderMonitor} from "../interfaces/folder-monitor";
 import {MosaicProxy} from "../interfaces/mosaic-proxy";
 import {NewmanProxy} from "../interfaces/newman-proxy";
+import {LogService} from "../interfaces/log-service";
 
 const async = require('async');
 
@@ -25,6 +26,7 @@ export class ServiceManagerImpl implements ServiceManager {
               @inject('FolderMonitor') private folderMonitor: FolderMonitor,
               @inject('MosaicProxy') private mosaicProxy: MosaicProxy,
               @inject('NewmanProxy') private newmanProxy: NewmanProxy,
+              @inject('LogService') private logService: LogService,
               @inject('WebSocketService') private webSocketService: WebSocketService,
               @inject('InitializeDatabase') private initializeDatabase: InitializeDatabase) {
   }
@@ -49,6 +51,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.rootService.initSubscriptions.bind(this.rootService)
       , this.mosaicProxy.initSubscriptions.bind(this.mosaicProxy)
       , this.newmanProxy.initSubscriptions.bind(this.newmanProxy)
+      , this.logService.initSubscriptions.bind(this.logService)
 
       , this.initializeDatabase.init.bind(this.initializeDatabase)
       , this.pluginManager.init.bind(this.pluginManager)
@@ -60,6 +63,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.rootService.init.bind(this.rootService)
       , this.mosaicProxy.init.bind(this.mosaicProxy)
       , this.newmanProxy.init.bind(this.newmanProxy)
+      , this.logService.init.bind(this.logService)
     ];
     async.mapSeries(fnArray,
       (fn, cb) => {

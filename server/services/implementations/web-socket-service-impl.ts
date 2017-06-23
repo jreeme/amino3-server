@@ -8,12 +8,16 @@ import webSocket = require('nodejs-websocket');
 import kernel from '../../inversify.config';
 import nodeUrl = require('url');
 import * as _ from 'lodash';
+import {LogService} from "../interfaces/log-service";
 
+//noinspection JSUnusedGlobalSymbols
 @injectable()
 export class WebSocketServiceImpl implements WebSocketService {
   private webSocketPort: number;
 
+  //noinspection JSUnusedLocalSymbols
   constructor(@inject('BaseService') private baseService: BaseService,
+              @inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal) {
     //this.server.on('started', () => { });
   }
@@ -23,7 +27,6 @@ export class WebSocketServiceImpl implements WebSocketService {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
-    const me = this;
     cb(null, {message: 'Initialized WebSocketService Subscriptions'});
   }
 
@@ -39,27 +42,25 @@ export class WebSocketServiceImpl implements WebSocketService {
       let wsServer = webSocket.createServer();
       wsServer.on('connection', conn => {
         connections[conn.key] = conn;
-        console.log(`Connection from: ${conn.key}`);
-
-        console.log(`Connection from: ${conn.key}`);
+        me.log.debug(`Connection from: ${conn.key}`);
         conn.on('text', text => {
           //Incoming message from websocket, make sure it's shaped like Postal's IEnvelope<T> then
           //use Postal to ship it
           safeJsonParse(text, (err: Error, envelope: IEnvelope<any>) => {
             if (err) {
               conn.sendText(JSON.stringify({status: 'error', msg: 'WebSocket received invalid JSON'}));
-              console.log(err.message);
+              me.log.logIfError(err);
               return;
             }
             if (!envelope || !envelope.channel || !envelope.topic || !envelope.data) {
-              console.log(`Received bad envelope on websocket: ${JSON.stringify(envelope)}`);
+              me.log.error(`Received bad envelope on websocket: ${JSON.stringify(envelope)}`);
               return;
             }
             postal.publish(envelope);
           });
         });
         conn.on('close', (code, reason) => {
-          console.log(`WebSocket Closed = key: ${conn.key}, code: ${code}, reason: ${reason}`);
+          me.log.info(`WebSocket Closed = key: ${conn.key}, code: ${code}, reason: ${reason}`);
         });
       });
       wsServer.listen(me.webSocketPort = port);

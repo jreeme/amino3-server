@@ -2,33 +2,36 @@ import {injectable, inject} from 'inversify';
 import {InitializeDatabase} from '../interfaces/initialize-database';
 import {CommandUtil, IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
-const async = require('async');
+import {LogService} from "../interfaces/log-service";
+//const async = require('async');
 
+//noinspection JSUnusedGlobalSymbols
 @injectable()
 export class InitializeDatabaseImpl implements InitializeDatabase {
-  static templateFlows = [
-    {
-      name: 'Bro',
-      type: 'template',
-      filter: {where: {and: [{name: 'Bro'}, {type: 'template'}]}},
-      steps: [
-        {
-          name: 'DecryptAndUnTar',
-        },
-        {
-          name: 'UnZip'
-        },
-        {
-          name: 'MergePCap'
-        }
-      ]
-    }
-  ];
+  /*  static templateFlows = [
+   {
+   name: 'Bro',
+   type: 'template',
+   filter: {where: {and: [{name: 'Bro'}, {type: 'template'}]}},
+   steps: [
+   {
+   name: 'DecryptAndUnTar',
+   },
+   {
+   name: 'UnZip'
+   },
+   {
+   name: 'MergePCap'
+   }
+   ]
+   }
+   ];*/
 
+//noinspection JSUnusedLocalSymbols
   constructor(@inject('BaseService') private baseService: BaseService,
+              @inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal,
               @inject('CommandUtil') private commandUtil: CommandUtil) {
-    this.commandUtil.log('InitializeDatabase created');
   }
 
   get server(): any {
@@ -40,8 +43,9 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    let me = this;
-    /*    async.map(InitializeDatabaseImpl.templateFlows,
+    /*
+     const me = this;
+     async.map(InitializeDatabaseImpl.templateFlows,
      (templateFlow, cb) => {
      me.postal.publish({
      channel: 'Loopback',

@@ -24,6 +24,8 @@ import {MosaicProxy} from "./services/interfaces/mosaic-proxy";
 import {MosaicProxyImpl} from "./services/implementations/mosaic-proxy-impl";
 import {NewmanProxy} from "./services/interfaces/newman-proxy";
 import {NewmanProxyImpl} from "./services/implementations/newman-proxy-impl";
+import {LogService} from "./services/interfaces/log-service";
+import {LogServiceImpl} from "./services/implementations/log-service-impl";
 
 kernel.bind<BaseService>('BaseService').to(BaseServiceImpl).inSingletonScope();
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -37,6 +39,7 @@ kernel.bind<WebSocketService>('WebSocketService').to(WebSocketServiceImpl).inSin
 kernel.bind<FolderMonitor>('FolderMonitor').to(FolderMonitorImpl).inSingletonScope();
 kernel.bind<MosaicProxy>('MosaicProxy').to(MosaicProxyImpl).inSingletonScope();
 kernel.bind<NewmanProxy>('NewmanProxy').to(NewmanProxyImpl).inSingletonScope();
+kernel.bind<LogService>('LogService').to(LogServiceImpl).inSingletonScope();
 
 //noinspection JSUnusedGlobalSymbols
 export default kernel;

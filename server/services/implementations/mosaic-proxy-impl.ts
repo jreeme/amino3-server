@@ -6,6 +6,7 @@ import path = require('path');
 import httpRequest = require('request');
 import fs = require('fs');
 import {Globals} from "../../globals";
+import {LogService} from "../interfaces/log-service";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -20,7 +21,9 @@ export class MosaicProxyImpl implements MosaicProxy {
     }
   };
 
+  //noinspection JSUnusedLocalSymbols
   constructor(@inject('BaseService') private baseService: BaseService,
+              @inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal) {
   }
 
@@ -63,19 +66,21 @@ export class MosaicProxyImpl implements MosaicProxy {
   }
 
   private mosaicHttpGet(url, res) {
+    const me = this;
     MosaicProxyImpl.mosaicHttpRequestOptions.url = url;
     httpRequest.get(MosaicProxyImpl.mosaicHttpRequestOptions)
       .on('error', (err) => {
-        console.log(err.message);
+        me.log.logIfError(err);
       })
       .pipe(res);
   }
 
   init(cb: (err: Error, result: any) => void) {
+    const me = this;
     try {
       MosaicProxyImpl.mosaicHttpRequestOptions.agentOptions.pfx = fs.readFileSync(Globals.mosaicSslCertPath);
     } catch (err) {
-      console.log(err.message);
+      me.log.logIfError(err);
     }
     cb(null, {message: 'Initialized MosaicProxy'});
   }

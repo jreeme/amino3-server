@@ -2,6 +2,7 @@ import {injectable, inject} from 'inversify';
 import {CommandUtil, IPostal} from "firmament-yargs";
 import {BaseService} from "../interfaces/base-service";
 import {FolderMonitor} from "../interfaces/folder-monitor";
+import {LogService} from "../interfaces/log-service";
 const path = require('path');
 const fs = require('fs');
 
@@ -12,9 +13,11 @@ const chokidar = require('chokidar');
 export class FolderMonitorImpl implements FolderMonitor {
 
   constructor(@inject('BaseService') private baseService: BaseService,
+              @inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal,
               @inject('CommandUtil') private commandUtil: CommandUtil) {
-    this.commandUtil.log('FolderMonitor created');
+
+    this.log.info('FolderMonitor created');
   }
 
   get server(): any {
@@ -43,7 +46,7 @@ export class FolderMonitorImpl implements FolderMonitor {
         watcher.on('unlink', (fullPath, stats) => {
           me.sendFolderMonitorMessage(fullPath, stats, fileWatcherConfig);
         });
-        me.commandUtil.log(`config.folderMonitorPath: ${fileWatcherConfig.folderMonitorPath}`);
+        me.log.warning(`config.folderMonitorPath: ${fileWatcherConfig.folderMonitorPath}`);
       }
     });
     cb(null, {message: 'Initialized FolderMonitor Subscriptions'});
