@@ -39,7 +39,7 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
-    cb(null, {message: 'Initialized initializeDatabase Subscriptions'});
+    cb(null, {message: 'Initialized InitializeDatabase Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
@@ -90,6 +90,6 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
      cb(err, {message: 'Initialized initializeDatabase'});
      });
      });*/
-    cb(null, {message: 'Initialized initializeDatabase'});
+    cb(null, {message: 'Initialized InitializeDatabase'});
   }
 }

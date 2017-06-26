@@ -46,7 +46,7 @@ export class FolderMonitorImpl implements FolderMonitor {
         watcher.on('unlink', (fullPath, stats) => {
           me.sendFolderMonitorMessage(fullPath, stats, fileWatcherConfig);
         });
-        me.log.warning(`config.folderMonitorPath: ${fileWatcherConfig.folderMonitorPath}`);
+        me.log.info(`Plugin upload path: ${fileWatcherConfig.folderMonitorPath}`);
       }
     });
     cb(null, {message: 'Initialized FolderMonitor Subscriptions'});

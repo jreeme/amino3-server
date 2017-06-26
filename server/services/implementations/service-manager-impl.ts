@@ -13,8 +13,9 @@ import {MosaicProxy} from "../interfaces/mosaic-proxy";
 import {NewmanProxy} from "../interfaces/newman-proxy";
 import {LogService} from "../interfaces/log-service";
 
-const async = require('async');
+import async = require('async');
 
+//noinspection JSUnusedGlobalSymbols
 @injectable()
 export class ServiceManagerImpl implements ServiceManager {
   constructor(@inject('BaseService') private baseService: BaseService,
@@ -35,12 +36,8 @@ export class ServiceManagerImpl implements ServiceManager {
     return this.baseService.server;
   }
 
-  initSubscriptions(cb: (err: Error, result: any) => void) {
-    cb(null, null);
-  }
-
-  init(cb: (err: Error, result: any) => void) {
-    let fnArray = [
+  initSubscriptions(cb: (err?: Error, result?: any) => void) {
+    const fnArray = [
       this.initializeDatabase.initSubscriptions.bind(this.initializeDatabase)
       , this.pluginManager.initSubscriptions.bind(this.pluginManager)
       , this.rebuildClient.initSubscriptions.bind(this.rebuildClient)
@@ -52,8 +49,16 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.mosaicProxy.initSubscriptions.bind(this.mosaicProxy)
       , this.newmanProxy.initSubscriptions.bind(this.newmanProxy)
       , this.logService.initSubscriptions.bind(this.logService)
+    ];
+    async.map(fnArray,
+      (fn, cb) => {
+        fn(cb);
+      }, cb);
+  }
 
-      , this.initializeDatabase.init.bind(this.initializeDatabase)
+  init(cb: (err?: Error, result?: any) => void) {
+    const fnArray = [
+      this.initializeDatabase.init.bind(this.initializeDatabase)
       , this.pluginManager.init.bind(this.pluginManager)
       , this.rebuildClient.init.bind(this.rebuildClient)
       , this.authentication.init.bind(this.authentication)
@@ -65,7 +70,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.newmanProxy.init.bind(this.newmanProxy)
       , this.logService.init.bind(this.logService)
     ];
-    async.mapSeries(fnArray,
+    async.map(fnArray,
       (fn, cb) => {
         fn(cb);
       }, cb);

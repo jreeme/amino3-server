@@ -1,16 +1,29 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
-import {LogService} from "../interfaces/log-service";
+import {LogService} from '../interfaces/log-service';
 import fs = require('fs');
-import {Globals} from "../../globals";
+import {Globals} from '../../globals';
+
+const lineEnding = '\n';
+const stackIndex = 3; //How far up to call stack to look to get file:# for logging call
+const format = '${timestamp} <${title}> ${file}:${line} ${message}';
+const level = Globals.logLevel;
 
 const loggers = [
   require('js-logging').dailyFile({
+    level,
+    format,
+    lineEnding,
+    stackIndex,
     path: Globals.logFilePath,
-    lineEnding: '\n'
   }),
-  require('js-logging').colorConsole({})
+  require('js-logging').colorConsole({
+    level,
+    format,
+    lineEnding,
+    stackIndex
+  })
 ];
 
 //noinspection JSUnusedGlobalSymbols
@@ -86,9 +99,12 @@ export class LogServiceImpl implements LogService {
     });
   }
 
-  logIfError(err: Error) {
+  logIfError(err: Error): boolean {
     if (err) {
-      this.error(err.message);
+      loggers.forEach((logger) => {
+        logger.error(err.message);
+      });
     }
+    return !!err;
   }
 }

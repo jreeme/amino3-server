@@ -8,12 +8,15 @@ import fs = require('fs');
 import async = require('async');
 import {Util} from "../../util/util";
 import {Globals} from "../../globals";
+import {LogService} from "../interfaces/log-service";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class RebuildClientImpl implements RebuildClient {
 
+//noinspection JSUnusedLocalSymbols
   constructor(@inject('BaseService') private baseService: BaseService,
+              @inject('LogService') private log: LogService,
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('IPostal') private postal: IPostal) {
     //this.server.on('started', () => { });
@@ -36,37 +39,43 @@ export class RebuildClientImpl implements RebuildClient {
   init(cb: (err: Error, result: any) => void) {
     const me = this;
     this.server.get('/system-ctl/rebuild-client', (req, res) => {
-      me.rebuildClient();
+      me.postal.publish({
+        channel: 'System',
+        topic: 'RebuildClient',
+        data: {}
+      });
       return res.status(200).json({status: 'OK'});
     });
-    me.rebuildClient((err) => {
-      cb(err, {message: 'Initialized RebuildClient'});
+    me.rebuildClient((err, result) => {
+      cb(err, err ? result : {message: 'Initialized RebuildClient'});
     });
   }
 
-  private rebuildClient(cb?: (err?) => void) {
+  private rebuildClient(cb: (err, result) => void) {
     const me = this;
     cb = Util.checkCallback(cb);
-    async.series([
-      (cb) => {
-        me.ngBuildClient(cb);
+    me.ngBuildClient((err, result) => {
+      if (!err) {
+        me.postal.publish({
+          channel: 'WebSocket',
+          topic: 'Broadcast',
+          data: {
+            channel: 'System',
+            topic: 'RefreshPage',
+            data: {}
+          }
+        });
       }
-    ], (err) => {
-      me.postal.publish({
-        channel: 'WebSocket',
-        topic: 'Broadcast',
-        data: {
-          channel: 'System',
-          topic: 'RefreshPage',
-          data: {}
-        }
-      });
-      cb(err);
+      cb(err, result);
     });
   }
 
-  private ngBuildClient(cb: (err: Error, result: any) => void) {
+  private ngBuildClient(cb: (err?: Error, result?: any) => void) {
+    /*    const err = null;
+     cb(err, {message: err ? 'Error Rebuilding Client' : 'Client Rebuilt'});*/
     process.chdir(Globals.clientFolder);
-    this.processCommandJson.processAbsoluteUrl(Globals.ngBuildClientExecutionGraph, cb);
+    this.processCommandJson.processAbsoluteUrl(Globals.ngBuildClientExecutionGraph, (err) => {
+      cb(err, {message: err ? 'Error Rebuilding Client' : 'Client Rebuilt'});
+    });
   }
 }

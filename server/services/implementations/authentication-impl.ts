@@ -52,45 +52,41 @@ export class AuthenticationImpl implements Authentication {
 
     me.server.post('/auth/register', function (req, res) {
       let newUser = req.body;
-      delete newUser.id;
-      me.aminoUser.create(newUser, (err, models) => {
+      me.aminoUser.create(newUser, (err, /*aminoUser*/) => {
         if (err) {
-          return res.status(200).send({status: 'error', error: err});
+          return res.status(403).send(err);
         }
-        return res.status(200).send({status: 'OK', newUser: JSON.parse(models.json)});
+        me.login(newUser.username, newUser.password, res);
       });
     });
 
     me.server.post('/auth/login', function (req, res) {
-      let username = req.body.username;
-      let password = req.body.password;
-      if (!username || !password) {
-        return res.status(200).send({status: 'error', error: {message: 'Please provide username and password'}});
-      }
-
-      me.aminoUser.login({username, password}, (err, loopbackToken) => {
-        if (err) {
-          return res.status(200).send({status: 'error', error: err});
-        }
-        //Get extended user info (since loopback doesn't send it with this response :( )
-        me.aminoUser.findById(loopbackToken.userId, (err, aminoUser) => {
-          delete aminoUser.password;
-          return res.status(201).send({
-            status: 'OK',
-            userInfo: aminoUser,
-            jwtToken: me.createToken({username: aminoUser.username}),
-            loopbackToken
-          });
-        });
-      });
+      me.login(req.body.username, req.body.password, res);
     });
     cb(null, {message: 'Initialized Authentication'});
+  }
+
+  private login(username: string, password: string, res: any) {
+    const me = this;
+    me.aminoUser.login({username, password}, (err, loopbackToken) => {
+      if (err) {
+        return res.status(401).send();
+      }
+      //Get extended user info (since loopback doesn't send it with this response :( )
+      me.aminoUser.findById(loopbackToken.userId, (err, aminoUser) => {
+        aminoUser = JSON.parse(JSON.stringify(aminoUser));
+        aminoUser.loopbackToken = loopbackToken.id;
+        const jwtToken = me.createToken(aminoUser);
+        res.header('X-Authorization', jwtToken);
+        return res.status(200).send();
+      });
+    });
   }
 
   private createToken(user) {
     const me = this;
     try {
-      return jwt.sign(_.omit(user, 'password'), 'mySecret', {expiresIn: '1 days'});
+      return jwt.sign(user, 'mySecret', {expiresIn: '1d'});
     } catch (err) {
       me.log.logIfError(err);
     }
