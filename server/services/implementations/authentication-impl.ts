@@ -83,10 +83,10 @@ export class AuthenticationImpl implements Authentication {
     });
   }
 
-  private createToken(user) {
+  private createToken(aminoUser) {
     const me = this;
     try {
-      return jwt.sign(user, 'mySecret', {expiresIn: '1d'});
+      return jwt.sign(aminoUser, 'mySecret', {expiresIn: '1d'});
     } catch (err) {
       me.log.logIfError(err);
     }

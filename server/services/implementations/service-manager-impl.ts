@@ -14,6 +14,7 @@ import {NewmanProxy} from "../interfaces/newman-proxy";
 import {LogService} from "../interfaces/log-service";
 
 import async = require('async');
+import {InfluentProxy} from "../interfaces/influent-proxy";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -27,6 +28,7 @@ export class ServiceManagerImpl implements ServiceManager {
               @inject('FolderMonitor') private folderMonitor: FolderMonitor,
               @inject('MosaicProxy') private mosaicProxy: MosaicProxy,
               @inject('NewmanProxy') private newmanProxy: NewmanProxy,
+              @inject('InfluentProxy') private influentProxy: InfluentProxy,
               @inject('LogService') private logService: LogService,
               @inject('WebSocketService') private webSocketService: WebSocketService,
               @inject('InitializeDatabase') private initializeDatabase: InitializeDatabase) {
@@ -48,6 +50,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.rootService.initSubscriptions.bind(this.rootService)
       , this.mosaicProxy.initSubscriptions.bind(this.mosaicProxy)
       , this.newmanProxy.initSubscriptions.bind(this.newmanProxy)
+      , this.influentProxy.initSubscriptions.bind(this.influentProxy)
       , this.logService.initSubscriptions.bind(this.logService)
     ];
     async.map(fnArray,
@@ -68,6 +71,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.rootService.init.bind(this.rootService)
       , this.mosaicProxy.init.bind(this.mosaicProxy)
       , this.newmanProxy.init.bind(this.newmanProxy)
+      , this.influentProxy.init.bind(this.influentProxy)
       , this.logService.init.bind(this.logService)
     ];
     async.map(fnArray,

@@ -41,6 +41,7 @@
     "@types/node": "^6.0.73",
     "eslint": "^3.17.1",
     "eslint-config-loopback": "^8.0.0",
+    "loopback-cli": "^2.5.1",
     "nsp": "^2.1.0"
   },
   "repository": {

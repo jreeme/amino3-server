@@ -71,8 +71,10 @@ export class RebuildClientImpl implements RebuildClient {
   }
 
   private ngBuildClient(cb: (err?: Error, result?: any) => void) {
-    /*    const err = null;
-     cb(err, {message: err ? 'Error Rebuilding Client' : 'Client Rebuilt'});*/
+    if (Globals.suppressClientRebuild) {
+      const err = null;
+      return cb(err, {message: err ? 'Error Rebuilding Client' : 'Client Rebuilt'});
+    }
     process.chdir(Globals.clientFolder);
     this.processCommandJson.processAbsoluteUrl(Globals.ngBuildClientExecutionGraph, (err) => {
       cb(err, {message: err ? 'Error Rebuilding Client' : 'Client Rebuilt'});

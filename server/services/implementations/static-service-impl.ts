@@ -21,7 +21,8 @@ export class StaticServiceImpl implements StaticService {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    this.server.use(require('loopback').static(Globals.clientDistFolder));
+    this.server.use('/', require('loopback').static(Globals.clientDistFolder));
+    this.server.use('/static-influent', require('loopback').static('/home/jreeme/src/amino3-server/static/influent-app-2.0.0'));
     cb(null, {message: 'Initialized StaticService'});
   }
 }
