@@ -74,7 +74,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.influentProxy.init.bind(this.influentProxy)
       , this.logService.init.bind(this.logService)
     ];
-    async.map(fnArray,
+    async.mapSeries(fnArray,
       (fn, cb) => {
         fn(cb);
       }, cb);
