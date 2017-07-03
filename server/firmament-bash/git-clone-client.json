@@ -18,7 +18,7 @@
       "args"                       : [
         "bash",
         "-c",
-        "pwd && git clone https://github.com/jreeme/amino3-client --branch hack-testClientDebug client"
+        "pwd && git clone https://github.com/jreeme/amino3-client --branch demo-07-JUL-2017 client"
       ],
       "opt-args"                       : [
         "bash",
