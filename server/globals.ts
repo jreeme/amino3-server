@@ -24,5 +24,5 @@ export class Globals {
   static mosaicSslCertPath = path.resolve(Globals.serverFolder, 'ssl-certs/cert.p12');
   static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
   static influentPath = path.resolve(Globals.projectRootPath, 'static/influent-app-2.0.0');
-  static newmanUrl = path.resolve(Globals.projectRootPath, 'http://localhost:5000');
+  static newmanUrl = 'http://localhost:5000';
 }
