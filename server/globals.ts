@@ -1,5 +1,6 @@
 import path = require('path');
 
+//this.server.use('/static-influent', require('loopback').static('/home/jreeme/src/amino3-server/static/influent-app-2.0.0'));
 export class Globals {
   static logLevel = 'info';// debug, info, notice, warning, error, critical, alert, emergency
   static suppressLoadPlugins = false;
@@ -22,4 +23,6 @@ export class Globals {
   static fileUploaderPath = path.resolve(Globals.serverFolder, 'util/blueimp-file-upload-expressjs/fileupload');
   static mosaicSslCertPath = path.resolve(Globals.serverFolder, 'ssl-certs/cert.p12');
   static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
+  static influentPath = path.resolve(Globals.projectRootPath, 'static/influent-app-2.0.0');
+  static newmanUrl = path.resolve(Globals.projectRootPath, 'http://localhost:5000');
 }

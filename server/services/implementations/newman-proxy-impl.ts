@@ -11,7 +11,8 @@ import {LogService} from "../interfaces/log-service";
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class NewmanProxyImpl implements NewmanProxy {
-  private static baseNewmanUrl = 'https://ec2-52-222-55-155.us-gov-west-1.compute.amazonaws.com';
+  //private static baseNewmanUrl = 'https://ec2-52-222-55-155.us-gov-west-1.compute.amazonaws.com';
+  private static baseNewmanUrl = Globals.newmanUrl;
   private static newmanHttpRequestOptions = {
     url: '',
     agentOptions: {
