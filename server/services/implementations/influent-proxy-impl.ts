@@ -11,7 +11,8 @@ import {LogService} from '../interfaces/log-service';
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class InfluentProxyImpl implements InfluentProxy {
-  private static baseInfluentUrl = 'http://192.168.104.67:8080';
+  //private static baseInfluentUrl = 'http://192.168.104.67:8080';
+  private static baseInfluentUrl = Globals.influentUrl;
   private static influentHttpRequestOptions = {
     url: ''
   };
