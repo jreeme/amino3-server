@@ -4,7 +4,7 @@ import path = require('path');
 export class Globals {
   static logLevel = 'info';// debug, info, notice, warning, error, critical, alert, emergency
   static suppressLoadPlugins = false;
-  static suppressClientRebuild = false;
+  static suppressClientRebuild = true;
   static projectRootPath = path.resolve(__dirname, '..');
   static clientFolder = path.resolve(Globals.projectRootPath, 'client');
   static serverFolder = path.resolve(Globals.projectRootPath, 'server');
@@ -26,6 +26,7 @@ export class Globals {
   static influentPath = path.resolve(Globals.projectRootPath, 'static/influent-app-2.0.0');
   static gartnerPath = path.resolve(Globals.projectRootPath, 'static/static-gartner');
   static mosaicPath = path.resolve(Globals.projectRootPath, 'static/static-mosaic');
+  static chatterPath = path.resolve(Globals.projectRootPath, 'static/chatter');
   static newmanUrl = 'http://localhost:5000';
   static influentUrl = 'http://192.168.56.101:8080';
 }

@@ -25,6 +25,7 @@ export class StaticServiceImpl implements StaticService {
     this.server.use('/static-influent', require('loopback').static(Globals.influentPath));
     this.server.use('/static-gartner', require('loopback').static(Globals.gartnerPath));
     this.server.use('/static-mosaic', require('loopback').static(Globals.mosaicPath));
+    this.server.use('/chatter', require('loopback').static(Globals.chatterPath));
     cb(null, {message: 'Initialized StaticService'});
   }
 }

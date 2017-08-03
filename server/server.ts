@@ -1,11 +1,9 @@
 import kernel from './inversify.config';
-import {LogService} from "./services/interfaces/log-service";
+import {LogService} from './services/interfaces/log-service';
 
 (() => {
   const loopback = require('loopback');
   const boot = require('loopback-boot');
-  const path = require('path');
-  const fs = require('fs');
   const app = module.exports = loopback();
   const log = kernel.get<LogService>('LogService');
 
@@ -23,8 +21,9 @@ import {LogService} from "./services/interfaces/log-service";
   };
 
   log.info(`Booting Amino3 using 'loopback-boot'`);
-  boot(app, __dirname, function (err) {
+  boot(app, __dirname, function (err: Error) {
     if (err) {
+      log.error(`Error booting loopback application: ${err.message}`);
       throw err;
     }
     // start the server if `$ node server.js`
