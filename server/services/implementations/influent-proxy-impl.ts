@@ -2,9 +2,7 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {InfluentProxy} from '../interfaces/influent-proxy';
-import path = require('path');
 import httpRequest = require('request');
-import fs = require('fs');
 import {Globals} from '../../globals';
 import {LogService} from '../interfaces/log-service';
 

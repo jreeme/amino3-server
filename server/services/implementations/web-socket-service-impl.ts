@@ -7,8 +7,10 @@ import findPort = require('find-free-port');
 import webSocket = require('nodejs-websocket');
 import kernel from '../../inversify.config';
 import nodeUrl = require('url');
+import fs = require('fs');
 import * as _ from 'lodash';
 import {LogService} from "../interfaces/log-service";
+import {Globals} from "../../globals";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -65,12 +67,33 @@ export class WebSocketServiceImpl implements WebSocketService {
       });
       wsServer.listen(me.webSocketPort = port);
       //Give client a way to get websocket port
-      me.server.get('/util/get-websocket-port', function (req, res) {
+      me.server.get('/util/get-websocket-port', (req, res) => {
         let url = nodeUrl.parse(`http://${req.headers.host}`);
         return res.status(200).send({
           hostname: url.hostname,
           port: me.webSocketPort,
           uri: `ws://${url.hostname}:${me.webSocketPort}`
+        });
+      });
+      //Give client a way to get websocket port
+      me.server.get('/amino-lodash.js', (req, res) => {
+        fs.readFile(Globals.lodashLibraryPath, (err, fileContents) => {
+          const scriptContent = `(function(){console.log('hello from amino-lodash');})();${fileContents}`;
+          res.status(200).send(scriptContent);
+        });
+      });
+      me.server.get('/amino-postal.js', (req, res) => {
+        let url = nodeUrl.parse(`http://${req.headers.host}`);
+        fs.readFile(Globals.postalLibraryPath, (err, postalFileContents) => {
+          const pfc = postalFileContents.toString();
+          fs.readFile(Globals.clientSideWebSocketLibraryPath, (err, clientSideWebSocketFileContents) => {
+            let wsfc = clientSideWebSocketFileContents.toString();
+            wsfc = wsfc.replace('__WS_URL__', `ws://${url.hostname}:${me.webSocketPort}`);
+            let scriptContent = `(function(){console.log('hello from amino-postal');})();`;
+            scriptContent += `${pfc}`;
+            scriptContent += `${wsfc}`;
+            res.status(200).send(scriptContent);
+          });
         });
       });
       postal.subscribe({
