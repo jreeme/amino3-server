@@ -3,10 +3,11 @@ import {BaseService} from "../interfaces/base-service";
 
 @injectable()
 export class BaseServiceImpl implements BaseService {
+  public servicePostalChannel: string;
+  public server: any;
+
   constructor() {
   }
-
-  public server: any;
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     cb(null, null);

@@ -1,10 +1,6 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
-import path = require('path');
-import fs = require('fs');
-import async = require('async');
-import _ = require('lodash');
 import jwt = require('jsonwebtoken');
 import {Authentication} from "../interfaces/authentication";
 import {LogService} from "../interfaces/log-service";
@@ -21,11 +17,23 @@ export class AuthenticationImpl implements Authentication {
     //this.server.on('started', () => { });
   }
 
+  get servicePostalChannel(): string {
+    return 'Authentication';
+  }
+
   get server(): any {
     return this.baseService.server;
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
+    const me = this;
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'Login',
+      callback: (data) => {
+
+      }
+    });
     cb(null, {message: 'Initialized Authentication Subscriptions'});
   }
 
@@ -49,7 +57,6 @@ export class AuthenticationImpl implements Authentication {
         });
       });
     });
-
     me.server.post('/auth/register', function (req, res) {
       let newUser = req.body;
       me.aminoUser.create(newUser, (err, /*aminoUser*/) => {
@@ -59,7 +66,6 @@ export class AuthenticationImpl implements Authentication {
         me.login(newUser.username, newUser.password, res);
       });
     });
-
     me.server.post('/auth/login', function (req, res) {
       me.login(req.body.username, req.body.password, res);
     });
