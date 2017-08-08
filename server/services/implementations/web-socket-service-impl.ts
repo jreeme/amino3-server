@@ -30,26 +30,6 @@ export class WebSocketServiceImpl implements WebSocketService {
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
-    me.server.get('/amino-lodash.js', (req, res) => {
-      fs.readFile(Globals.lodashLibraryPath, (err, fileContents) => {
-        const scriptContent = `(function(){console.log('hello from amino-lodash');})();${fileContents}`;
-        res.status(200).send(scriptContent);
-      });
-    });
-    me.server.get('/amino-postal.js', (req, res) => {
-      let url = nodeUrl.parse(`http://${req.headers.host}`);
-      fs.readFile(Globals.postalLibraryPath, (err, postalFileContents) => {
-        const pfc = postalFileContents.toString();
-        fs.readFile(Globals.clientSideWebSocketLibraryPath, (err, clientSideWebSocketFileContents) => {
-          let wsfc = clientSideWebSocketFileContents.toString();
-          wsfc = wsfc.replace(/__WS_URL__/g, `ws://${url.hostname}:${me.webSocketPort}`);
-          let scriptContent = `(function(){console.log('hello from amino-postal');})();`;
-          scriptContent += `${pfc}`;
-          scriptContent += `${wsfc}`;
-          res.status(200).send(scriptContent);
-        });
-      });
-    });
     me.postal.subscribe({
       channel: 'WebSocket',
       topic: 'Broadcast',
@@ -62,6 +42,26 @@ export class WebSocketServiceImpl implements WebSocketService {
           }
         });
       }
+    });
+    me.server.get('/amino-lodash.js', (req, res) => {
+      fs.readFile(Globals.lodashLibraryPath, (err, fileContents) => {
+        const scriptContent = `(function(){console.log('hello from amino-lodash');})();${fileContents}`;
+        res.status(200).send(scriptContent);
+      });
+    });
+    me.server.get('/amino-postal.js', (req, res) => {
+/*      let url = nodeUrl.parse(`http://${req.headers.host}`);
+      fs.readFile(Globals.postalLibraryPath, (err, postalFileContents) => {
+        const pfc = postalFileContents.toString();
+        fs.readFile(Globals.clientSideWebSocketLibraryPath, (err, clientSideWebSocketFileContents) => {
+          let wsfc = clientSideWebSocketFileContents.toString();
+          wsfc = wsfc.replace(/__WS_URL__/g, `ws://${url.hostname}:${me.webSocketPort}`);
+          let scriptContent = `(function(){console.log('hello from amino-postal');})();`;
+          scriptContent += `${pfc}`;
+          scriptContent += `${wsfc}`;
+          res.status(200).send(scriptContent);
+        });
+      });*/
     });
     //Give client a way to get websocket port
     me.server.get('/util/get-websocket-port', (req, res) => {
