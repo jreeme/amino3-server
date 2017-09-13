@@ -5,11 +5,11 @@
     ]
   },
   "AminoUser": {
-    "dataSource": "mongodb",
+    "dataSource": "amino_admin",
     "public": true
   },
   "AccessToken": {
-    "dataSource": "mongodb",
+    "dataSource": "amino_admin",
     "public": false,
     "relations": {
       "user": {
@@ -20,19 +20,19 @@
     }
   },
   "ACL": {
-    "dataSource": "mongodb",
+    "dataSource": "amino_admin",
     "public": false
   },
   "RoleMapping": {
-    "dataSource": "mongodb",
+    "dataSource": "amino_admin",
     "public": false
   },
   "Role": {
-    "dataSource": "mongodb",
+    "dataSource": "amino_admin",
     "public": false
   },
   "session": {
-    "dataSource": "mongodb",
+    "dataSource": "amino_admin",
     "public": true
   }
 }

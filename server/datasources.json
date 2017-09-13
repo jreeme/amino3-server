@@ -11,14 +11,14 @@
     "connectionTimeout": 10000,
     "connector": "mongodb"
   },
-  "postgres": {
+  "amino_admin": {
     "host": "localhost",
     "port": 5432,
-    "url": "postgres://northwind_user:thewindisblowing@localhost/northwind",
-    "database": "northwind",
-    "password": "thewindisblowing",
-    "name": "postgres",
-    "user": "northwind",
+    "_url": "postgres://northwind_user:thewindisblowing@localhost/northwind",
+    "database": "amino_admin",
+    "password": "password",
+    "name": "amino_admin",
+    "user": "amino_admin_user",
     "connector": "postgresql"
   }
 }

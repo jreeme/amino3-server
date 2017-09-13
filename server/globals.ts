@@ -4,7 +4,7 @@ import path = require('path');
 export class Globals {
   static logLevel = 'info';// debug, info, notice, warning, error, critical, alert, emergency
   static suppressLoadPlugins = false;
-  static suppressClientRebuild = true;
+  static suppressClientRebuild = false;
   static projectRootPath = path.resolve(__dirname, '..');
   static clientFolder = path.resolve(Globals.projectRootPath, 'client');
   static serverFolder = path.resolve(Globals.projectRootPath, 'server');
