@@ -20,8 +20,6 @@ import {WebSocketService} from "./services/interfaces/web-socket-service";
 import {WebSocketServiceImpl} from "./services/implementations/web-socket-service-impl";
 import {FolderMonitor} from "./services/interfaces/folder-monitor";
 import {FolderMonitorImpl} from "./services/implementations/folder-monitor-impl";
-import {MosaicProxy} from "./services/interfaces/mosaic-proxy";
-import {MosaicProxyImpl} from "./services/implementations/mosaic-proxy-impl";
 import {NewmanProxy} from "./services/interfaces/newman-proxy";
 import {NewmanProxyImpl} from "./services/implementations/newman-proxy-impl";
 import {LogService} from "./services/interfaces/log-service";
@@ -39,7 +37,6 @@ kernel.bind<StaticService>('StaticService').to(StaticServiceImpl).inSingletonSco
 kernel.bind<RootService>('RootService').to(RootServiceImpl).inSingletonScope();
 kernel.bind<WebSocketService>('WebSocketService').to(WebSocketServiceImpl).inSingletonScope();
 kernel.bind<FolderMonitor>('FolderMonitor').to(FolderMonitorImpl).inSingletonScope();
-kernel.bind<MosaicProxy>('MosaicProxy').to(MosaicProxyImpl).inSingletonScope();
 kernel.bind<NewmanProxy>('NewmanProxy').to(NewmanProxyImpl).inSingletonScope();
 kernel.bind<InfluentProxy>('InfluentProxy').to(InfluentProxyImpl).inSingletonScope();
 kernel.bind<LogService>('LogService').to(LogServiceImpl).inSingletonScope();

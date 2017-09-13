@@ -14,11 +14,12 @@
   "amino_admin": {
     "host": "localhost",
     "port": 5432,
-    "_url": "postgres://northwind_user:thewindisblowing@localhost/northwind",
     "database": "amino_admin",
-    "password": "password",
     "name": "amino_admin",
+    "admin_user": "postgres",
+    "admin_password": "password",
     "user": "amino_admin_user",
+    "password": "password",
     "connector": "postgresql"
   }
 }

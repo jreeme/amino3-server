@@ -14,12 +14,7 @@ export class NewmanProxyImpl implements NewmanProxy {
   //private static baseNewmanUrl = 'https://ec2-52-222-55-155.us-gov-west-1.compute.amazonaws.com';
   private static baseNewmanUrl = Globals.newmanUrl;
   private static newmanHttpRequestOptions = {
-    url: '',
-    agentOptions: {
-      pfx: null,
-      passphrase: 'password',
-      securityOptions: 'SSL_OP_NO_SSLv3'
-    }
+    url: ''
   };
 
   //noinspection JSUnusedLocalSymbols
@@ -110,11 +105,6 @@ export class NewmanProxyImpl implements NewmanProxy {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    try {
-      NewmanProxyImpl.newmanHttpRequestOptions.agentOptions.pfx = fs.readFileSync(Globals.mosaicSslCertPath);
-    } catch (err) {
-      me.log.logIfError(err);
-    }
     cb(null, {message: 'Initialized NewmanProxy'});
   }
 }

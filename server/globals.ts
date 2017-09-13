@@ -21,11 +21,9 @@ export class Globals {
   static npmInstallClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-install-client.json');
   static ngBuildClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client.json');
   static fileUploaderPath = path.resolve(Globals.serverFolder, 'util/blueimp-file-upload-expressjs/fileupload');
-  static mosaicSslCertPath = path.resolve(Globals.serverFolder, 'ssl-certs/cert.p12');
   static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
   static influentPath = path.resolve(Globals.projectRootPath, 'static/influent-app-2.0.0');
   static gartnerPath = path.resolve(Globals.projectRootPath, 'static/static-gartner');
-  static mosaicPath = path.resolve(Globals.projectRootPath, 'static/static-mosaic');
   static chatterPath = path.resolve(Globals.projectRootPath, 'static/chatter');
   static lodashLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/lodash/lodash.min.js');
   static postalLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/postal/lib/postal.min.js');
