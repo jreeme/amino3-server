@@ -28,6 +28,4 @@ export class Globals {
   static lodashLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/lodash/lodash.min.js');
   static postalLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/postal/lib/postal.min.js');
   static clientSideWebSocketLibraryPath = path.resolve(Globals.serverFolder, 'util/clientSideWebSocket.js');
-  static newmanUrl = 'http://localhost:5000';
-  static influentUrl = 'http://192.168.56.101:8080';
 }

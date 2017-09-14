@@ -9,11 +9,9 @@ import {StaticService} from "../interfaces/static-service";
 import {RootService} from "../interfaces/root-service";
 import {WebSocketService} from "../interfaces/web-socket-service";
 import {FolderMonitor} from "../interfaces/folder-monitor";
-import {NewmanProxy} from "../interfaces/newman-proxy";
 import {LogService} from "../interfaces/log-service";
 
 import async = require('async');
-import {InfluentProxy} from "../interfaces/influent-proxy";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -25,8 +23,6 @@ export class ServiceManagerImpl implements ServiceManager {
               @inject('RootService') private rootService: RootService,
               @inject('StaticService') private staticService: StaticService,
               @inject('FolderMonitor') private folderMonitor: FolderMonitor,
-              @inject('NewmanProxy') private newmanProxy: NewmanProxy,
-              @inject('InfluentProxy') private influentProxy: InfluentProxy,
               @inject('LogService') private logService: LogService,
               @inject('WebSocketService') private webSocketService: WebSocketService,
               @inject('InitializeDatabase') private initializeDatabase: InitializeDatabase) {
@@ -46,8 +42,6 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.folderMonitor.initSubscriptions.bind(this.folderMonitor)
       , this.staticService.initSubscriptions.bind(this.staticService)
       , this.rootService.initSubscriptions.bind(this.rootService)
-      , this.newmanProxy.initSubscriptions.bind(this.newmanProxy)
-      , this.influentProxy.initSubscriptions.bind(this.influentProxy)
       , this.logService.initSubscriptions.bind(this.logService)
     ];
     async.map(fnArray,
@@ -66,8 +60,6 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.folderMonitor.init.bind(this.folderMonitor)
       , this.staticService.init.bind(this.staticService)
       , this.rootService.init.bind(this.rootService)
-      , this.newmanProxy.init.bind(this.newmanProxy)
-      , this.influentProxy.init.bind(this.influentProxy)
       , this.logService.init.bind(this.logService)
     ];
     async.mapSeries(fnArray,
