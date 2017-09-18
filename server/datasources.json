@@ -6,20 +6,30 @@
   "mongodb": {
     "host": "localhost",
     "port": 27017,
-    "database": "vita",
+    "database": "amino",
     "name": "mongodb",
     "connectionTimeout": 10000,
     "connector": "mongodb"
-  },
-  "amino_admin": {
+  }
+  ,"amino_admin": {
     "host": "localhost",
     "port": 5432,
     "database": "amino_admin",
+    "password": "password",
     "name": "amino_admin",
     "admin_user": "postgres",
     "admin_password": "password",
     "user": "amino_admin_user",
-    "password": "password",
     "connector": "postgresql"
+  }
+  ,"mysql": {
+    "host": "localhost",
+    "port": 3306,
+    "url": "",
+    "database": "amino",
+    "password": "password",
+    "name": "mysql",
+    "user": "root",
+    "connector": "mysql"
   }
 }

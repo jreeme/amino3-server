@@ -3,6 +3,7 @@ import path = require('path');
 //this.server.use('/static-influent', require('loopback').static('/home/jreeme/src/amino3-server/static/influent-app-2.0.0'));
 export class Globals {
   static logLevel = 'info';// debug, info, notice, warning, error, critical, alert, emergency
+  static env = process.env.NODE_ENV || 'development';
   static suppressLoadPlugins = false;
   static suppressClientRebuild = false;
   static projectRootPath = path.resolve(__dirname, '..');

@@ -35,9 +35,9 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
     const AminoUser = me.server.models.AminoUser;
+    const ds = AminoUser.dataSource;
     AminoUser.find((err) => {
       if (err) {
-        const ds = AminoUser.dataSource;
         if (ds.settings.connector === 'postgresql') {
           try {
             const {Client} = require('pg');
