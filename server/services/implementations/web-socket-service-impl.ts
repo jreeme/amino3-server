@@ -10,6 +10,7 @@ import fs = require('fs');
 import * as _ from 'lodash';
 import {LogService} from "../interfaces/log-service";
 import {Globals} from "../../globals";
+import {WebSocketConn} from "../../custom-typings";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()

@@ -44,7 +44,7 @@ export class ServiceManagerImpl implements ServiceManager {
       , this.rootService.initSubscriptions.bind(this.rootService)
       , this.logService.initSubscriptions.bind(this.logService)
     ];
-    async.map(fnArray,
+    async.mapSeries(fnArray,
       (fn, cb) => {
         fn(cb);
       }, cb);

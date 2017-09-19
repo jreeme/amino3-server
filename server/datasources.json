@@ -1,35 +1,35 @@
 {
-  "db": {
-    "name": "db",
+  "db"         : {
+    "name"     : "db",
     "connector": "memory"
   },
-  "mongodb": {
-    "host": "localhost",
-    "port": 27017,
-    "database": "amino",
-    "name": "mongodb",
+  "mongodb"    : {
+    "host"             : "localhost",
+    "port"             : 27017,
+    "database"         : "amino",
+    "name"             : "mongodb",
     "connectionTimeout": 10000,
-    "connector": "mongodb"
-  }
-  ,"amino_admin": {
-    "host": "localhost",
-    "port": 5432,
-    "database": "amino_admin",
-    "password": "password",
-    "name": "amino_admin",
-    "admin_user": "postgres",
+    "connector"        : "mongodb"
+  },
+  "postgres": {
+    "host"          : "localhost",
+    "port"          : 5432,
+    "database"      : "amino_admin",
+    "password"      : "password",
+    "name"          : "amino_admin",
+    "admin_user"    : "postgres",
     "admin_password": "password",
-    "user": "amino_admin_user",
-    "connector": "postgresql"
-  }
-  ,"mysql": {
-    "host": "localhost",
-    "port": 3306,
-    "url": "",
-    "database": "amino",
-    "password": "password",
-    "name": "mysql",
-    "user": "root",
+    "user"          : "amino_admin_user",
+    "connector"     : "postgresql"
+  },
+  "amino_admin": {
+    "host"     : "localhost",
+    "port"     : 3306,
+    "url"      : "",
+    "database" : "amino",
+    "password" : "password",
+    "name"     : "mysql",
+    "user"     : "root",
     "connector": "mysql"
   }
 }

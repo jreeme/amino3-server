@@ -3,6 +3,7 @@ import {CommandUtil, IPostal} from "firmament-yargs";
 import {BaseService} from "../interfaces/base-service";
 import {FolderMonitor} from "../interfaces/folder-monitor";
 import {LogService} from "../interfaces/log-service";
+import {FileWatcherConfig} from "../../custom-typings";
 const path = require('path');
 const fs = require('fs');
 

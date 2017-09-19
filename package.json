@@ -41,6 +41,8 @@
   },
   "devDependencies": {
     "@mean-expert/loopback-sdk-builder": "^2.1.0-rc.13.5",
+    "@types/loopback": "^3.2.0",
+    "@types/mysql": "0.0.34",
     "@types/node": "^6.0.73",
     "eslint": "^3.17.1",
     "eslint-config-loopback": "^8.0.0",

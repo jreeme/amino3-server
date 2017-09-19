@@ -11,10 +11,9 @@ import recursiveReaddir = require('recursive-readdir');
 import jsonfile = require('jsonfile');
 import {PluginManager} from '../interfaces/plugin-manager';
 import {Util} from '../../util/util';
-import ReadStream = NodeJS.ReadStream;
-import WriteStream = NodeJS.WriteStream;
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
 import {Globals} from '../../globals';
+import {PluginManifest} from '../../custom-typings';
 import {LogService} from '../interfaces/log-service';
 
 //noinspection JSUnusedGlobalSymbols
