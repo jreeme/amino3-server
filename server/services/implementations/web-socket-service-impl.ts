@@ -1,16 +1,16 @@
 import {injectable, inject} from 'inversify';
 import {CommandUtil, IEnvelope, IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
-import {WebSocketService} from "../interfaces/web-socket-service";
+import {WebSocketService} from '../interfaces/web-socket-service';
 import safeJsonParse = require('safe-json-parse/callback');
 import findPort = require('find-free-port');
 import webSocket = require('nodejs-websocket');
 import nodeUrl = require('url');
 import fs = require('fs');
 import * as _ from 'lodash';
-import {LogService} from "../interfaces/log-service";
-import {Globals} from "../../globals";
-import {WebSocketConn} from "../../custom-typings";
+import {LogService} from '../interfaces/log-service';
+import {Globals} from '../../globals';
+import {WebSocketConn} from '../../custom-typings';
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()

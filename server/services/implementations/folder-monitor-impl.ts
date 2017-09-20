@@ -1,9 +1,9 @@
 import {injectable, inject} from 'inversify';
-import {CommandUtil, IPostal} from "firmament-yargs";
-import {BaseService} from "../interfaces/base-service";
-import {FolderMonitor} from "../interfaces/folder-monitor";
-import {LogService} from "../interfaces/log-service";
-import {FileWatcherConfig} from "../../custom-typings";
+import {CommandUtil, IPostal} from 'firmament-yargs';
+import {BaseService} from '../interfaces/base-service';
+import {FolderMonitor} from '../interfaces/folder-monitor';
+import {LogService} from '../interfaces/log-service';
+import {FileWatcherConfig} from '../../custom-typings';
 const path = require('path');
 const fs = require('fs');
 
@@ -17,7 +17,6 @@ export class FolderMonitorImpl implements FolderMonitor {
               @inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal,
               @inject('CommandUtil') private commandUtil: CommandUtil) {
-
     this.log.info('FolderMonitor created');
   }
 

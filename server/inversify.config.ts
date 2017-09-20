@@ -22,6 +22,9 @@ import {FolderMonitor} from "./services/interfaces/folder-monitor";
 import {FolderMonitorImpl} from "./services/implementations/folder-monitor-impl";
 import {LogService} from "./services/interfaces/log-service";
 import {LogServiceImpl} from "./services/implementations/log-service-impl";
+import {PostgresHelperImpl} from "./util/database-helpers/implementations/postgres-helper-impl";
+import {MysqlHelperImpl} from "./util/database-helpers/implementations/mysql-helper-impl";
+import {BaseDatabaseHelper} from "./util/database-helpers/interfaces/base-database-helper";
 
 kernel.bind<BaseService>('BaseService').to(BaseServiceImpl).inSingletonScope();
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -34,6 +37,8 @@ kernel.bind<RootService>('RootService').to(RootServiceImpl).inSingletonScope();
 kernel.bind<WebSocketService>('WebSocketService').to(WebSocketServiceImpl).inSingletonScope();
 kernel.bind<FolderMonitor>('FolderMonitor').to(FolderMonitorImpl).inSingletonScope();
 kernel.bind<LogService>('LogService').to(LogServiceImpl).inSingletonScope();
+kernel.bind<BaseDatabaseHelper>('BaseDatabaseHelper').to(PostgresHelperImpl).inSingletonScope();
+kernel.bind<BaseDatabaseHelper>('BaseDatabaseHelper').to(MysqlHelperImpl).inSingletonScope();
 
 //noinspection JSUnusedGlobalSymbols
 export default kernel;
