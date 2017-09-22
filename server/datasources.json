@@ -4,15 +4,15 @@
     "connector": "memory"
   },
   "mongodb"    : {
-    "host"             : "localhost",
+    "host"             : "127.0.0.1",
     "port"             : 27017,
     "database"         : "amino",
     "name"             : "mongodb",
     "connectionTimeout": 10000,
     "connector"        : "mongodb"
   },
-  "postgres"   : {
-    "host"          : "localhost",
+  "amino_admin": {
+    "host"          : "127.0.0.1",
     "port"          : 5432,
     "database"      : "amino_admin",
     "password"      : "password",
@@ -22,8 +22,8 @@
     "user"          : "amino_admin_user",
     "connector"     : "postgresql"
   },
-  "amino_admin": {
-    "host"          : "localhost",
+  "mysql"      : {
+    "host"          : "127.0.0.1",
     "port"          : 3306,
     "url"           : "",
     "database"      : "amino",

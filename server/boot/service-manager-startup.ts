@@ -2,10 +2,16 @@ import kernel from '../inversify.config';
 import {ServiceManager} from '../services/interfaces/service-manager';
 import {BaseService} from '../services/interfaces/base-service';
 import {LogService} from "../services/interfaces/log-service";
+
 module.exports = function (server, cb) {
+  const log = kernel.get<LogService>('LogService');
+  if (process.env.AMINO3_NO_SERVICES === 'TRUE') {
+    log.warning('Services startup suppressed by AMINO3_NO_SERVICES environment variable');
+    cb(null);
+    return;
+  }
   const baseService: BaseService = kernel.get<BaseService>('BaseService');
   const serviceManager: ServiceManager = kernel.get<ServiceManager>('ServiceManager');
-  const log = kernel.get<LogService>('LogService');
   baseService.server = server;
   serviceManager.initSubscriptions((err, results) => {
     log.debug(JSON.stringify(results, null, 2));

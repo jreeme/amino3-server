@@ -10,7 +10,7 @@
     "start": "node .",
     "build": "npm i && tsc --project server/tsconfig.json",
     "posttest": "npm run lint && nsp check",
-    "build:sdk": "lb-sdk server/server.js client/src/lb-sdk -i enabled -w enabled"
+    "build:sdk": "AMINO3_NO_SERVICES=TRUE lb-sdk server/server.js client/src/lb-sdk -i enabled -w enabled"
   },
   "dependencies": {
     "chokidar": "^1.7.0",
