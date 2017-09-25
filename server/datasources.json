@@ -22,14 +22,16 @@
     "user"          : "amino_admin_user",
     "connector"     : "postgresql"
   },
-  "mysql"      : {
-    "host"          : "127.0.0.1",
+  "influent"      : {
+    "host"          : "10.1.70.196",
     "port"          : 3306,
     "url"           : "",
-    "database"      : "amino",
-    "password"      : "password",
+    "database"      : "aml",
+    "acquireTimeout": 40000,
+    "connectTimeout": 40000,
+    "user"          : "influent",
+    "password"      : "influent",
     "name"          : "mysql",
-    "user"          : "amino_admin_user",
     "admin_user"    : "root",
     "admin_password": "password",
     "connector"     : "mysql"

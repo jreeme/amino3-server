@@ -1,7 +1,8 @@
 {
   "_meta": {
     "sources": [
-      "../common/models"
+      "../common/models",
+      "../common/models/influent"
     ]
   },
   "AminoUser": {
@@ -33,6 +34,74 @@
   },
   "session": {
     "dataSource": "amino_admin",
+    "public": true
+  },
+  "Accounts": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Clustersummary": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Clustersummarymembers": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Datasummary": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finentity": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finentitymonthly": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finentityquarterly": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finentityweekly": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finentityyearly": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finentitydaily": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finflow": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finflowdaily": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finflowmonthly": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finflowyearly": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Transactions": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finflowquarterly": {
+    "dataSource": "influent",
+    "public": true
+  },
+  "Finflowweekly": {
+    "dataSource": "influent",
     "public": true
   }
 }
