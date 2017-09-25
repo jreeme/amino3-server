@@ -1,0 +1,44 @@
+{
+  "name": "Clustersummarymembers",
+  "options": {
+    "idInjection": false,
+    "mysql": {
+      "schema": "aml",
+      "table": "clustersummarymembers"
+    }
+  },
+  "properties": {
+    "summaryid": {
+      "type": "String",
+      "required": true,
+      "length": 94,
+      "precision": null,
+      "scale": null,
+      "id": 1,
+      "mysql": {
+        "columnName": "SummaryId",
+        "dataType": "varchar",
+        "dataLength": 94,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    },
+    "entityid": {
+      "type": "String",
+      "required": true,
+      "length": 94,
+      "precision": null,
+      "scale": null,
+      "id": 2,
+      "mysql": {
+        "columnName": "EntityId",
+        "dataType": "varchar",
+        "dataLength": 94,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    }
+  }
+}

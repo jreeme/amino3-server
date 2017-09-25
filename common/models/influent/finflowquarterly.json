@@ -1,0 +1,105 @@
+{
+  "name": "Finflowquarterly",
+  "options": {
+    "idInjection": false,
+    "mysql": {
+      "schema": "aml",
+      "table": "finflowquarterly"
+    }
+  },
+  "properties": {
+    "fromentityid": {
+      "type": "String",
+      "required": true,
+      "length": 94,
+      "precision": null,
+      "scale": null,
+      "id": 1,
+      "mysql": {
+        "columnName": "FromEntityId",
+        "dataType": "varchar",
+        "dataLength": 94,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    },
+    "fromentitytype": {
+      "type": "String",
+      "required": false,
+      "length": 1,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "FromEntityType",
+        "dataType": "varchar",
+        "dataLength": 1,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "toentityid": {
+      "type": "String",
+      "required": true,
+      "length": 94,
+      "precision": null,
+      "scale": null,
+      "id": 2,
+      "mysql": {
+        "columnName": "ToEntityId",
+        "dataType": "varchar",
+        "dataLength": 94,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    },
+    "toentitytype": {
+      "type": "String",
+      "required": false,
+      "length": 1,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "ToEntityType",
+        "dataType": "varchar",
+        "dataLength": 1,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "amount": {
+      "type": "Number",
+      "required": false,
+      "length": null,
+      "precision": 12,
+      "scale": null,
+      "mysql": {
+        "columnName": "Amount",
+        "dataType": "float",
+        "dataLength": null,
+        "dataPrecision": 12,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "perioddate": {
+      "type": "Date",
+      "required": true,
+      "length": null,
+      "precision": null,
+      "scale": null,
+      "id": 3,
+      "mysql": {
+        "columnName": "PeriodDate",
+        "dataType": "datetime",
+        "dataLength": null,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    }
+  }
+}

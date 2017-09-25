@@ -1,0 +1,105 @@
+{
+  "name": "Clustersummary",
+  "options": {
+    "idInjection": false,
+    "mysql": {
+      "schema": "aml",
+      "table": "clustersummary"
+    }
+  },
+  "properties": {
+    "entityid": {
+      "type": "String",
+      "required": true,
+      "length": 94,
+      "precision": null,
+      "scale": null,
+      "id": 1,
+      "mysql": {
+        "columnName": "EntityId",
+        "dataType": "varchar",
+        "dataLength": 94,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    },
+    "property": {
+      "type": "String",
+      "required": true,
+      "length": 47,
+      "precision": null,
+      "scale": null,
+      "id": 2,
+      "mysql": {
+        "columnName": "Property",
+        "dataType": "varchar",
+        "dataLength": 47,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    },
+    "tag": {
+      "type": "String",
+      "required": false,
+      "length": 47,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "Tag",
+        "dataType": "varchar",
+        "dataLength": 47,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "type": {
+      "type": "String",
+      "required": false,
+      "length": 47,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "Type",
+        "dataType": "varchar",
+        "dataLength": 47,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "value": {
+      "type": "String",
+      "required": true,
+      "length": 188,
+      "precision": null,
+      "scale": null,
+      "id": 3,
+      "mysql": {
+        "columnName": "Value",
+        "dataType": "varchar",
+        "dataLength": 188,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    },
+    "stat": {
+      "type": "Number",
+      "required": false,
+      "length": null,
+      "precision": 12,
+      "scale": null,
+      "mysql": {
+        "columnName": "Stat",
+        "dataType": "float",
+        "dataLength": null,
+        "dataPrecision": 12,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    }
+  }
+}

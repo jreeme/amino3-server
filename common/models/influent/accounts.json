@@ -1,0 +1,268 @@
+{
+  "name": "Accounts",
+  "options": {
+    "idInjection": false,
+    "mysql": {
+      "schema": "aml",
+      "table": "accounts"
+    }
+  },
+  "properties": {
+    "id": {
+      "type": "String",
+      "required": true,
+      "length": 94,
+      "precision": null,
+      "scale": null,
+      "id": 1,
+      "mysql": {
+        "columnName": "id",
+        "dataType": "varchar",
+        "dataLength": 94,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "N"
+      }
+    },
+    "accountClass": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "account_class",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "accountType": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "account_type",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerId": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_id",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "dateOpened": {
+      "type": "Date",
+      "required": false,
+      "length": null,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "date_opened",
+        "dataType": "datetime",
+        "dataLength": null,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "status": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "status",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "powerOfAttorney": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "power_of_attorney",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerName": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_name",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerType": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_type",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "initDate": {
+      "type": "Date",
+      "required": false,
+      "length": null,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "init_date",
+        "dataType": "datetime",
+        "dataLength": null,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerStreet": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_street",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerCity": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_city",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerState": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_state",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerCountry": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_country",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerZip": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_zip",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerPhoneHome": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_phone_home",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    },
+    "customerPhoneOffice": {
+      "type": "String",
+      "required": false,
+      "length": 256,
+      "precision": null,
+      "scale": null,
+      "mysql": {
+        "columnName": "customer_phone_office",
+        "dataType": "varchar",
+        "dataLength": 256,
+        "dataPrecision": null,
+        "dataScale": null,
+        "nullable": "Y"
+      }
+    }
+  }
+}
