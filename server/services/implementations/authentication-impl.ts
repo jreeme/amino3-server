@@ -4,6 +4,7 @@ import {BaseService} from '../interfaces/base-service';
 import jwt = require('jsonwebtoken');
 import {Authentication} from "../interfaces/authentication";
 import {LogService} from "../interfaces/log-service";
+import {LoopBackApplication2} from "../../custom-typings";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -21,7 +22,7 @@ export class AuthenticationImpl implements Authentication {
     return 'Authentication';
   }
 
-  get server(): any {
+  get server(): LoopBackApplication2 {
     return this.baseService.server;
   }
 

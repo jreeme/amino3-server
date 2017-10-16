@@ -4,6 +4,7 @@ import {CommandUtil, IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {LogService} from '../interfaces/log-service';
 import {BaseDatabaseHelper} from '../../util/database-helpers/interfaces/base-database-helper';
+import {LoopBackApplication2} from "../../custom-typings";
 
 const async = require('async');
 
@@ -18,7 +19,7 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
               @inject('CommandUtil') private commandUtil: CommandUtil) {
   }
 
-  get server(): any {
+  get server(): LoopBackApplication2 {
     return this.baseService.server;
   }
 

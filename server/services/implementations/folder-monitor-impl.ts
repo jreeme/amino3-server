@@ -3,7 +3,7 @@ import {CommandUtil, IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {FolderMonitor} from '../interfaces/folder-monitor';
 import {LogService} from '../interfaces/log-service';
-import {FileWatcherConfig} from '../../custom-typings';
+import {FileWatcherConfig, LoopBackApplication2} from '../../custom-typings';
 const path = require('path');
 const fs = require('fs');
 
@@ -20,7 +20,7 @@ export class FolderMonitorImpl implements FolderMonitor {
     this.log.info('FolderMonitor created');
   }
 
-  get server(): any {
+  get server(): LoopBackApplication2 {
     return this.baseService.server;
   }
 

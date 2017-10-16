@@ -23,7 +23,7 @@
     "connector"     : "postgresql"
   },
   "influent"      : {
-    "host"          : "10.1.70.196",
+    "host"          : "127.0.0.1",
     "port"          : 3306,
     "url"           : "",
     "database"      : "aml",

@@ -9,6 +9,7 @@ import async = require('async');
 import {Util} from "../../util/util";
 import {Globals} from "../../globals";
 import {LogService} from "../interfaces/log-service";
+import {LoopBackApplication2} from "../../custom-typings";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -22,7 +23,7 @@ export class RebuildClientImpl implements RebuildClient {
     //this.server.on('started', () => { });
   }
 
-  get server(): any {
+  get server(): LoopBackApplication2 {
     return this.baseService.server;
   }
 

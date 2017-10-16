@@ -13,7 +13,7 @@ import {PluginManager} from '../interfaces/plugin-manager';
 import {Util} from '../../util/util';
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
 import {Globals} from '../../globals';
-import {PluginManifest} from '../../custom-typings';
+import {LoopBackApplication2, PluginManifest} from '../../custom-typings';
 import {LogService} from '../interfaces/log-service';
 
 //noinspection JSUnusedGlobalSymbols
@@ -40,7 +40,7 @@ export class PluginManagerImpl implements PluginManager {
               @inject('IPostal') private postal: IPostal) {
   }
 
-  get server(): any {
+  get server(): LoopBackApplication2 {
     return this.baseService.server;
   }
 

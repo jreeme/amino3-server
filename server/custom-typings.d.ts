@@ -1,4 +1,5 @@
-import {LoopBackApplication} from "loopback";
+import {LoopBackApplication} from 'loopback';
+import {Server} from 'http';
 
 interface WebSocketConn {
   sendText(text: string);
@@ -48,6 +49,11 @@ interface PluginManifest {
 }
 
 interface LoopBackApplication2 extends LoopBackApplication {
-  emit: (name: string, data?: any) => void;
+  on: (eventName: string, cb: () => void) => void;
+  start: () => Server;
+  http: Server;
+  models: any;
+  dataSources: any;
+  emit: (eventName: string, data?: any) => void;
 }
 

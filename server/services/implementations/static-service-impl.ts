@@ -3,6 +3,7 @@ import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {StaticService} from "../interfaces/static-service";
 import {Globals} from "../../globals";
+import {LoopBackApplication2} from "../../custom-typings";
 
 @injectable()
 export class StaticServiceImpl implements StaticService {
@@ -12,7 +13,7 @@ export class StaticServiceImpl implements StaticService {
     //this.server.on('started', () => { });
   }
 
-  get server(): any {
+  get server(): LoopBackApplication2 {
     return this.baseService.server;
   }
 

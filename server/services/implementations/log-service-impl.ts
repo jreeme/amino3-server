@@ -4,6 +4,7 @@ import {BaseService} from '../interfaces/base-service';
 import {LogService} from '../interfaces/log-service';
 import fs = require('fs');
 import {Globals} from '../../globals';
+import {LoopBackApplication2} from "../../custom-typings";
 
 const lineEnding = '\n';
 const stackIndex = 3; //How far up to call stack to look to get file:# for logging call
@@ -35,7 +36,7 @@ export class LogServiceImpl implements LogService {
     //this.server.on('started', () => { });
   }
 
-  get server(): any {
+  get server(): LoopBackApplication2 {
     return this.baseService.server;
   }
 

@@ -5,6 +5,7 @@ import {LoopBackApplication2} from "./custom-typings";
 (() => {
   const log = kernel.get<LogService>('LogService');
   const app: LoopBackApplication2 = module.exports = require('loopback')();
+
   app.start = () => {
     // start the web server
     return app.listen(function () {
@@ -14,7 +15,6 @@ import {LoopBackApplication2} from "./custom-typings";
         log.info(`Browse your REST API at ${baseUrl} ${explorerPath}`);
       }
       log.info(`Web server listening at: ${baseUrl}`);
-      app.emit('started');
     });
   };
 
@@ -28,7 +28,11 @@ import {LoopBackApplication2} from "./custom-typings";
     // start the server if `$ node server.js`
     if (require.main === module) {
       log.info(`Starting Amino3 by 'node server.js'`);
-      app.start();
+      //app.start() return the http server object (I learned by reading the source)
+      //Having the underlying http server object available on the app object is useful
+      //for hooking up socket.io later
+      app.http = app.start();
+      app.emit('started');
       return;
     }
     log.info(`Starting Amino3`);

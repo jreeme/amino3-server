@@ -1,10 +1,11 @@
-import {injectable, inject} from 'inversify';
+import {injectable} from 'inversify';
 import {BaseService} from "../interfaces/base-service";
+import {LoopBackApplication2} from "../../custom-typings";
 
 @injectable()
 export class BaseServiceImpl implements BaseService {
   public servicePostalChannel: string;
-  public server: any;
+  public server: LoopBackApplication2;
 
   constructor() {
   }

@@ -12,6 +12,7 @@ import {FolderMonitor} from "../interfaces/folder-monitor";
 import {LogService} from "../interfaces/log-service";
 
 import async = require('async');
+import {LoopBackApplication2} from "../../custom-typings";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -28,7 +29,7 @@ export class ServiceManagerImpl implements ServiceManager {
               @inject('InitializeDatabase') private initializeDatabase: InitializeDatabase) {
   }
 
-  get server(): any {
+  get server(): LoopBackApplication2 {
     return this.baseService.server;
   }
 
