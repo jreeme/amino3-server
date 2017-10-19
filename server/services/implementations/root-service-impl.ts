@@ -9,7 +9,6 @@ export class RootServiceImpl implements RootService {
 
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('IPostal') private postal: IPostal) {
-    //this.server.on('started', () => { });
   }
 
   get server(): LoopBackApplication2 {

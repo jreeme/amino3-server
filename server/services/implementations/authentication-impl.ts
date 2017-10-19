@@ -15,7 +15,6 @@ export class AuthenticationImpl implements Authentication {
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal) {
-    //this.server.on('started', () => { });
   }
 
   get servicePostalChannel(): string {

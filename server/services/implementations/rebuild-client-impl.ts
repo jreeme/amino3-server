@@ -20,7 +20,6 @@ export class RebuildClientImpl implements RebuildClient {
               @inject('LogService') private log: LogService,
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('IPostal') private postal: IPostal) {
-    //this.server.on('started', () => { });
   }
 
   get server(): LoopBackApplication2 {

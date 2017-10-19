@@ -10,7 +10,6 @@ export class StaticServiceImpl implements StaticService {
 
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('IPostal') private postal: IPostal) {
-    //this.server.on('started', () => { });
   }
 
   get server(): LoopBackApplication2 {
