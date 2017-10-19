@@ -38,6 +38,18 @@ export class BootManagerImpl implements BootManager {
     });
     me.app.get('/util/get-websocket-info', (req, res) => {
       try {
+        const os = require('os');
+        let interfaces = os.networkInterfaces();
+        let addresses = [];
+        for (let k in interfaces) {
+          for (let k2 in interfaces[k]) {
+            let address = interfaces[k][k2];
+            if (address.family === 'IPv4' && !address.internal) {
+              addresses.push(address.address);
+            }
+          }
+        }
+
         res.status(200).send(nodeUrl.parse(`http://${req.headers.host}`));
       } catch (err) {
         return res.status(500).send(err);
