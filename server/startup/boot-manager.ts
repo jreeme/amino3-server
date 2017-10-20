@@ -1,11 +1,14 @@
 import {injectable, inject} from 'inversify';
+import kernel from '../inversify.config';
 import {LogService} from '../services/interfaces/log-service';
 import {LoopBackApplication2} from '../custom-typings';
-import nodeUrl = require('url');
 import {IPostal} from "firmament-yargs";
+import {PostalSocketConnection} from "../util/postal-socket-connection";
 
 export interface BootManager {
   start(loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
+  removePostalSocketConnection(postalSocketConnection: PostalSocketConnection);
+  addPostalSocketConnection(postalSocketConnection: PostalSocketConnection);
 }
 
 @injectable()
@@ -13,6 +16,7 @@ export class BootManagerImpl implements BootManager {
   private app: LoopBackApplication2;
   private startListening: boolean;
   private io: any;//We have @types/socket.io but it's not working for some reason
+  private postalSocketConnections: any = {};
 
   constructor(@inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal) {
@@ -27,32 +31,36 @@ export class BootManagerImpl implements BootManager {
     require('loopback-boot')(me.app, _applicationFolder, me.bootCallback.bind(me));
   }
 
+  removePostalSocketConnection(postalSocketConnection: PostalSocketConnection) {
+    delete this.postalSocketConnections[postalSocketConnection.id];
+  }
+
+  addPostalSocketConnection(postalSocketConnection: PostalSocketConnection) {
+    this.postalSocketConnections[postalSocketConnection.id] = postalSocketConnection;
+  }
+
   private started() {
     const me = this;
+    me.createSystemRoutes();
+    me.configurePostalAndSocketIO();
+  }
+
+  private configurePostalAndSocketIO() {
+    const me = this;
     me.io.on('connection', (socket) => {
-      socket.on('add-message', (message) => {
-        socket.emit('message', {type: 'new-message', text: message});
-      });
-      socket.on('disconnect', () => {
-      });
+      const postalSocketConnection = kernel.get<PostalSocketConnection>('PostalSocketConnection');
+      postalSocketConnection.init(me, socket);
     });
+  }
+
+  private createSystemRoutes() {
+    const me = this;
     me.app.get('/util/get-websocket-info', (req, res) => {
       try {
-        const os = require('os');
-        let interfaces = os.networkInterfaces();
-        let addresses = [];
-        for (let k in interfaces) {
-          for (let k2 in interfaces[k]) {
-            let address = interfaces[k][k2];
-            if (address.family === 'IPv4' && !address.internal) {
-              addresses.push(address.address);
-            }
-          }
-        }
-
-        res.status(200).send(nodeUrl.parse(`http://${req.headers.host}`));
+        const url = {url: `http://${req.connection.localAddress}:${req.connection.localPort}`};
+        res.status(200).send(url);
       } catch (err) {
-        return res.status(500).send(err);
+        res.status(500).send(err);
       }
     });
   }
@@ -70,6 +78,7 @@ export class BootManagerImpl implements BootManager {
       return;
     }
     me.log.info(`Starting Amino3 by 'node server.js'`);
+    me.log.info(`Starting Socket.IO server`);
     me.io = require('socket.io')(me.listen());
     me.app.emit('started');
   }

@@ -24,6 +24,7 @@ import {PostgresHelperImpl} from "./util/database-helpers/implementations/postgr
 import {MysqlHelperImpl} from "./util/database-helpers/implementations/mysql-helper-impl";
 import {BaseDatabaseHelper} from "./util/database-helpers/interfaces/base-database-helper";
 import {BootManager, BootManagerImpl} from "./startup/boot-manager";
+import {PostalSocketConnection, PostalSocketConnectionImpl} from "./util/postal-socket-connection";
 
 kernel.bind<BaseService>('BaseService').to(BaseServiceImpl).inSingletonScope();
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -38,6 +39,7 @@ kernel.bind<LogService>('LogService').to(LogServiceImpl).inSingletonScope();
 kernel.bind<BootManager>('BootManager').to(BootManagerImpl).inSingletonScope();
 kernel.bind<BaseDatabaseHelper>('BaseDatabaseHelper').to(PostgresHelperImpl).inSingletonScope();
 kernel.bind<BaseDatabaseHelper>('BaseDatabaseHelper').to(MysqlHelperImpl).inSingletonScope();
+kernel.bind<PostalSocketConnection>('PostalSocketConnection').to(PostalSocketConnectionImpl).inTransientScope();
 
 //noinspection JSUnusedGlobalSymbols
 export default kernel;
