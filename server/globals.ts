@@ -4,6 +4,7 @@ import path = require('path');
 export class Globals {
   static logLevel = 'info';// debug, info, notice, warning, error, critical, alert, emergency
   static env = process.env.NODE_ENV || 'development';
+  static serverChannel = 'server-channel';
   static suppressLoadPlugins = false;
   static suppressClientRebuild = false;
   static projectRootPath = path.resolve(__dirname, '..');

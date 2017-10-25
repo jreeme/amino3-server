@@ -7,8 +7,6 @@ import {PostalSocketConnection} from "../util/postal-socket-connection";
 
 export interface BootManager {
   start(loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
-  removePostalSocketConnection(postalSocketConnection: PostalSocketConnection);
-  addPostalSocketConnection(postalSocketConnection: PostalSocketConnection);
 }
 
 @injectable()
@@ -16,7 +14,6 @@ export class BootManagerImpl implements BootManager {
   private app: LoopBackApplication2;
   private startListening: boolean;
   private io: any;//We have @types/socket.io but it's not working for some reason
-  private postalSocketConnections: any = {};
 
   constructor(@inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal) {
@@ -31,25 +28,26 @@ export class BootManagerImpl implements BootManager {
     require('loopback-boot')(me.app, _applicationFolder, me.bootCallback.bind(me));
   }
 
-  removePostalSocketConnection(postalSocketConnection: PostalSocketConnection) {
-    delete this.postalSocketConnections[postalSocketConnection.id];
-  }
-
-  addPostalSocketConnection(postalSocketConnection: PostalSocketConnection) {
-    this.postalSocketConnections[postalSocketConnection.id] = postalSocketConnection;
-  }
-
   private started() {
     const me = this;
     me.createSystemRoutes();
     me.configurePostalAndSocketIO();
+    //BEGIN --> Remove Me!
+    me.postal.subscribe({
+      channel: 'testChannel',
+      topic: 'testTopic',
+      callback: (data) => {
+        console.dir(data);
+      }
+    });
+    //END --> Remove Me!
   }
 
   private configurePostalAndSocketIO() {
     const me = this;
     me.io.on('connection', (socket) => {
       const postalSocketConnection = kernel.get<PostalSocketConnection>('PostalSocketConnection');
-      postalSocketConnection.init(me, socket);
+      postalSocketConnection.init(socket);
     });
   }
 
