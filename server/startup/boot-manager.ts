@@ -32,15 +32,6 @@ export class BootManagerImpl implements BootManager {
     const me = this;
     me.createSystemRoutes();
     me.configurePostalAndSocketIO();
-    //BEGIN --> Remove Me!
-    me.postal.subscribe({
-      channel: 'testChannel',
-      topic: 'testTopic',
-      callback: (data) => {
-        console.dir(data);
-      }
-    });
-    //END --> Remove Me!
   }
 
   private configurePostalAndSocketIO() {
@@ -55,8 +46,10 @@ export class BootManagerImpl implements BootManager {
     const me = this;
     me.app.get('/util/get-websocket-info', (req, res) => {
       try {
-        const url = {url: `http://${req.connection.localAddress}:${req.connection.localPort}`};
-        res.status(200).send(url);
+        res.status(200).send({
+          serverUrl: `http://${req.connection.localAddress}:${req.connection.localPort}`,
+          clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
+        });
       } catch (err) {
         res.status(500).send(err);
       }

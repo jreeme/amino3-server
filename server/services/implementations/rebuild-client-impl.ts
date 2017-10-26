@@ -29,7 +29,6 @@ export class RebuildClientImpl implements RebuildClient {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
     me.postal.subscribe({
-      channel: 'System',
       topic: 'RebuildClient',
       callback: me.rebuildClient.bind(me)
     });
@@ -40,7 +39,6 @@ export class RebuildClientImpl implements RebuildClient {
     const me = this;
     this.server.get('/system-ctl/rebuild-client', (req, res) => {
       me.postal.publish({
-        channel: 'System',
         topic: 'RebuildClient',
         data: {}
       });
@@ -57,12 +55,9 @@ export class RebuildClientImpl implements RebuildClient {
     me.ngBuildClient((err, result) => {
       if (!err) {
         me.postal.publish({
-          channel: 'WebSocket',
-          topic: 'Broadcast',
+          topic: 'BroadcastToClients',
           data: {
-            channel: 'System',
-            topic: 'RefreshPage',
-            data: {}
+            topic: 'RefreshPage'
           }
         });
       }
