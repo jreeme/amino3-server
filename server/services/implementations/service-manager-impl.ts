@@ -12,6 +12,7 @@ import {LogService} from "../interfaces/log-service";
 
 import async = require('async');
 import {LoopBackApplication2} from "../../custom-typings";
+import {WebSocketManager} from "../interfaces/web-socket-manager";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -24,6 +25,7 @@ export class ServiceManagerImpl implements ServiceManager {
               @inject('StaticService') private staticService: StaticService,
               @inject('FolderMonitor') private folderMonitor: FolderMonitor,
               @inject('LogService') private logService: LogService,
+              @inject('WebSocketManager') private webSocketManager: WebSocketManager,
               @inject('InitializeDatabase') private initializeDatabase: InitializeDatabase) {
   }
 
@@ -34,6 +36,7 @@ export class ServiceManagerImpl implements ServiceManager {
   initSubscriptions(cb: (err?: Error, result?: any) => void) {
     const fnArray = [
       this.initializeDatabase.initSubscriptions.bind(this.initializeDatabase)
+      , this.webSocketManager.initSubscriptions.bind(this.webSocketManager)
       , this.pluginManager.initSubscriptions.bind(this.pluginManager)
       , this.rebuildClient.initSubscriptions.bind(this.rebuildClient)
       , this.authentication.initSubscriptions.bind(this.authentication)
@@ -51,6 +54,7 @@ export class ServiceManagerImpl implements ServiceManager {
   init(cb: (err?: Error, result?: any) => void) {
     const fnArray = [
       this.initializeDatabase.init.bind(this.initializeDatabase)
+      , this.webSocketManager.init.bind(this.webSocketManager)
       , this.pluginManager.init.bind(this.pluginManager)
       , this.rebuildClient.init.bind(this.rebuildClient)
       , this.authentication.init.bind(this.authentication)

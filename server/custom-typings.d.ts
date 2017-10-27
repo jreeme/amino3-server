@@ -1,10 +1,19 @@
 import {LoopBackApplication} from 'loopback';
 import {Server} from 'http';
+import {IEnvelope} from "firmament-yargs";
 
-interface WebSocketConn {
-  sendText(text: string);
+interface AminoMessage extends IEnvelope<any> {
+}
 
-  close();
+interface PostalSocketConnection {
+  id: string;
+  init(_socket: any);
+  publishToClient(aminoMessage: AminoMessage);
+}
+
+interface SocketConnectionInfo {
+  serverUrl: string,
+  clientUrl: string
 }
 
 interface WatcherConfig {

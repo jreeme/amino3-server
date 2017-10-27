@@ -1,9 +1,7 @@
 import {injectable, inject} from 'inversify';
-import kernel from '../inversify.config';
 import {LogService} from '../services/interfaces/log-service';
 import {LoopBackApplication2} from '../custom-typings';
 import {IPostal} from "firmament-yargs";
-import {PostalSocketConnection} from "../util/postal-socket-connection";
 
 export interface BootManager {
   start(loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
@@ -13,7 +11,6 @@ export interface BootManager {
 export class BootManagerImpl implements BootManager {
   private app: LoopBackApplication2;
   private startListening: boolean;
-  private io: any;//We have @types/socket.io but it's not working for some reason
 
   constructor(@inject('LogService') private log: LogService,
               @inject('IPostal') private postal: IPostal) {
@@ -22,38 +19,9 @@ export class BootManagerImpl implements BootManager {
   start(_app: LoopBackApplication2, _applicationFolder: string, _startListening: boolean) {
     const me = this;
     me.app = _app;
-    me.app.on('started', me.started.bind(me));
     me.startListening = _startListening;
     me.log.info(`Booting Amino3 using 'loopback-boot'`);
     require('loopback-boot')(me.app, _applicationFolder, me.bootCallback.bind(me));
-  }
-
-  private started() {
-    const me = this;
-    me.createSystemRoutes();
-    me.configurePostalAndSocketIO();
-  }
-
-  private configurePostalAndSocketIO() {
-    const me = this;
-    me.io.on('connection', (socket) => {
-      const postalSocketConnection = kernel.get<PostalSocketConnection>('PostalSocketConnection');
-      postalSocketConnection.init(socket);
-    });
-  }
-
-  private createSystemRoutes() {
-    const me = this;
-    me.app.get('/util/get-websocket-info', (req, res) => {
-      try {
-        res.status(200).send({
-          serverUrl: `http://${req.connection.localAddress}:${req.connection.localPort}`,
-          clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
-        });
-      } catch (err) {
-        res.status(500).send(err);
-      }
-    });
   }
 
   private bootCallback(err: Error) {
@@ -70,7 +38,14 @@ export class BootManagerImpl implements BootManager {
     }
     me.log.info(`Starting Amino3 by 'node server.js'`);
     me.log.info(`Starting Socket.IO server`);
-    me.io = require('socket.io')(me.listen());
+    const io = require('socket.io')(me.listen());
+    me
+      .postal
+      .publish({
+        channel: 'ServiceBus',
+        topic: 'SetSocketIO',
+        data: {io}
+      });
     me.app.emit('started');
   }
 

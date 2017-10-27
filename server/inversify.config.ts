@@ -24,7 +24,10 @@ import {PostgresHelperImpl} from "./util/database-helpers/implementations/postgr
 import {MysqlHelperImpl} from "./util/database-helpers/implementations/mysql-helper-impl";
 import {BaseDatabaseHelper} from "./util/database-helpers/interfaces/base-database-helper";
 import {BootManager, BootManagerImpl} from "./startup/boot-manager";
-import {PostalSocketConnection, PostalSocketConnectionImpl} from "./util/postal-socket-connection";
+import {PostalSocketConnectionImpl} from "./util/postal-socket-connection";
+import {WebSocketManager} from "./services/interfaces/web-socket-manager";
+import {WebSocketManagerImpl} from "./services/implementations/web-socket-manager-impl";
+import {PostalSocketConnection} from "./custom-typings";
 
 kernel.bind<BaseService>('BaseService').to(BaseServiceImpl).inSingletonScope();
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -40,6 +43,7 @@ kernel.bind<BootManager>('BootManager').to(BootManagerImpl).inSingletonScope();
 kernel.bind<BaseDatabaseHelper>('BaseDatabaseHelper').to(PostgresHelperImpl).inSingletonScope();
 kernel.bind<BaseDatabaseHelper>('BaseDatabaseHelper').to(MysqlHelperImpl).inSingletonScope();
 kernel.bind<PostalSocketConnection>('PostalSocketConnection').to(PostalSocketConnectionImpl).inTransientScope();
+kernel.bind<WebSocketManager>('WebSocketManager').to(WebSocketManagerImpl).inSingletonScope();
 
 //noinspection JSUnusedGlobalSymbols
 export default kernel;
