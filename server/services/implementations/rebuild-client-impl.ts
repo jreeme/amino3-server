@@ -46,7 +46,7 @@ export class RebuildClientImpl implements RebuildClient {
       });
       return res.status(200).json({status: 'OK'});
     });
-    me.rebuildClient((err, result) => {
+    me.ngBuildClient((err, result) => {
       cb(err, err ? result : {message: 'Initialized RebuildClient'});
     });
   }

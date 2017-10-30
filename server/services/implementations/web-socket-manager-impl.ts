@@ -3,15 +3,15 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {LogService} from '../interfaces/log-service';
-import {WebSocketManager} from "../interfaces/web-socket-manager";
-import {AminoMessage, LoopBackApplication2, PostalSocketConnection, SocketConnectionInfo} from "../../custom-typings";
-import {Globals} from "../../globals";
+import {WebSocketManager} from '../interfaces/web-socket-manager';
+import {AminoMessage, LoopBackApplication2, PostalSocketConnection, SocketIO} from '../../custom-typings';
 
-const Rx = require('rxjs');
+import _ = require('lodash');
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class WebSocketManagerImpl implements WebSocketManager {
+  private socketIo: SocketIO.Server;
   private postalSocketConnections: Set<PostalSocketConnection> = new Set();
 
   //noinspection JSUnusedLocalSymbols
@@ -30,21 +30,10 @@ export class WebSocketManagerImpl implements WebSocketManager {
       .subscribe({
         channel: 'ServiceBus',
         topic: 'BroadcastToClients',
-        callback: (aminoMessage:AminoMessage) => {
-          Rx
-            .Observable
-            .from(me.postalSocketConnections)
-            .subscribe(
-              (psc: PostalSocketConnection) => {
-                psc.publishToClient(aminoMessage);
-              },
-              (err) => {
-                me.log.error(`BroadcastToClient FAILED: ${JSON.stringify(err)}`);
-              },
-              () => {
-                me.log.debug(`BroadcastToClient SUCCESSFUL`);
-              }
-            );
+        callback: (aminoMessage: AminoMessage) => {
+          me.postalSocketConnections.forEach((postalSocketConnection) => {
+            postalSocketConnection.publishToClient(_.clone(aminoMessage));
+          });
         }
       });
     me
@@ -54,22 +43,8 @@ export class WebSocketManagerImpl implements WebSocketManager {
         topic: 'SetSocketIO',
         callback: (data) => {
           me.log.debug(`Setting SocketIO`);
-          data.io.on('connection', (socket) => {
-            me.log.debug(`Creating PostalSocketConnection`);
-            const psc = kernel.get<PostalSocketConnection>('PostalSocketConnection')
-            me.postalSocketConnections.add(psc);
-            psc.init(socket);
-          });
-        }
-      });
-    me
-      .postal
-      .subscribe({
-        channel: 'ServiceBus',
-        topic: 'DestroySocketIO',
-        callback: (psc: PostalSocketConnection) => {
-          me.log.debug(`Destroying SocketIO`);
-          me.postalSocketConnections.delete(psc);
+          me.socketIo = <SocketIO.Server>data.io;
+          me.socketIo.on('connection', me.addPostalSocketConnection.bind(me));
         }
       });
     cb(null, {message: 'Initialized WebSocketManagerImpl Subscriptions'});
@@ -88,5 +63,27 @@ export class WebSocketManagerImpl implements WebSocketManager {
       }
     });
     cb(null, {message: 'Initialized WebSocketManagerImpl'});
+  }
+
+  removePostalSocketConnection(postalSocketConnection: PostalSocketConnection) {
+    const me = this;
+    try {
+      me.postalSocketConnections.delete(postalSocketConnection);
+      me.log.notice(`Removing PostalSocketConnection'${postalSocketConnection.id}' from WebSocketManager`)
+    } catch (err) {
+      me.log.error(`ERROR Removing PostalSocketConnection'${postalSocketConnection.id}'`);
+    }
+  }
+
+  private addPostalSocketConnection(socket: any) {
+    const me = this;
+    try {
+      const postalSocketConnection = kernel.get<PostalSocketConnection>('PostalSocketConnection')
+      postalSocketConnection.init(socket);
+      me.log.debug(`Created PostalSocketConnection '${postalSocketConnection.id}'`);
+      me.postalSocketConnections.add(postalSocketConnection);
+    } catch (err) {
+      me.log.error(`ERROR creating/adding PostalSocketConnection`);
+    }
   }
 }

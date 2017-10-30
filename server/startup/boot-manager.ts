@@ -33,18 +33,17 @@ export class BootManagerImpl implements BootManager {
     }
     // start the server if `$ node server.js`
     if (!me.startListening) {
-      me.log.info(`Starting Amino3`);
+      me.log.debug(`Starting Amino3`);
       return;
     }
-    me.log.info(`Starting Amino3 by 'node server.js'`);
-    me.log.info(`Starting Socket.IO server`);
-    const io = require('socket.io')(me.listen());
+    me.log.debug(`Starting Amino3 by 'node server.js'`);
+    me.log.debug(`Starting Socket.IO server`);
     me
       .postal
       .publish({
         channel: 'ServiceBus',
         topic: 'SetSocketIO',
-        data: {io}
+        data: {io:require('socket.io')(me.listen())}
       });
     me.app.emit('started');
   }
