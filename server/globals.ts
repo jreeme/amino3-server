@@ -5,7 +5,7 @@ export class Globals {
   static logLevel = 'debug';// debug, info, notice, warning, error, critical, alert, emergency
   static env = process.env.NODE_ENV || 'development';
   static serverChannel = 'server-channel';
-  static suppressLoadPlugins = false;
+  static suppressLoadPlugins = true;
   static suppressClientRebuild = false;
   static projectRootPath = path.resolve(__dirname, '..');
   static clientFolder = path.resolve(Globals.projectRootPath, 'client');

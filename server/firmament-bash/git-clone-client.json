@@ -18,6 +18,11 @@
       "args"                       : [
         "bash",
         "-c",
+        "git clone https://github.com/jreeme/amino3-primeng-client client"
+      ],
+      "old.args"                       : [
+        "bash",
+        "-c",
         "git clone https://github.com/jreeme/amino3-client --branch prime-ng client"
       ]
     }
