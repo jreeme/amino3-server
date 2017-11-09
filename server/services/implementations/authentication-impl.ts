@@ -84,7 +84,7 @@ export class AuthenticationImpl implements Authentication {
         aminoUser.loopbackToken = loopbackToken.id;
         const jwtToken = me.createToken(aminoUser);
         res.header('X-Authorization', jwtToken);
-        return res.status(200).send();
+        return res.status(200).send({});
       });
     });
   }
