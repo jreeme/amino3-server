@@ -27,6 +27,8 @@ export class AuthenticationImpl implements Authentication {
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
+    //Required to enable LoopBack authentication
+    me.server.enableAuth();
     me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'Login',
