@@ -61,11 +61,12 @@ export class AuthenticationImpl implements Authentication {
     });
     me.server.post('/auth/register', function (req, res) {
       let newUser = req.body;
-      me.aminoUser.create(newUser, (err, /*aminoUser*/) => {
+      me.aminoUser.create(newUser, (err, aminoUser) => {
         if (err) {
           return res.status(403).send(err);
         }
-        me.login(newUser.username, newUser.password, res);
+        return res.status(200).send(aminoUser);
+        //me.login(newUser.username, newUser.password, res);
       });
     });
     me.server.post('/auth/login', function (req, res) {
