@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-module.exports = function (aminoUser) {
+module.exports = function (AminoUser) {
   /**
    * Get access token
    * @param {string} username Amino user name
@@ -7,13 +7,17 @@ module.exports = function (aminoUser) {
    * @param {Function(Error, string)} callback
    */
 
-  aminoUser.aminoLogin = function (username, password, cb) {
-    aminoUser.login({username, password}, (err, loopbackToken) => {
+  AminoUser.deleteAllUsers = function (cb) {
+    AminoUser.destroyAll(cb);
+  };
+
+  AminoUser.aminoLogin = function (username, password, cb) {
+    AminoUser.login({username, password}, (err, loopbackToken) => {
       if (err) {
         return cb(err);
       }
       //Get extended user info (since loopback doesn't send it with this response :( )
-      aminoUser.findById(loopbackToken.userId, (err, aminoUser) => {
+      AminoUser.findById(loopbackToken.userId, (err, aminoUser) => {
         if (err) {
           return cb(err);
         }
@@ -26,11 +30,11 @@ module.exports = function (aminoUser) {
   };
 
   function createToken(aminoUser) {
-    const me = this;
     try {
       return jwt.sign(aminoUser, 'mySecret', {expiresIn: '1d'});
     } catch (err) {
-      me.log.logIfError(err);
+      //me.log.logIfError(err);
+      return 'could not generate JSON web token';
     }
   }
 };

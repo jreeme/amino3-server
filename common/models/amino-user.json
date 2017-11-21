@@ -26,6 +26,25 @@
     }
   ],
   "methods": {
+    "deleteAllUsers": {
+      "accepts": [
+      ],
+      "returns": [
+        {
+          "arg": "results",
+          "type": "object",
+          "root": true,
+          "description": "Results of deleteAllUsers operation"
+        }
+      ],
+      "description": "Clear all users from user database",
+      "http": [
+        {
+          "path": "/delete-all-users",
+          "verb": "delete"
+        }
+      ]
+    },
     "aminoLogin": {
       "accepts": [
         {

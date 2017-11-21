@@ -74,11 +74,11 @@ interface LoopBackApplication2 extends LoopBackApplication {
 
 ///<reference types="node" />
 
-declare module 'socket.io' {
+/*declare module 'socket.io' {
   var server: SocketIOStatic;
 
   export = server;
-}
+}*/
 
 interface SocketIOStatic {
   /**
