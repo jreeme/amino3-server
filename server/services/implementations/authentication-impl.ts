@@ -44,7 +44,7 @@ export class AuthenticationImpl implements Authentication {
     me.aminoUser = me.server.models.AminoUser;
     // enable (loopback) authentication
     me.server.enableAuth();
-    me.server.post('/auth/update-user-info', function (req, res) {
+/*    me.server.post('/auth/update-user-info', function (req, res) {
       let userInfo = req.body;
       me.aminoUser.findById(userInfo.id, (err, aminoUser) => {
         if (err) {
@@ -71,7 +71,7 @@ export class AuthenticationImpl implements Authentication {
     });
     me.server.post('/auth/login', function (req, res) {
       me.login(req.body.username, req.body.password, res);
-    });
+    });*/
     cb(null, {message: 'Initialized Authentication'});
   }
 

@@ -6,7 +6,7 @@ export class Globals {
   static env = process.env.NODE_ENV || 'development';
   static serverChannel = 'server-channel';
   static suppressLoadPlugins = true;
-  static suppressClientRebuild = false;
+  static suppressClientRebuild = true;
   static projectRootPath = path.resolve(__dirname, '..');
   static clientFolder = path.resolve(Globals.projectRootPath, 'client');
   static serverFolder = path.resolve(Globals.projectRootPath, 'server');

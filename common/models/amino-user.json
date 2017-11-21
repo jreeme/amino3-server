@@ -25,5 +25,37 @@
       "model": "*"
     }
   ],
-  "methods": {}
+  "methods": {
+    "aminoLogin": {
+      "accepts": [
+        {
+          "arg": "username",
+          "type": "string",
+          "required": true,
+          "description": "Amino user name"
+        },
+        {
+          "arg": "password",
+          "type": "string",
+          "required": true,
+          "description": "Amino password"
+        }
+      ],
+      "returns": [
+        {
+          "arg": "jwt",
+          "type": "string",
+          "root": true,
+          "description": "JSON web auth token"
+        }
+      ],
+      "description": "Get access token",
+      "http": [
+        {
+          "path": "/login",
+          "verb": "post"
+        }
+      ]
+    }
+  }
 }
