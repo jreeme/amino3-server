@@ -1,15 +1,26 @@
 const jwt = require('jsonwebtoken');
 module.exports = function (AminoUser) {
+  AminoUser.createUser = function (username, firstName, lastName, email, password, cb) {
+    AminoUser.create({
+      username,
+      fullname: `${firstName} ${lastName}`,
+      email,
+      password
+    }, (err, newAminoUser) => {
+      cb(err, newAminoUser);
+    });
+  };
+
+  AminoUser.deleteAllUsers = function (cb) {
+    AminoUser.destroyAll(cb);
+  };
+
   /**
    * Get access token
    * @param {string} username Amino user name
    * @param {string} password Amino password
    * @param {Function(Error, string)} callback
    */
-
-  AminoUser.deleteAllUsers = function (cb) {
-    AminoUser.destroyAll(cb);
-  };
 
   AminoUser.aminoLogin = function (username, password, cb) {
     AminoUser.login({username, password}, (err, loopbackToken) => {

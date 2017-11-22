@@ -1,75 +1,130 @@
 {
-  "name": "AminoUser",
-  "plural": "AminoUsers",
-  "base": "User",
+  "name"       : "AminoUser",
+  "plural"     : "AminoUsers",
+  "base"       : "User",
   "idInjection": true,
-  "options": {
+  "options"    : {
     "validateUpsert": true
   },
-  "forceId": false,
-  "properties": {
+  "forceId"    : false,
+  "properties" : {
     "fullname": {
-      "type": "string",
+      "type"    : "string",
       "required": true
     }
   },
   "validations": [],
-  "relations": {},
-  "acls": [
+  "relations"  : {},
+  "acls"       : [
     {
-      "accessType": "*",
+      "accessType"   : "*",
       "principalType": "ROLE",
-      "principalId": "$unauthenticated",
-      "permission": "ALLOW",
-      "property": "*",
-      "model": "*"
+      "principalId"  : "$unauthenticated",
+      "permission"   : "ALLOW",
+      "property"     : "*",
+      "model"        : "*"
     }
   ],
-  "methods": {
+  "methods"    : {
     "deleteAllUsers": {
-      "accepts": [
+      "accepts"    : [
       ],
-      "returns": [
+      "returns"    : [
         {
-          "arg": "results",
-          "type": "object",
-          "root": true,
+          "arg"        : "results",
+          "type"       : "object",
+          "root"       : true,
           "description": "Results of deleteAllUsers operation"
         }
       ],
       "description": "Clear all users from user database",
-      "http": [
+      "http"       : [
         {
           "path": "/delete-all-users",
           "verb": "delete"
         }
       ]
     },
-    "aminoLogin": {
-      "accepts": [
+    "createUser"    : {
+      "accepts"    : [
         {
-          "arg": "username",
-          "type": "string",
-          "required": true,
+          "arg"        : "username",
+          "type"       : "string",
+          "required"   : true,
           "description": "Amino user name"
         },
         {
-          "arg": "password",
-          "type": "string",
-          "required": true,
+          "arg"        : "firstName",
+          "type"       : "string",
+          "required"   : true,
+          "description": "Amino user first name"
+        },
+        {
+          "arg"        : "lastName",
+          "type"       : "string",
+          "required"   : true,
+          "description": "Amino user last name"
+        },
+        {
+          "arg"        : "email",
+          "type"       : "string",
+          "required"   : true,
+          "description": "Amino user email"
+        },
+        {
+          "arg"        : "password",
+          "type"       : "string",
+          "required"   : true,
           "description": "Amino password"
         }
       ],
-      "returns": [
+      "returns"    : [
         {
-          "arg": "jwt",
-          "type": "string",
-          "root": true,
+          "arg"        : "username",
+          "type"       : "string",
+          "root"       : true,
+          "description": "Amino user name"
+        },
+        {
+          "arg"        : "email",
+          "type"       : "string",
+          "root"       : true,
+          "description": "Amino user email"
+        }
+      ],
+      "description": "Create new Amino user",
+      "http"       : [
+        {
+          "path": "/create-user",
+          "verb": "post"
+        }
+      ]
+    },
+    "aminoLogin"    : {
+      "accepts"    : [
+        {
+          "arg"        : "username",
+          "type"       : "string",
+          "required"   : true,
+          "description": "Amino user name"
+        },
+        {
+          "arg"        : "password",
+          "type"       : "string",
+          "required"   : true,
+          "description": "Amino password"
+        }
+      ],
+      "returns"    : [
+        {
+          "arg"        : "jwt",
+          "type"       : "string",
+          "root"       : true,
           "description": "JSON web auth token"
         }
       ],
       "description": "Get access token",
-      "http": [
+      "http"       : [
         {
           "path": "/login",
           "verb": "post"
