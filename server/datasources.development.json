@@ -1,0 +1,36 @@
+{
+  "mongodb": {
+    "host": "127.0.0.1",
+    "port": 27017,
+    "database": "amino",
+    "name": "mongodb",
+    "connectionTimeout": 10000,
+    "connector": "mongodb"
+  },
+  "amino_admin": {
+    "host": "127.0.0.1",
+    "port": 5432,
+    "database": "amino_admin",
+    "password": "password",
+    "name": "amino_admin",
+    "admin_user": "postgres",
+    "admin_password": "password",
+    "user": "amino_admin_user",
+    "connector": "postgresql"
+  },
+  "influent": {
+    "host": "127.0.0.1",
+    "port": 3306,
+    "url": "",
+    "database": "aml",
+    "password": "influent",
+    "name": "influent",
+    "acquireTimeout": 40000,
+    "connectTimeout": 40000,
+    "user": "influent",
+    "admin_user": "root",
+    "admin_password": "password",
+    "connector": "mysql"
+  }
+}
+
