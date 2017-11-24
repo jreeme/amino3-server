@@ -45,6 +45,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
+    if(Globals.env === 'test'){
+      return cb(null, {message: `Initialize PluginManager Subscriptions (bypassed by NODE_ENV === 'test'`});
+    }
     const me = this;
     me.postal.subscribe({
       channel: 'FolderMonitor',
@@ -66,6 +69,9 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   init(cb: (err: Error, result: any) => void) {
+    if(Globals.env === 'test'){
+      return cb(null, {message: `Initialize PluginManager (bypassed by NODE_ENV === 'test'`});
+    }
     const me = this;
     me.gitClientCode((err) => {
       me.postal.publish({
