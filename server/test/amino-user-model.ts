@@ -2,6 +2,10 @@ import 'mocha';
 
 const chakram = require('chakram');
 const request = require('request');
+const async = require('async');
+const fs = require('fs');
+const path = require('path');
+const Rx = require('rxjs');
 const expect = chakram.expect;
 
 const config = require('../config.test.json');
@@ -37,11 +41,30 @@ const testUsers = {
 describe('AminoUsers static operations', () => {
   const aminoUsersUrlBase = `${apiUrlBase}/AminoUsers`;
   before((done) => {
-    chakram.delete(`${aminoUsersUrlBase}/delete-all-users`)
-      .then((response) => {
-        expect(response).to.have.status(200);
-        done();
-      });
+    async.parallel([
+      (cb) => {
+        chakram.delete(`${aminoUsersUrlBase}/delete-all-users`)
+          .then((response) => {
+            expect(response).to.have.status(200);
+            cb();
+          });
+      },
+      (cb) => {
+        const testDataFolder = path.resolve(__dirname, './test-data');
+        const testDataFiles = fs.readdirSync(testDataFolder)
+          .map((testDataFile) => path.resolve(testDataFolder, testDataFile));
+        async
+          .each(testDataFiles, (testDataFile, cb) => {
+              const testData = require(testDataFile);
+              cb();
+            },
+            (err) => {
+              cb();
+            });
+      }
+    ], (err) => {
+      done();
+    });
   });
   it('should create test amino users', () => {
     const responses = [];
@@ -49,8 +72,7 @@ describe('AminoUsers static operations', () => {
       const newUser = testUsers[user];
       const response = chakram.post(`${aminoUsersUrlBase}/create-user`, newUser);
       responses.push(response);
-      expect(response).to.have.status(200);
-      expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+      checkResponseStatusAndHeaders(response);
       expect(response).to.comprise.of.json({
         username: newUser.username,
         fullname: `${newUser.firstName} ${newUser.lastName}`,
@@ -62,10 +84,14 @@ describe('AminoUsers static operations', () => {
   it('should get the test users', () => {
     const response = chakram.get(`${aminoUsersUrlBase}`);
     return response.then((response) => {
-      expect(response).to.have.status(200);
-      expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+      checkResponseStatusAndHeaders(response);
       expect(response.body).to.be.instanceOf(Array);
-      expect(response.body).to.be.lengthOf(3);
+      expect(response.body).to.be.lengthOf(4);//Test users + system created superuser
     });
   });
 });
+
+function checkResponseStatusAndHeaders(response) {
+  expect(response).to.have.status(200);
+  expect(response).to.have.header('content-type', 'application/json; charset=utf-8');
+}

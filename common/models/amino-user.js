@@ -12,14 +12,24 @@ module.exports = function (AminoUser) {
   };
 
   AminoUser.deleteAllUsers = function (cb) {
-    AminoUser.destroyAll(cb);
+    AminoUser.destroyAll((err, results) => {
+      global.postal.publish({
+        channel: 'Authentication',
+        topic: 'CreateRootUserAndAdminRole',
+        data: {
+          cb: (err2) => {
+            cb(err, results);
+          }
+        }
+      });
+    });
   };
 
   /**
    * Get access token
    * @param {string} username Amino user name
    * @param {string} password Amino password
-   * @param {Function(Error, string)} callback
+   * @param {callback} cb
    */
 
   AminoUser.aminoLogin = function (username, password, cb) {
