@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 module.exports = function (AminoUser) {
+  //createUser
   AminoUser.createUser = function (username, firstName, lastName, email, password, cb) {
     AminoUser.create({
       username,
@@ -11,6 +12,58 @@ module.exports = function (AminoUser) {
     });
   };
 
+  AminoUser.remoteMethod('createUser', {
+      accepts: [
+        {
+          arg: 'username',
+          type: 'string',
+          required: true,
+          description: 'Amino user name'
+        },
+        {
+          arg: 'firstName',
+          type: 'string',
+          required: true,
+          description: 'Amino user first name'
+        },
+        {
+          arg: 'lastName',
+          type: 'string',
+          required: true,
+          description: 'Amino user last name'
+        },
+        {
+          arg: 'email',
+          type: 'string',
+          required: true,
+          description: 'Amino user email'
+        },
+        {
+          arg: 'password',
+          type: 'string',
+          required: true,
+          description: 'Amino password'
+        }
+      ],
+      returns: [
+        {
+          arg: 'username',
+          type: 'string',
+          root: true,
+          description: 'Amino user name'
+        },
+        {
+          arg: 'email',
+          type: 'string',
+          root: true,
+          description: 'Amino user email'
+        }
+      ],
+      http: {path: '/create-user', verb: 'post'}
+    }
+  );
+
+  //deleteAllUsers
   AminoUser.deleteAllUsers = function (cb) {
     AminoUser.destroyAll((err, results) => {
       global.postal.publish({
@@ -25,6 +78,17 @@ module.exports = function (AminoUser) {
     });
   };
 
+  AminoUser.remoteMethod('deleteAllUsers', {
+      accepts: [],
+      returns: {
+        arg: 'results',
+        type: 'object',
+        root: true,
+        description: 'Results of deleteAllUsers operation'
+      },
+      http: {path: '/delete-all-users', verb: 'delete'}
+    }
+  );
   /**
    * Get access token
    * @param {string} username Amino user name
@@ -32,6 +96,7 @@ module.exports = function (AminoUser) {
    * @param {callback} cb
    */
 
+  //login
   AminoUser.aminoLogin = function (username, password, cb) {
     AminoUser.login({username, password}, (err, loopbackToken) => {
       if (err) {
@@ -49,6 +114,31 @@ module.exports = function (AminoUser) {
       });
     });
   };
+
+  AminoUser.remoteMethod('deleteAllUsers', {
+      accepts: [
+        {
+          arg: 'username',
+          type: 'string',
+          required: true,
+          description: 'Amino user name'
+        },
+        {
+          arg: 'password',
+          type: 'string',
+          required: true,
+          description: 'Amino password'
+        }
+      ],
+      returns: {
+        arg: 'jwt',
+        type: 'string',
+        root: true,
+        description: 'JSON web token'
+      },
+      http: {path: '/login', verb: 'post'}
+    }
+  );
 
   function createToken(aminoUser) {
     try {
