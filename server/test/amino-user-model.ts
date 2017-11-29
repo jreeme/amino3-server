@@ -1,4 +1,5 @@
 import 'mocha';
+import _ = require('lodash');
 
 const chakram = require('chakram');
 const async = require('async');
@@ -43,13 +44,22 @@ describe('AminoUsers static operations', () => {
   const aminoUsersUrlBase = `${apiUrlBase}/AminoUsers`;
   const dataSetsUrlBase = `${apiUrlBase}/DataSets`;
   before((done) => {
-    async.parallel([
+    async.series([
+        (cb) => {
+          chakram.post(`${aminoUsersUrlBase}/login`, {username: 'root', password: 'password'})
+            .then((response) => {
+              expect(response).to.have.status(200);
+              cb();
+            })
+            .catch(cb)
+        },
         (cb) => {
           chakram.delete(`${aminoUsersUrlBase}/delete-all-users`)
             .then((response) => {
               expect(response).to.have.status(200);
               cb();
-            });
+            })
+            .catch(cb);
         },
         (cb) => {
           const testDataFolder = path.resolve(__dirname, './test-data');
@@ -100,10 +110,18 @@ describe('AminoUsers static operations', () => {
                               return cb(res.body.error);
                             }
                             const count = res.body.count;
-                            const response = chakram.get(`${dataSetsUrlBase}?filter={"where":{"name":"dataSet01Json"}}`);
+                            //const response = chakram.get(`${dataSetsUrlBase}?filter={"where":{"name":"${dataSetModelName}"}}`);
+                            const response = chakram.get(`${dataSetsUrlBase}/findOne?filter={"where":{"name":"${dataSetModelName}"}}`);
                             response.then((res) => {
-                              let r = res;
-                              cb();
+                              if (res.body.error) {
+                                return cb(res.body.error);
+                              }
+                              const updatedDataSet = _.clone(res.body);
+                              updatedDataSet.recordCount = count;
+                              const response = chakram.put(`${dataSetsUrlBase}/${updatedDataSet.id}`, updatedDataSet);
+                              response.then((res) => {
+                                cb();
+                              });
                             });
                           })
                           ;
@@ -119,8 +137,7 @@ describe('AminoUsers static operations', () => {
       (/*err*/) => {
         done();
       }
-    )
-    ;
+    );
   });
   it('should create test amino users', () => {
     const responses = [];
@@ -142,7 +159,7 @@ describe('AminoUsers static operations', () => {
     return response.then((response) => {
       checkResponseStatusAndHeaders(response);
       expect(response.body).to.be.instanceOf(Array);
-      expect(response.body).to.be.lengthOf(4);//Test users + system created superuser
+      expect(response.body).to.be.lengthOf(4);//3 Test users + system created superuser
     });
   });
 });

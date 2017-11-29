@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 module.exports = function (AminoUser) {
   //createUser
   AminoUser.createUser = function (username, firstName, lastName, email, password, cb) {
@@ -97,37 +96,23 @@ module.exports = function (AminoUser) {
    */
 
   //login
-  AminoUser.aminoLogin = function (username, password, cb) {
-    AminoUser.login({username, password}, (err, loopbackToken) => {
+  AminoUser.aminoLogin = function (loginInfo, cb) {
+    AminoUser.login(loginInfo, (err, loopbackToken) => {
       if (err) {
         return cb(err);
       }
-      //Get extended user info (since loopback doesn't send it with this response :( )
-      AminoUser.findById(loopbackToken.userId, (err, aminoUser) => {
-        if (err) {
-          return cb(err);
-        }
-        aminoUser = JSON.parse(JSON.stringify(aminoUser));
-        aminoUser.loopbackToken = loopbackToken.id;
-        const jwtToken = createToken(aminoUser);
-        cb(null, jwtToken);
-      });
+      cb(null, loopbackToken);
     });
   };
 
-  AminoUser.remoteMethod('deleteAllUsers', {
+  AminoUser.remoteMethod('aminoLogin', {
       accepts: [
         {
-          arg: 'username',
-          type: 'string',
+          arg: 'loginInfo',
+          type: 'object',
           required: true,
-          description: 'Amino user name'
-        },
-        {
-          arg: 'password',
-          type: 'string',
-          required: true,
-          description: 'Amino password'
+          description: 'JSON object containing username & password',
+          http: {source: 'body'}
         }
       ],
       returns: {
@@ -139,14 +124,5 @@ module.exports = function (AminoUser) {
       http: {path: '/login', verb: 'post'}
     }
   );
-
-  function createToken(aminoUser) {
-    try {
-      return jwt.sign(aminoUser, 'mySecret', {expiresIn: '1d'});
-    } catch (err) {
-      //me.log.logIfError(err);
-      return 'could not generate JSON web token';
-    }
-  }
 };
 

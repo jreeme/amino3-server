@@ -8,7 +8,7 @@ export class Globals {
   static suppressClientRebuild = Globals.env === 'test';
   static uploadedPluginUrl = '/amino3-plugins/files';
   static adminUserName = 'root';
-  static adminUserDefaultPassword = 'root';
+  static adminUserDefaultPassword = 'password';
   static adminUserEmail= 'root@amino3.com';
   static adminRoleName = 'superuser';
 

@@ -14,17 +14,23 @@
     }
   },
   "validations": [],
-  "relations"  : {},
+  "relations"  : {
+    "accessTokens": {
+      "type"      : "hasMany",
+      "model"     : "AminoAccessToken",
+      "foreignKey": "userId",
+      "options"   : {
+        "disableInclude": true
+      }
+    }
+  },
   "acls"       : [
     {
       "accessType"   : "*",
       "principalType": "ROLE",
-      "principalId"  : "$unauthenticated",
-      "permission"   : "ALLOW",
-      "property"     : "*",
-      "model"        : "*"
+      "principalId"  : "$everyone",
+      "permission"   : "DENY"
     }
   ],
-  "methods"    : {
-  }
+  "methods"    : {}
 }

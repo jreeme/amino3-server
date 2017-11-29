@@ -4,11 +4,12 @@ import {LoopBackApplication2} from '../custom-typings';
 import {IPostal} from "firmament-yargs";
 
 export interface BootManager {
-  start(loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
+  start(loopback: any, loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
 }
 
 @injectable()
 export class BootManagerImpl implements BootManager {
+  private loopback: any;
   private app: LoopBackApplication2;
   private startListening: boolean;
 
@@ -16,8 +17,12 @@ export class BootManagerImpl implements BootManager {
               @inject('IPostal') private postal: IPostal) {
   }
 
-  start(_app: LoopBackApplication2, _applicationFolder: string, _startListening: boolean) {
+  start(_loopback: any,
+        _app: LoopBackApplication2,
+        _applicationFolder: string,
+        _startListening: boolean) {
     const me = this;
+    me.loopback = _loopback;
     me.app = _app;
     me.startListening = _startListening;
     me.log.info(`Booting Amino3 using 'loopback-boot'`);
@@ -31,6 +36,10 @@ export class BootManagerImpl implements BootManager {
       me.log.error(errorMsg);
       throw new Error(errorMsg);
     }
+    // tell loopback to use AminoAccessToken for auth
+    me.app.use(me.loopback.token({
+      model: me.app.models.AminoAccessToken
+    }));
     // start the server if `$ node server.js`
     if (!me.startListening) {
       me.log.debug(`Starting Amino3`);
@@ -43,7 +52,7 @@ export class BootManagerImpl implements BootManager {
       .publish({
         channel: 'ServiceBus',
         topic: 'SetSocketIO',
-        data: {io:require('socket.io')(me.listen())}
+        data: {io: require('socket.io')(me.listen())}
       });
     me.app.emit('started');
   }

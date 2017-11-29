@@ -46,38 +46,6 @@ export class AuthenticationImpl implements Authentication {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    const me = this;
-    //me.aminoUser = me.server.models.AminoUser;
-    // enable (loopback) authentication
-    me.server.enableAuth();
-    /*    me.server.post('/auth/update-user-info', function (req, res) {
-          let userInfo = req.body;
-          me.aminoUser.findById(userInfo.id, (err, aminoUser) => {
-            if (err) {
-              return res.status(200).send({status: 'error', error: err});
-            }
-            delete userInfo.id;
-            aminoUser.updateAttributes(userInfo, (err, aminoUser) => {
-              if (err) {
-                return res.status(200).send({status: 'error', error: err});
-              }
-              return res.status(200).send({status: 'OK', userInfo: aminoUser});
-            });
-          });
-        });
-        me.server.post('/auth/register', function (req, res) {
-          let newUser = req.body;
-          me.aminoUser.create(newUser, (err, aminoUser) => {
-            if (err) {
-              return res.status(403).send(err);
-            }
-            return res.status(200).send(aminoUser);
-            //me.login(newUser.username, newUser.password, res);
-          });
-        });
-        me.server.post('/auth/login', function (req, res) {
-          me.login(req.body.username, req.body.password, res);
-        });*/
     cb(null, {message: 'Initialized Authentication'});
   }
 
@@ -86,6 +54,7 @@ export class AuthenticationImpl implements Authentication {
     const R = me.server.models.Role;
     const RM = me.server.models.RoleMapping;
     const U = me.server.models.AminoUser;
+    const ACL = me.server.models.ACL;
     const newRootUser = {
       username: Globals.adminUserName,
       fullname: Globals.adminUserName,
@@ -118,39 +87,35 @@ export class AuthenticationImpl implements Authentication {
         cb(null, user, role);
       },
       (user, role, cb) => {
+        //TODO: figure out how this helps us ...
         role.principals.create({
           principalType: RM.USER,
           principalId: user.id
         }, cb);
       },
-    ], (err, /*principal*/) => {
+      (principal, cb) => {
+        ACL.create([{
+          accessType: '*',
+          principalType: 'ROLE',
+          principalId: 'superuser',
+          permission: 'ALLOW'
+        }, {
+          accessType: 'EXECUTE',
+          principalType: 'ROLE',
+          principalId: '$everyone',
+          permission: 'ALLOW',
+          property: 'aminoLogin'
+        }], (err, acls) => {
+          acls.forEach((acl) => {
+            U.settings.acls.push(acl);
+          });
+          cb(err);
+        });
+
+        //cb(null);
+      }
+    ], (err, /*acl*/) => {
       cb(err);
     });
   }
-
-  /*  private login(username: string, password: string, res: any) {
-      const me = this;
-      me.aminoUser.login({username, password}, (err, loopbackToken) => {
-        if (err) {
-          return res.status(401).send();
-        }
-        //Get extended user info (since loopback doesn't send it with this response :( )
-        me.aminoUser.findById(loopbackToken.userId, (err, aminoUser) => {
-          aminoUser = JSON.parse(JSON.stringify(aminoUser));
-          aminoUser.loopbackToken = loopbackToken.id;
-          const jwtToken = me.createToken(aminoUser);
-          res.header('X-Authorization', jwtToken);
-          return res.status(200).send({});
-        });
-      });
-    }
-
-    private createToken(aminoUser) {
-      const me = this;
-      try {
-        return jwt.sign(aminoUser, 'mySecret', {expiresIn: '1d'});
-      } catch (err) {
-        me.log.logIfError(err);
-      }
-    }*/
 }

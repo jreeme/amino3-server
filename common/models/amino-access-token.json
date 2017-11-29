@@ -1,0 +1,20 @@
+{
+  "name"       : "AminoAccessToken",
+  "plural"     : "AminoAccessTokens",
+  "base"       : "AccessToken",
+  "idInjection": true,
+  "options"    : {
+    "validateUpsert": true
+  },
+  "properties" : {},
+  "validations": [],
+  "relations"  : {
+    "user": {
+      "type"      : "belongsTo",
+      "model"     : "AminoUser",
+      "foreignKey": "userId"
+    }
+  },
+  "acls"       : [],
+  "methods"    : {}
+}
