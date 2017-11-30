@@ -87,32 +87,41 @@ export class AuthenticationImpl implements Authentication {
         cb(null, user, role);
       },
       (user, role, cb) => {
-        //TODO: figure out how this helps us ...
+        // Add admin user to admin role
         role.principals.create({
           principalType: RM.USER,
           principalId: user.id
         }, cb);
       },
       (principal, cb) => {
-        ACL.create([{
-          accessType: '*',
-          principalType: 'ROLE',
-          principalId: 'superuser',
-          permission: 'ALLOW'
-        }, {
-          accessType: 'EXECUTE',
-          principalType: 'ROLE',
-          principalId: '$everyone',
-          permission: 'ALLOW',
-          property: 'aminoLogin'
-        }], (err, acls) => {
+        ACL.create([
+          {
+            accessType: '*',
+            principalType: 'ROLE',
+            principalId: '$everyone',
+            permission: 'DENY'
+          },
+          {
+            accessType: 'EXECUTE',
+            principalType: 'ROLE',
+            principalId: '$everyone',
+            permission: 'ALLOW',
+            property: 'aminoLogin'
+          },
+          {
+            accessType: '*',
+            principalType: 'ROLE',
+            principalId: 'superuser',
+            permission: 'ALLOW',
+            property: '*'
+          }
+        ], (err, acls) => {
+          U.settings.acls = [];
           acls.forEach((acl) => {
             U.settings.acls.push(acl);
           });
           cb(err);
         });
-
-        //cb(null);
       }
     ], (err, /*acl*/) => {
       cb(err);

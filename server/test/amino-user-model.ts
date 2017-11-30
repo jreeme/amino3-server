@@ -40,26 +40,50 @@ const testUsers = {
   }
 };
 
+let authenticationHeaders = {};
+
 describe('AminoUsers static operations', () => {
   const aminoUsersUrlBase = `${apiUrlBase}/AminoUsers`;
   const dataSetsUrlBase = `${apiUrlBase}/DataSets`;
   before((done) => {
-    async.series([
+    async.waterfall([
         (cb) => {
           chakram.post(`${aminoUsersUrlBase}/login`, {username: 'root', password: 'password'})
             .then((response) => {
               expect(response).to.have.status(200);
-              cb();
+              cb(null, response.body.id);
             })
             .catch(cb)
         },
-        (cb) => {
-          chakram.delete(`${aminoUsersUrlBase}/delete-all-users`)
+        (aminoAccessToken, cb) => {
+          authenticationHeaders = {
+            headers: {
+              Authorization: aminoAccessToken
+            }
+          };
+          chakram.delete(`${aminoUsersUrlBase}/delete-all-users`, {}, authenticationHeaders)
             .then((response) => {
               expect(response).to.have.status(200);
               cb();
             })
             .catch(cb);
+        },
+        (cb) => {
+          // Because we just deleted all our users we must login again and get a shiny, new token
+          chakram.post(`${aminoUsersUrlBase}/login`, {username: 'root', password: 'password'})
+            .then((response) => {
+              expect(response).to.have.status(200);
+              cb(null, response.body.id);
+            })
+            .catch(cb)
+        },
+        (aminoAccessToken, cb) => {
+          authenticationHeaders = {
+            headers: {
+              Authorization: aminoAccessToken
+            }
+          };
+          cb();
         },
         (cb) => {
           const testDataFolder = path.resolve(__dirname, './test-data');
@@ -139,23 +163,23 @@ describe('AminoUsers static operations', () => {
       }
     );
   });
-  it('should create test amino users', () => {
-    const responses = [];
-    for (let user in testUsers) {
-      const newUser = testUsers[user];
-      const response = chakram.post(`${aminoUsersUrlBase}/create-user`, newUser);
-      responses.push(response);
-      checkResponseStatusAndHeaders(response);
-      expect(response).to.comprise.of.json({
-        username: newUser.username,
-        fullname: `${newUser.firstName} ${newUser.lastName}`,
-        email: newUser.email
-      });
-    }
-    return chakram.waitFor(responses);
+  it('should create test amino users', (done) => {
+    async.each(testUsers, (testUser, cb) => {
+      const response = chakram.post(`${aminoUsersUrlBase}/create-user`, testUser, authenticationHeaders);
+      response
+        .then((response) => {
+          checkResponseStatusAndHeaders(response);
+          expect(response).to.comprise.of.json({
+            username: testUser.username,
+            fullname: `${testUser.firstName} ${testUser.lastName}`,
+            email: testUser.email
+          });
+          cb();
+        });
+    }, done);
   });
   it('should get the test users', () => {
-    const response = chakram.get(`${aminoUsersUrlBase}`);
+    const response = chakram.get(`${aminoUsersUrlBase}`, authenticationHeaders);
     return response.then((response) => {
       checkResponseStatusAndHeaders(response);
       expect(response.body).to.be.instanceOf(Array);

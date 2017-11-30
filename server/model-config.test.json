@@ -9,17 +9,6 @@
     "dataSource": "db",
     "public": true
   },
-  "AccessToken": {
-    "dataSource": "db",
-    "public": true,
-    "relations": {
-      "user": {
-        "type": "belongsTo",
-        "model": "AminoUser",
-        "foreignKey": "userId"
-      }
-    }
-  },
   "ACL": {
     "dataSource": "db",
     "public": true

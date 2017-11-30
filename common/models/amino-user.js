@@ -1,11 +1,11 @@
 module.exports = function (AminoUser) {
   //createUser
-  AminoUser.createUser = function (username, firstName, lastName, email, password, cb) {
+  AminoUser.createUser = function (newUserInfo, cb) {
     AminoUser.create({
-      username,
-      fullname: `${firstName} ${lastName}`,
-      email,
-      password
+      username: newUserInfo.username,
+      fullname: `${newUserInfo.firstName} ${newUserInfo.lastName}`,
+      email: newUserInfo.email,
+      password: newUserInfo.password
     }, (err, newAminoUser) => {
       cb(err, newAminoUser);
     });
@@ -14,48 +14,19 @@ module.exports = function (AminoUser) {
   AminoUser.remoteMethod('createUser', {
       accepts: [
         {
-          arg: 'username',
-          type: 'string',
+          arg: 'newUserInfo',
+          type: 'object',
           required: true,
-          description: 'Amino user name'
-        },
-        {
-          arg: 'firstName',
-          type: 'string',
-          required: true,
-          description: 'Amino user first name'
-        },
-        {
-          arg: 'lastName',
-          type: 'string',
-          required: true,
-          description: 'Amino user last name'
-        },
-        {
-          arg: 'email',
-          type: 'string',
-          required: true,
-          description: 'Amino user email'
-        },
-        {
-          arg: 'password',
-          type: 'string',
-          required: true,
-          description: 'Amino password'
+          description: 'JSON object containing new user info',
+          http: {source: 'body'}
         }
       ],
       returns: [
         {
-          arg: 'username',
-          type: 'string',
+          arg: 'createdUserInfo',
+          type: 'object',
           root: true,
-          description: 'Amino user name'
-        },
-        {
-          arg: 'email',
-          type: 'string',
-          root: true,
-          description: 'Amino user email'
+          description: 'Amino user info'
         }
       ],
       http: {path: '/create-user', verb: 'post'}
@@ -97,12 +68,8 @@ module.exports = function (AminoUser) {
 
   //login
   AminoUser.aminoLogin = function (loginInfo, cb) {
-    AminoUser.login(loginInfo, (err, loopbackToken) => {
-      if (err) {
-        return cb(err);
-      }
-      cb(null, loopbackToken);
-    });
+    loginInfo.ttl = 60 * 60;//seconds
+    AminoUser.login(loginInfo, cb);
   };
 
   AminoUser.remoteMethod('aminoLogin', {

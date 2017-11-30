@@ -4,14 +4,11 @@ const jwt = require('jsonwebtoken');
 module.exports = function (AminoAccessToken) {
   AminoAccessToken.observe('before save', (ctx, cb) => {
     // Invoke custom id function
-    if (err) {
-      return cb(err);
-    }
     ctx.Model.app.models.AminoUser.findById(ctx.instance.userId, (err, aminoUser) => {
       if (err) {
         return cb(err);
       }
-      ctx.instance.id = createToken(aminoUser);
+      //ctx.instance.id = createToken(aminoUser);
       cb();
     });
   });

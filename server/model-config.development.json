@@ -9,17 +9,6 @@
     "dataSource": "amino_admin",
     "public": true
   },
-  "AccessToken": {
-    "dataSource": "amino_admin",
-    "public": false,
-    "relations": {
-      "user": {
-        "type": "belongsTo",
-        "model": "AminoUser",
-        "foreignKey": "userId"
-      }
-    }
-  },
   "ACL": {
     "dataSource": "amino_admin",
     "public": false
