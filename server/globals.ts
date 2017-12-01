@@ -11,6 +11,7 @@ export class Globals {
   static adminUserDefaultPassword = 'password';
   static adminUserEmail= 'root@amino3.com';
   static adminRoleName = 'superuser';
+  static accessTokenTimeToLiveSeconds = 60 * 60;
 
   //Resolve some server side paths
   static projectRootPath = path.resolve(__dirname, '..');

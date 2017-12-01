@@ -1,9 +1,11 @@
 import kernel from './inversify.config';
 import {BootManager} from './startup/boot-manager';
 import {IPostal} from 'firmament-yargs';
+import {Globals} from "./globals";
 
-// Attach postal to <global> so loopback javascripts can send messages
+// Attach some things to <global> so loopback javascripts can have access to them
 (<any>global).postal = kernel.get<IPostal>('IPostal');
+(<any>global).accessTokenTimeToLiveSeconds = Globals.accessTokenTimeToLiveSeconds;
 
 const bootManager: BootManager = kernel.get<BootManager>('BootManager');
 const loopback = require('loopback');

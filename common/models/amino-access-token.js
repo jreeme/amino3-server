@@ -8,7 +8,7 @@ module.exports = function (AminoAccessToken) {
       if (err) {
         return cb(err);
       }
-      //ctx.instance.id = createToken(aminoUser);
+      ctx.instance.id = createToken(aminoUser);
       cb();
     });
   });
@@ -16,7 +16,8 @@ module.exports = function (AminoAccessToken) {
 
 function createToken(aminoUser) {
   try {
-    return jwt.sign(aminoUser, 'mySecret', {expiresIn: '1d'});
+    const ttl = global.accessTokenTimeToLiveSeconds;
+    return jwt.sign(aminoUser, 'mySecret', {expiresIn: ttl});
   } catch (err) {
     return 'could not generate JSON web token';
   }

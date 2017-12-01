@@ -91,6 +91,28 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    cb(null, {message: 'Initialized InitializeDatabase'});
+    const me = this;
+    const datasources = Object.keys(me.server.dataSources);
+    async.eachSeries(datasources, function (dsName, cb) {
+      const ds = me.server.dataSources[dsName];
+      ds.isActual(function (err, actual) {
+        if (err) {
+          return cb(err);
+        }
+        if (actual) {
+          me.log.debug(`datasource '${dsName}' is up to date`);
+          return cb();
+        }
+        ds.autoupdate(function (err) {
+          if (err) {
+            return cb(err);
+          }
+          me.log.debug(`datasource '${dsName}' updated`);
+          cb();
+        });
+      });
+    }, (err) => {
+      cb(err, {message: 'Initialized InitializeDatabase'});
+    });
   }
 }

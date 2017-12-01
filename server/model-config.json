@@ -1,6 +1,2 @@
 {
-  "AminoAccessToken": {
-    "dataSource": "db",
-    "public": true
-  }
 }

@@ -59,16 +59,10 @@ module.exports = function (AminoUser) {
       http: {path: '/delete-all-users', verb: 'delete'}
     }
   );
-  /**
-   * Get access token
-   * @param {string} username Amino user name
-   * @param {string} password Amino password
-   * @param {callback} cb
-   */
 
   //login
   AminoUser.aminoLogin = function (loginInfo, cb) {
-    loginInfo.ttl = 60 * 60;//seconds
+    loginInfo.ttl = global.accessTokenTimeToLiveSeconds;
     AminoUser.login(loginInfo, cb);
   };
 

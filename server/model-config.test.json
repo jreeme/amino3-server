@@ -1,9 +1,12 @@
 {
   "_meta": {
     "sources": [
-      "../common/models",
-      "../common/models/influent"
+      "../common/models"
     ]
+  },
+  "AminoAccessToken": {
+    "dataSource": "db",
+    "public": true
   },
   "AminoUser": {
     "dataSource": "db",
