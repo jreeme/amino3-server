@@ -15,7 +15,7 @@ module.exports = function (AminoUser) {
       accepts: [
         {
           arg: 'newUserInfo',
-          type: 'object',
+          type: 'AminoUser',
           required: true,
           description: 'JSON object containing new user info',
           http: {source: 'body'}
@@ -40,7 +40,7 @@ module.exports = function (AminoUser) {
         channel: 'Authentication',
         topic: 'CreateRootUserAndAdminRole',
         data: {
-          cb: (err2) => {
+          cb: () => {
             cb(err, results);
           }
         }

@@ -8,7 +8,11 @@
   },
   "forceId"    : false,
   "properties" : {
-    "fullname": {
+    "firstname": {
+      "type"    : "string",
+      "required": true
+    },
+    "lastname": {
       "type"    : "string",
       "required": true
     }
@@ -25,12 +29,6 @@
     }
   },
   "acls"       : [
-    {
-      "accessType"   : "*",
-      "principalType": "ROLE",
-      "principalId"  : "$everyone",
-      "permission"   : "DENY"
-    }
   ],
   "methods"    : {}
 }
