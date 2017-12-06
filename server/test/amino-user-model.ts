@@ -19,22 +19,22 @@ const apiUrlBase = `http://${urlBuilder}`;
 const testUsers = {
   admin: {
     username: 'adminUser',
-    firstName: 'adminUser-firstName',
-    lastName: 'adminUser-lastName',
+    firstname: 'adminUser-firstname',
+    lastname: 'adminUser-lastname',
     email: 'adminUser@email.com',
     password: 'adminUser-password'
   },
   guest: {
     username: 'guestUser',
-    firstName: 'guestUser-firstName',
-    lastName: 'guestUser-lastName',
+    firstname: 'guestUser-firstname',
+    lastname: 'guestUser-lastname',
     email: 'guestUser@email.com',
     password: 'guestUser-password'
   },
   authenticated: {
     username: 'authenticatedUser',
-    firstName: 'authenticatedUser-firstName',
-    lastName: 'authenticatedUser-lastName',
+    firstname: 'authenticatedUser-firstname',
+    lastname: 'authenticatedUser-lastname',
     email: 'authenticatedUser@email.com',
     password: 'authenticatedUser-password'
   }
@@ -171,7 +171,8 @@ describe('AminoUsers static operations', () => {
           checkResponseStatusAndHeaders(response);
           expect(response).to.comprise.of.json({
             username: testUser.username,
-            fullname: `${testUser.firstName} ${testUser.lastName}`,
+            firstname: testUser.firstname,
+            lastname: testUser.lastname,
             email: testUser.email
           });
           cb();

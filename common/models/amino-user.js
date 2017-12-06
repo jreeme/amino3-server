@@ -3,7 +3,8 @@ module.exports = function (AminoUser) {
   AminoUser.createUser = function (newUserInfo, cb) {
     AminoUser.create({
       username: newUserInfo.username,
-      fullname: `${newUserInfo.firstName} ${newUserInfo.lastName}`,
+      firstname: newUserInfo.firstname,
+      lastname: newUserInfo.lastname,
       email: newUserInfo.email,
       password: newUserInfo.password
     }, (err, newAminoUser) => {
@@ -24,9 +25,9 @@ module.exports = function (AminoUser) {
       returns: [
         {
           arg: 'createdUserInfo',
-          type: 'object',
+          type: 'AminoUser',
           root: true,
-          description: 'Amino user info'
+          description: 'Created Amino user info'
         }
       ],
       http: {path: '/create-user', verb: 'post'}

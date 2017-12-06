@@ -29,22 +29,93 @@ export class AuthenticationImpl implements Authentication {
     //Required to enable LoopBack authentication
     me.server.enableAuth();
     this.dropAllLoopbackSystemTables((err) => {
-      cb(null);
-/*      me.postal.subscribe({
-        channel: me.servicePostalChannel,
-        topic: 'CreateRootUserAndAdminRole',
-        callback: (data) => {
-          me.createRootUserAndAdminRole((err) => {
-            me.log.logIfError(err);
-            data.cb(null, {message: 'Initialized Authentication Subscriptions'});
-          })
-        }
+      const R = me.server.models.AminoRole;
+      R.create({
+        "name": "superuser",
+        "description": "big, strong user"
+      }, (err, result) => {
+        const role = result;
+        const U = me.server.models.AminoUser;
+        U.create([
+          {
+            "firstname": "John",
+            "lastname": "Reeme",
+            "username": "jreeme",
+            "description": "Remo the magnifico",
+            "email": "john@reeme.com",
+            "password": "password"
+          },
+          {
+            "firstname": "froot",
+            "lastname": "lroot",
+            "username": "root",
+            "description": "I'm rooting for me!",
+            "email": "root@reeme.com",
+            "password": "password"
+          }
+        ], (err, result) => {
+          const RM = me.server.models.AminoRoleMapping;
+          const user = result[1];
+          RM.create({
+            "principalType": RM.USER,
+            "principalId": user.id,
+            "aminoRoleId": role.id
+          }, (err, result) => {
+            const ACL = me.server.models.ACL;
+            ACL.create([
+              {
+                model: 'AminoUser',
+                accessType: '*',
+                property: '*',
+                principalType: 'ROLE',
+                principalId: '$everyone',
+                permission: 'DENY'
+              },
+              {
+                model: 'AminoUser',
+                accessType: '*',
+                property: '*',
+                principalType: 'ROLE',
+                principalId: 'superuser',
+                permission: 'ALLOW'
+              },
+              {
+                model: 'AminoUser',
+                accessType: 'EXECUTE',
+                property: 'createUser',
+                principalType: 'ROLE',
+                principalId: 'superuser',
+                permission: 'ALLOW'
+              },
+              {
+                model: 'AminoUser',
+                accessType: 'EXECUTE',
+                property: 'aminoLogin',
+                principalType: 'ROLE',
+                principalId: '$everyone',
+                permission: 'ALLOW'
+              }
+            ], (err, result) => {
+              cb(null);
+            });
+          });
+        });
       });
-      me.postal.publish({
-        channel: me.servicePostalChannel,
-        topic: 'CreateRootUserAndAdminRole',
-        data: {cb}
-      });*/
+      /*      me.postal.subscribe({
+              channel: me.servicePostalChannel,
+              topic: 'CreateRootUserAndAdminRole',
+              callback: (data) => {
+                me.createRootUserAndAdminRole((err) => {
+                  me.log.logIfError(err);
+                  data.cb(null, {message: 'Initialized Authentication Subscriptions'});
+                })
+              }
+            });
+            me.postal.publish({
+              channel: me.servicePostalChannel,
+              topic: 'CreateRootUserAndAdminRole',
+              data: {cb}
+            });*/
     });
   }
 
@@ -58,8 +129,8 @@ export class AuthenticationImpl implements Authentication {
       'ACL',
       'AminoAccessToken',
       'AminoUser',
-      'Role',
-      'RoleMapping',
+      'AminoRole',
+      'AminoRoleMapping',
       'DataSet'
     ];
     async.each(loopbackSystemTables, (loopbackSystemTable, cb) => {
@@ -81,7 +152,8 @@ export class AuthenticationImpl implements Authentication {
     const ACL = me.server.models.ACL;
     const newRootUser = {
       username: Globals.adminUserName,
-      fullname: Globals.adminUserName,
+      firstname: Globals.adminUserName,
+      lastname: Globals.adminUserName,
       email: Globals.adminUserEmail,
       password: Globals.adminUserDefaultPassword
     };
@@ -118,7 +190,7 @@ export class AuthenticationImpl implements Authentication {
         }, cb);
       },
       (principal, cb) => {
-      return cb(null);
+        return cb(null);
         /*        ACL.create([
                   {
                     accessType: '*',

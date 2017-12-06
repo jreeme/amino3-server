@@ -1,0 +1,16 @@
+{
+  "name"       : "AminoRoleMapping",
+  "plural"     : "AminoRoleMappings",
+  "base"       : "RoleMapping",
+  "idInjection": true,
+  "description": "Map principals to roles",
+  "properties" : {
+  },
+  "relations"  : {
+    "role": {
+      "type"      : "belongsTo",
+      "model"     : "AminoRole",
+      "foreignKey": "aminoRoleId"
+    }
+  }
+}

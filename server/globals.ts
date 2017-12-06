@@ -5,8 +5,7 @@ export class Globals {
   static env = process.env.NODE_ENV || 'development';
   static serverChannel = 'server-channel';
   static suppressLoadPlugins = true;
-  static suppressClientRebuild = true;
-  //static suppressClientRebuild = Globals.env === 'test';
+  static suppressClientRebuild = Globals.env === 'test';
   static uploadedPluginUrl = '/amino3-plugins/files';
   static adminUserName = 'root';
   static adminUserDefaultPassword = 'password';

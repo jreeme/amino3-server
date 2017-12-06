@@ -1,24 +1,33 @@
 {
-  "name"       : "AminoUser",
-  "plural"     : "AminoUsers",
-  "base"       : "User",
-  "idInjection": true,
-  "options"    : {
+  "name"                 : "AminoUser",
+  "plural"               : "AminoUsers",
+  "base"                 : "User",
+  "idInjection"          : true,
+  "options"              : {
     "validateUpsert": true
   },
-  "forceId"    : false,
-  "properties" : {
+  "forceId"              : false,
+  "excludeBaseProperties": [
+    "emailVerified",
+    "realm",
+    "id"
+  ],
+  "properties"           : {
     "firstname": {
       "type"    : "string",
       "required": true
     },
-    "lastname": {
+    "lastname" : {
       "type"    : "string",
       "required": true
+    },
+    "description" : {
+      "type"    : "string",
+      "required": false
     }
   },
-  "validations": [],
-  "relations"  : {
+  "validations"          : [],
+  "relations"            : {
     "accessTokens": {
       "type"      : "hasMany",
       "model"     : "AminoAccessToken",
@@ -28,7 +37,7 @@
       }
     }
   },
-  "acls"       : [
+  "acls"                 : [
   ],
-  "methods"    : {}
+  "methods"              : {}
 }

@@ -1,31 +1,31 @@
 {
-  "_meta": {
+  "_meta"           : {
     "sources": [
       "../common/models"
     ]
   },
   "AminoAccessToken": {
     "dataSource": "amino_admin",
-    "public": true
+    "public"    : true
   },
-  "AminoUser": {
+  "AminoUser"       : {
     "dataSource": "amino_admin",
-    "public": true
+    "public"    : true
   },
-  "ACL": {
+  "AminoRole"       : {
     "dataSource": "amino_admin",
-    "public": true
+    "public"    : true
   },
-  "RoleMapping": {
+  "AminoRoleMapping": {
     "dataSource": "amino_admin",
-    "public": true
+    "public"    : true
   },
-  "DataSet": {
+  "ACL"             : {
     "dataSource": "amino_admin",
-    "public": true
+    "public"    : true
   },
-  "Role": {
+  "DataSet"         : {
     "dataSource": "amino_admin",
-    "public": true
+    "public"    : true
   }
 }
