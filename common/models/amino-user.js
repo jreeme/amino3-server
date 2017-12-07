@@ -1,4 +1,35 @@
 module.exports = function (AminoUser) {
+  //aminoDeleteUser
+  AminoUser.aminoDeleteById = function (deleteUserInfo, cb) {
+    cb(new Error('Luv Me!'));
+/*    AminoUser.deleteById(deleteUserInfo.id,
+      (err, result) => {
+        cb(err, result);
+      });*/
+  };
+
+  AminoUser.remoteMethod('aminoDeleteById', {
+      accepts: [
+        {
+          arg: 'deleteUserInfo',
+          type: 'AminoUser',
+          required: true,
+          description: 'Id of aminoUser to delete',
+          http: {source: 'body'}
+        }
+      ],
+      returns: [
+        {
+          arg: 'deletedUserInfo',
+          type: 'AminoUser',
+          root: true,
+          description: 'Deleted Amino user info'
+        }
+      ],
+      http: {path: '/aminoDeleteById', verb: 'post'}
+    }
+  );
+
   //createUser
   AminoUser.createUser = function (newUserInfo, cb) {
     AminoUser.create({

@@ -28,7 +28,8 @@ export class AuthenticationImpl implements Authentication {
     const me = this;
     //Required to enable LoopBack authentication
     me.server.enableAuth();
-    this.dropAllLoopbackSystemTables((err) => {
+    cb(null);
+/*    this.dropAllLoopbackSystemTables((err) => {
       const R = me.server.models.AminoRole;
       R.create({
         "name": "superuser",
@@ -101,7 +102,7 @@ export class AuthenticationImpl implements Authentication {
           });
         });
       });
-      /*      me.postal.subscribe({
+      /!*      me.postal.subscribe({
               channel: me.servicePostalChannel,
               topic: 'CreateRootUserAndAdminRole',
               callback: (data) => {
@@ -115,8 +116,8 @@ export class AuthenticationImpl implements Authentication {
               channel: me.servicePostalChannel,
               topic: 'CreateRootUserAndAdminRole',
               data: {cb}
-            });*/
-    });
+            });*!/
+    });*/
   }
 
   init(cb: (err: Error, result: any) => void) {
