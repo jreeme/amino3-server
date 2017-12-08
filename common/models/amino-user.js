@@ -1,11 +1,10 @@
 module.exports = function (AminoUser) {
   //aminoDeleteUser
   AminoUser.aminoDeleteById = function (deleteUserInfo, cb) {
-    cb(new Error('Luv Me!'));
-/*    AminoUser.deleteById(deleteUserInfo.id,
-      (err, result) => {
-        cb(err, result);
-      });*/
+    AminoUser.deleteById(deleteUserInfo.id,
+      (err) => {
+        cb(err, deleteUserInfo);
+      });
   };
 
   AminoUser.remoteMethod('aminoDeleteById', {
