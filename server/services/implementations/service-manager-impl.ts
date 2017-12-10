@@ -14,6 +14,7 @@ import async = require('async');
 import {LoopBackApplication2} from "../../custom-typings";
 import {WebSocketManager} from "../interfaces/web-socket-manager";
 import {Globals} from "../../globals";
+import {FileUpload} from "../interfaces/file-upload";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -21,6 +22,7 @@ export class ServiceManagerImpl implements ServiceManager {
   constructor(@inject('BaseService') private baseService: BaseService,
               @inject('RebuildClient') private rebuildClient: RebuildClient,
               @inject('PluginManager') private pluginManager: PluginManager,
+              @inject('FileUpload') private fileUpload: FileUpload,
               @inject('Authentication') private authentication: Authentication,
               @inject('RootService') private rootService: RootService,
               @inject('StaticService') private staticService: StaticService,
@@ -38,6 +40,7 @@ export class ServiceManagerImpl implements ServiceManager {
     const fnArray = [];
     fnArray.push(this.initializeDatabase.initSubscriptions.bind(this.initializeDatabase));
     fnArray.push(this.webSocketManager.initSubscriptions.bind(this.webSocketManager));
+    fnArray.push(this.fileUpload.initSubscriptions.bind(this.fileUpload));
     if (Globals.suppressLoadPlugins) {
       fnArray.push(this.pluginManager.initSubscriptions.bind(this.pluginManager));
     }
@@ -57,6 +60,7 @@ export class ServiceManagerImpl implements ServiceManager {
     const fnArray = [];
     fnArray.push(this.initializeDatabase.init.bind(this.initializeDatabase));
     fnArray.push(this.webSocketManager.init.bind(this.webSocketManager));
+    fnArray.push(this.fileUpload.init.bind(this.fileUpload));
     if (Globals.suppressLoadPlugins) {
       fnArray.push(this.pluginManager.init.bind(this.pluginManager));
     }

@@ -29,6 +29,8 @@ import {WebSocketManager} from './services/interfaces/web-socket-manager';
 import {WebSocketManagerImpl} from './services/implementations/web-socket-manager-impl';
 import {PostalSocketConnection} from './custom-typings';
 import {SocketIoWrapper, SocketIoWrapperImpl} from './util/websockets/socketIoWrapper';
+import {FileUpload} from "./services/interfaces/file-upload";
+import {FileUploadImpl} from "./services/implementations/file-upload-impl";
 
 //Singletons
 kernel.bind<BaseService>('BaseService').to(BaseServiceImpl).inSingletonScope();
@@ -37,6 +39,7 @@ kernel.bind<InitializeDatabase>('InitializeDatabase').to(InitializeDatabaseImpl)
 kernel.bind<RebuildClient>('RebuildClient').to(RebuildClientImpl).inSingletonScope();
 kernel.bind<Authentication>('Authentication').to(AuthenticationImpl).inSingletonScope();
 kernel.bind<PluginManager>('PluginManager').to(PluginManagerImpl).inSingletonScope();
+kernel.bind<FileUpload>('FileUpload').to(FileUploadImpl).inSingletonScope();
 kernel.bind<StaticService>('StaticService').to(StaticServiceImpl).inSingletonScope();
 kernel.bind<RootService>('RootService').to(RootServiceImpl).inSingletonScope();
 kernel.bind<FolderMonitor>('FolderMonitor').to(FolderMonitorImpl).inSingletonScope();
