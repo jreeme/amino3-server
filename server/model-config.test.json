@@ -20,6 +20,10 @@
     "dataSource": "db",
     "public": true
   },
+  "UploadedFile": {
+    "dataSource": "db",
+    "public": true
+  },
   "DataSet": {
     "dataSource": "db",
     "public": true

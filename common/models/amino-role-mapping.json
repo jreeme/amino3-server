@@ -1,16 +1,18 @@
 {
-  "name"       : "AminoRoleMapping",
-  "plural"     : "AminoRoleMappings",
-  "base"       : "RoleMapping",
-  "idInjection": true,
+  "name": "AminoRoleMapping",
   "description": "Map principals to roles",
-  "properties" : {
-  },
-  "relations"  : {
+  "plural": "AminoRoleMappings",
+  "base": "RoleMapping",
+  "idInjection": true,
+  "properties": {},
+  "validations": [],
+  "relations": {
     "role": {
-      "type"      : "belongsTo",
-      "model"     : "AminoRole",
+      "type": "belongsTo",
+      "model": "AminoRole",
       "foreignKey": "aminoRoleId"
     }
-  }
+  },
+  "acls": [],
+  "methods": {}
 }

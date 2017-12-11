@@ -23,6 +23,7 @@ export class PluginManagerImpl implements PluginManager {
     tmpDir: Globals.tmpUploaderFolder,
     uploadDir: Globals.pluginUploadFolderToMonitor,
     uploadUrl: Globals.uploadedPluginUrl,
+    copyImgAsThumb: false,
     storage: {
       type: 'local'
     }

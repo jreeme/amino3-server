@@ -1,20 +1,20 @@
 {
-  "name"       : "AminoAccessToken",
-  "plural"     : "AminoAccessTokens",
-  "base"       : "AccessToken",
+  "name": "AminoAccessToken",
+  "plural": "AminoAccessTokens",
+  "base": "AccessToken",
   "idInjection": true,
-  "options"    : {
+  "options": {
     "validateUpsert": true
   },
-  "properties" : {},
+  "properties": {},
   "validations": [],
-  "relations"  : {
+  "relations": {
     "user": {
-      "type"      : "belongsTo",
-      "model"     : "AminoUser",
+      "type": "belongsTo",
+      "model": "AminoUser",
       "foreignKey": "userId"
     }
   },
-  "acls"       : [],
-  "methods"    : {}
+  "acls": [],
+  "methods": {}
 }

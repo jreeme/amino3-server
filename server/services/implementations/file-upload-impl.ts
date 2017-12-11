@@ -1,11 +1,12 @@
 import {injectable, inject} from 'inversify';
-import {CommandUtil, IPostal} from 'firmament-yargs';
+import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
-import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
 import {Globals} from '../../globals';
 import {LoopBackApplication2} from '../../custom-typings';
 import {LogService} from '../interfaces/log-service';
 import {FileUpload} from "../interfaces/file-upload";
+
+const path = require('path');
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -14,6 +15,7 @@ export class FileUploadImpl implements FileUpload {
     tmpDir: Globals.uploadedFilesTmpFolder,
     uploadDir: Globals.uploadedFilesFolder,
     uploadUrl: Globals.uploadFileUrl,
+    copyImgAsThumb: false,
     storage: {
       type: 'local'
     }
@@ -22,9 +24,7 @@ export class FileUploadImpl implements FileUpload {
   private static fileUploader = require(Globals.fileUploaderPath)(FileUploadImpl.fileUploaderOptions);
 
   constructor(@inject('BaseService') private baseService: BaseService,
-              @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('LogService') private log: LogService,
-              @inject('CommandUtil') private commandUtil: CommandUtil,
               @inject('IPostal') private postal: IPostal) {
   }
 
@@ -38,21 +38,64 @@ export class FileUploadImpl implements FileUpload {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    me.server.get(Globals.uploadFileGetUrl, function (req, res) {
-      FileUploadImpl.fileUploader.get(req, res, function (err, obj) {
-        res.send(JSON.stringify(obj));
-      });
+    /*
+    TODO: Need to patch supporting code. file.path expected to exist
+    me.server.get(Globals.uploadFileGetUrl, (req, res) => {
+          try {
+            FileUploadImpl.fileUploader.get(req, res, (/!*err, obj*!/) => {
+              res.status(200).send({status: 'OK'});
+            });
+          } catch (err) {
+            res.status(500).send({status: 'error', error: err});
+          }
+        });*/
+    me.server.post(Globals.uploadFilePostUrl, (req, res) => {
+      try {
+        FileUploadImpl.fileUploader.post(req, res,
+          (err, uploadedFilesInfo: UploadedFilesInfo) => {
+            const UF = me.server.models.UploadedFile;
+            const uploadedFiles =
+              uploadedFilesInfo.files.map((fileInfo: FileInfo) => {
+                const uri = path.resolve(fileInfo.options.uploadDir, fileInfo.name);
+                return {
+                  name: fileInfo.name,
+                  type: fileInfo.type,
+                  size: fileInfo.size,
+                  uri
+                }
+              });
+            UF.create(uploadedFiles, (err, result) => {
+              res.status(200).send({status: err ? 'error' : 'OK', error: err});
+            });
+          });
+      } catch (err) {
+        res.status(500).send({status: 'error', error: err});
+      }
     });
-    me.server.post(Globals.uploadFilePostUrl, function (req, res) {
-      FileUploadImpl.fileUploader.post(req, res, function (err, uploadedFileInfo) {
-        return res.status(200).send({status: err ? 'error' : 'OK', error: err});
-      });
-    });
-    me.server.delete(Globals.uploadFileDeleteUrl, function (req, res) {
-      FileUploadImpl.fileUploader.delete(req, res, function (err, result) {
-        res.send(JSON.stringify(result));
-      });
-    });
+    /*    me.server.delete(Globals.uploadFileDeleteUrl, (req, res) => {
+          try {
+            FileUploadImpl.fileUploader.delete(req, res, (err, result) => {
+              res.send(JSON.stringify(result));
+            });
+          } catch (err) {
+            res.status(500).send({status: 'error', error: err});
+          }
+        });*/
     cb(null, {message: 'Initialized FileUpload'});
   }
+}
+
+interface FileInfoOptions {
+  uploadDir: string
+}
+
+interface FileInfo {
+  name: string,
+  type: string,
+  size: number,
+  options: FileInfoOptions
+}
+
+interface UploadedFilesInfo {
+  files: FileInfo[]
 }

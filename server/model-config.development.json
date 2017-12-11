@@ -24,6 +24,10 @@
     "dataSource": "amino_admin",
     "public"    : true
   },
+  "UploadedFile": {
+    "dataSource": "amino_admin",
+    "public": true
+  },
   "DataSet"         : {
     "dataSource": "amino_admin",
     "public"    : true

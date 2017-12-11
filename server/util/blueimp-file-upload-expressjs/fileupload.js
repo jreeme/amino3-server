@@ -107,9 +107,9 @@ function uploadService(opts) {
         req.connection.destroy();
       }
     }).on('end', function () {
-      if (configs.storage.type === 'local') {
+/*      if (configs.storage.type === 'local') {
         finish();
-      }
+      }*/
     }).parse(req);
   };
 
