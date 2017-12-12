@@ -55,7 +55,7 @@ export class FileUploadImpl implements FileUpload {
           (err, uploadedFilesInfo: UploadedFilesInfo) => {
             const UF = me.server.models.UploadedFile;
             const uploadedFiles =
-              uploadedFilesInfo.files.map((fileInfo: FileInfo) => {
+              uploadedFilesInfo.files.map((fileInfo: UploadedFileInfo) => {
                 const uri = path.resolve(fileInfo.options.uploadDir, fileInfo.name);
                 return {
                   name: fileInfo.name,
@@ -85,17 +85,17 @@ export class FileUploadImpl implements FileUpload {
   }
 }
 
-interface FileInfoOptions {
+interface UploadedFileInfoOptions {
   uploadDir: string
 }
 
-interface FileInfo {
+interface UploadedFileInfo {
   name: string,
   type: string,
   size: number,
-  options: FileInfoOptions
+  options: UploadedFileInfoOptions
 }
 
 interface UploadedFilesInfo {
-  files: FileInfo[]
+  files: UploadedFileInfo[]
 }
