@@ -1,6 +1,25 @@
 'use strict';
 
 module.exports = function (DataSet) {
+  //destroyAll
+  DataSet.aminoDestroyAll = function (cb) {
+    DataSet.destroyAll((err, info) => {
+      cb(err, info);
+    });
+  };
+  DataSet.remoteMethod('aminoDestroyAll', {
+      accepts: [],
+      returns: [
+        {
+          arg: 'info',
+          type: 'object',
+          root: true,
+          description: 'DestroyAll info'
+        }
+      ],
+      http: {path: '/aminoDestroyAll', verb: 'post'}
+    }
+  );
   //createDataSetModel
   DataSet.createDataSetModel = function (modelCreateInfo, cb) {
     const db = DataSet.app.dataSources.db;

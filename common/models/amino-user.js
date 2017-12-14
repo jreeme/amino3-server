@@ -1,5 +1,5 @@
 module.exports = function (AminoUser) {
-  //aminoDeleteUser
+  //aminoDeleteById
   AminoUser.aminoDeleteById = function (deleteUserInfo, cb) {
     AminoUser.deleteById(deleteUserInfo.id,
       (err) => {
