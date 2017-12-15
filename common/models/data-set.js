@@ -20,6 +20,7 @@ module.exports = function (DataSet) {
       http: {path: '/aminoDestroyAll', verb: 'post'}
     }
   );
+
   //createDataSetModel
   DataSet.createDataSetModel = function (modelCreateInfo, cb) {
     const db = DataSet.app.dataSources.db;

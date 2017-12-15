@@ -1,4 +1,25 @@
 module.exports = function (AminoUser) {
+  //destroyAll
+  AminoUser.aminoDestroyAll = function (cb) {
+    AminoUser.destroyAll((err, info) => {
+      cb(err, info);
+    });
+  };
+
+  AminoUser.remoteMethod('aminoDestroyAll', {
+      accepts: [],
+      returns: [
+        {
+          arg: 'info',
+          type: 'object',
+          root: true,
+          description: 'DestroyAll info'
+        }
+      ],
+      http: {path: '/aminoDestroyAll', verb: 'post'}
+    }
+  );
+
   //aminoDeleteById
   AminoUser.aminoDeleteById = function (deleteUserInfo, cb) {
     AminoUser.deleteById(deleteUserInfo.id,

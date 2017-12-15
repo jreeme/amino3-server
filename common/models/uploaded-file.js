@@ -1,6 +1,25 @@
 'use strict';
 
 module.exports = function (UploadedFile) {
+  //destroyAll
+  UploadedFile.aminoDestroyAll = function (cb) {
+    UploadedFile.destroyAll((err, info) => {
+      cb(err, info);
+    });
+  };
+  UploadedFile.remoteMethod('aminoDestroyAll', {
+      accepts: [],
+      returns: [
+        {
+          arg: 'info',
+          type: 'object',
+          root: true,
+          description: 'DestroyAll info'
+        }
+      ],
+      http: {path: '/aminoDestroyAll', verb: 'post'}
+    }
+  );
   //ingestUploadedJsonFile
   UploadedFile.ingestUploadedJsonFile = function (uploadedFile, cb) {
     const DS = UploadedFile.app.models.DataSet;
