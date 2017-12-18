@@ -1,7 +1,7 @@
 import path = require('path');
 
 export class Globals {
-  static logLevel = 'debug';// debug, info, notice, warning, error, critical, alert, emergency
+  static logLevel = 'warning';// debug, info, notice, warning, error, critical, alert, emergency
   static env = process.env.NODE_ENV || 'development';
   static serverChannel = 'server-channel';
   static suppressLoadPlugins = true;

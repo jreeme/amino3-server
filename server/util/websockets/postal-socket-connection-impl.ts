@@ -48,7 +48,7 @@ export class PostalSocketConnectionImpl implements PostalSocketConnection {
 
   publishToClient(aminoMessage: AminoMessage) {
     const me = this;
-    me.log.error(`Publishing to client '${me.id}', AminoMessage: '${JSON.stringify(aminoMessage)}'`);
+    me.log.debug(`Publishing to client '${me.id}', AminoMessage: '${JSON.stringify(aminoMessage)}'`);
     me.socketIoWrapper.publishToClient(aminoMessage);
   }
 

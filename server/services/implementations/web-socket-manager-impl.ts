@@ -8,6 +8,8 @@ import {AminoMessage, LoopBackApplication2, PostalSocketConnection, SocketIO} fr
 
 import _ = require('lodash');
 
+const Rx = require('rxjs');
+
 //noinspection JSUnusedGlobalSymbols
 @injectable()
 export class WebSocketManagerImpl implements WebSocketManager {
@@ -47,6 +49,19 @@ export class WebSocketManagerImpl implements WebSocketManager {
           me.socketIo.on('connection', me.addPostalSocketConnection.bind(me));
         }
       });
+    Rx
+      .Observable
+      .interval(1000)
+      .subscribe((/*ticks*/) => {
+        me.postal.publish({
+          channel: 'ServiceBus',
+          topic: 'BroadcastToClients',
+          data: {
+            topic: 'ServerHeartbeat',
+            data: {serverTime: Date.now()}
+          }
+        });
+      });
     cb(null, {message: 'Initialized WebSocketManagerImpl Subscriptions'});
   }
 
@@ -78,7 +93,7 @@ export class WebSocketManagerImpl implements WebSocketManager {
   private addPostalSocketConnection(socket: any) {
     const me = this;
     try {
-      const postalSocketConnection = kernel.get<PostalSocketConnection>('PostalSocketConnection')
+      const postalSocketConnection = kernel.get<PostalSocketConnection>('PostalSocketConnection');
       postalSocketConnection.init(socket);
       me.log.debug(`Created PostalSocketConnection '${postalSocketConnection.id}'`);
       me.postalSocketConnections.add(postalSocketConnection);
