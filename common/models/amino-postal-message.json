@@ -1,0 +1,27 @@
+{
+  "name": "AminoPostalMessage",
+  "plural": "AminoPostalMessages",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "channel": {
+      "type": "string",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "required": true
+    },
+    "data": {
+      "type": "object",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

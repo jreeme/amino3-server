@@ -16,6 +16,10 @@
     "dataSource": "amino_admin",
     "public"    : true
   },
+  "AminoPostalMessage": {
+    "dataSource": "amino_admin",
+    "public": true
+  },
   "AminoRoleMapping": {
     "dataSource": "amino_admin",
     "public"    : true

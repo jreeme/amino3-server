@@ -28,6 +28,20 @@ export class WebSocketManagerImpl implements WebSocketManager {
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
+    me
+      .postal
+      .subscribe({
+        channel: 'ServiceBus',
+        topic: 'Ping',
+        callback: (data) => {
+          me.log.debug('Received PING');
+          data.cb && data.cb({
+            channel: 'ServiceBus',
+            topic: 'Pong',
+            data: {}
+          });
+        }
+      });
     me.postal
       .subscribe({
         channel: 'ServiceBus',
@@ -49,19 +63,6 @@ export class WebSocketManagerImpl implements WebSocketManager {
           me.socketIo.on('connection', me.addPostalSocketConnection.bind(me));
         }
       });
-    Rx
-      .Observable
-      .interval(1000)
-      .subscribe((/*ticks*/) => {
-        me.postal.publish({
-          channel: 'ServiceBus',
-          topic: 'BroadcastToClients',
-          data: {
-            topic: 'ServerHeartbeat',
-            data: {serverTime: Date.now()}
-          }
-        });
-      });
     cb(null, {message: 'Initialized WebSocketManagerImpl Subscriptions'});
   }
 
@@ -77,6 +78,7 @@ export class WebSocketManagerImpl implements WebSocketManager {
         res.status(500).send(err);
       }
     });
+    me.startHeartbeat();
     cb(null, {message: 'Initialized WebSocketManagerImpl'});
   }
 
@@ -100,5 +102,22 @@ export class WebSocketManagerImpl implements WebSocketManager {
     } catch (err) {
       me.log.error(`ERROR creating/adding PostalSocketConnection`);
     }
+  }
+
+  private startHeartbeat() {
+    const me = this;
+    Rx
+      .Observable
+      .interval(1000)
+      .subscribe((/*ticks*/) => {
+        me.postal.publish({
+          channel: 'ServiceBus',
+          topic: 'BroadcastToClients',
+          data: {
+            topic: 'ServerHeartbeat',
+            data: {serverTime: Date.now()}
+          }
+        });
+      });
   }
 }
