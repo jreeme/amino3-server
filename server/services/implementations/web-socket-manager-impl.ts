@@ -28,8 +28,7 @@ export class WebSocketManagerImpl implements WebSocketManager {
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     const me = this;
-    me
-      .postal
+    me.postal
       .subscribe({
         channel: 'ServiceBus',
         topic: 'Ping',
@@ -52,8 +51,7 @@ export class WebSocketManagerImpl implements WebSocketManager {
           });
         }
       });
-    me
-      .postal
+    me.postal
       .subscribe({
         channel: 'ServiceBus',
         topic: 'SetSocketIO',
