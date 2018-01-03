@@ -1,0 +1,11 @@
+{
+  "mongodb": {
+    "host": "127.0.0.1",
+    "port": 27017,
+    "database": "amino",
+    "name": "mongodb",
+    "connectionTimeout": 10000,
+    "connector": "mongodb"
+  }
+}
+

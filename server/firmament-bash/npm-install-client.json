@@ -18,7 +18,7 @@
       "args"                       : [
         "bash",
         "-c",
-        "npm install"
+        "yarn"
       ]
     }
   ]

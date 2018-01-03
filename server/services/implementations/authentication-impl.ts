@@ -28,9 +28,9 @@ export class AuthenticationImpl implements Authentication {
     const me = this;
     //Required to enable LoopBack authentication
     me.server.enableAuth();
-    if (this) {
+/*    if (this) {
       return cb(null);
-    }
+    }*/
     this.dropAllLoopbackSystemTables((err) => {
       const R = me.server.models.AminoRole;
       R.create({
