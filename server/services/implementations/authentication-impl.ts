@@ -28,98 +28,23 @@ export class AuthenticationImpl implements Authentication {
     const me = this;
     //Required to enable LoopBack authentication
     me.server.enableAuth();
-/*    if (this) {
-      return cb(null);
-    }*/
-    this.dropAllLoopbackSystemTables((err) => {
-      const R = me.server.models.AminoRole;
-      R.create({
-        "name": "superuser",
-        "description": "big, strong user"
-      }, (err, result) => {
-        const role = result;
-        const U = me.server.models.AminoUser;
-        U.create([
-          {
-            "firstname": "John",
-            "lastname": "Reeme",
-            "username": "jreeme",
-            "description": "Remo the magnifico",
-            "email": "john@reeme.com",
-            "password": "password"
-          },
-          {
-            "firstname": "froot",
-            "lastname": "lroot",
-            "username": "root",
-            "description": "I'm rooting for me!",
-            "email": "root@reeme.com",
-            "password": "password"
-          }
-        ], (err, result) => {
-          const RM = me.server.models.AminoRoleMapping;
-          const user = result[1];
-          RM.create({
-            "principalType": RM.USER,
-            "principalId": user.id,
-            "aminoRoleId": role.id
-          }, (err, result) => {
-            const ACL = me.server.models.ACL;
-            ACL.create([
-              {
-                model: 'AminoUser',
-                accessType: '*',
-                property: '*',
-                principalType: 'ROLE',
-                principalId: '$everyone',
-                permission: 'DENY'
-              },
-              {
-                model: 'AminoUser',
-                accessType: '*',
-                property: '*',
-                principalType: 'ROLE',
-                principalId: 'superuser',
-                permission: 'ALLOW'
-              },
-              {
-                model: 'AminoUser',
-                accessType: 'EXECUTE',
-                property: 'createUser',
-                principalType: 'ROLE',
-                principalId: 'superuser',
-                permission: 'ALLOW'
-              },
-              {
-                model: 'AminoUser',
-                accessType: 'EXECUTE',
-                property: 'aminoLogin',
-                principalType: 'ROLE',
-                principalId: '$everyone',
-                permission: 'ALLOW'
-              }
-            ], (err, result) => {
-              cb(null);
-            });
-          });
-        });
-      });
-      /*      me.postal.subscribe({
-              channel: me.servicePostalChannel,
-              topic: 'CreateRootUserAndAdminRole',
-              callback: (data) => {
-                me.createRootUserAndAdminRole((err) => {
-                  me.log.logIfError(err);
-                  data.cb(null, {message: 'Initialized Authentication Subscriptions'});
-                })
-              }
-            });
-            me.postal.publish({
-              channel: me.servicePostalChannel,
-              topic: 'CreateRootUserAndAdminRole',
-              data: {cb}
-            });*/
+    //me.dropAllLoopbackSystemTables((err) => {
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'CreateRootUserAndAdminRole',
+      callback: (data) => {
+        me.createRootUserAndAdminRole((err) => {
+          me.log.logIfError(err);
+          data.cb(null, {message: 'Initialized Authentication Subscriptions'});
+        })
+      }
     });
+    me.postal.publish({
+      channel: me.servicePostalChannel,
+      topic: 'CreateRootUserAndAdminRole',
+      data: {cb}
+    });
+    //});
   }
 
   init(cb: (err: Error, result: any) => void) {
@@ -149,8 +74,8 @@ export class AuthenticationImpl implements Authentication {
 
   private createRootUserAndAdminRole(cb: (err: Error, principal?: any) => void) {
     const me = this;
-    const R = me.server.models.Role;
-    const RM = me.server.models.RoleMapping;
+    const R = me.server.models.AminoRole;
+    const RM = me.server.models.AminoRoleMapping;
     const U = me.server.models.AminoUser;
     const ACL = me.server.models.ACL;
     const newRootUser = {
@@ -161,77 +86,68 @@ export class AuthenticationImpl implements Authentication {
       password: Globals.adminUserDefaultPassword
     };
     async.waterfall([
+      //AminoUser.findOrCreate() does not work. Something to do with base loopback user implementation
       (cb) => {
-        U.find({where: {email: Globals.adminUserEmail}}, (err, users) => {
+        U.find({where: {email: Globals.adminUserEmail}}, (err, users) => {//find adminUser
           return cb(err, users.length ? users[0] : null);
         });
       },
       (user, cb) => {
-        if (!user) {
+        if (!user) {//create adminUser if not found
           return U.create(newRootUser, cb);
         }
         cb(null, user);
       },
       (user, cb) => {
-        R.find({where: {name: Globals.adminRoleName}}, (err, roles) => {
-          return cb(err, user, roles.length ? roles[0] : null);
+        R.findOrCreate({name: Globals.adminRoleName}, (err, role/*, created*/) => {
+          cb(null, user, role);
         });
       },
       (user, role, cb) => {
-        if (!role) {
-          return R.create({name: Globals.adminRoleName}, (err, role) => {
-            cb(null, user, role);
-          });
-        }
-        cb(null, user, role);
-      },
-      (user, role, cb) => {
-        // Add admin user to admin role
-        role.principals.create({
+        //Create roleMapping to put adminUser in adminRole
+        RM.findOrCreate({
           principalType: RM.USER,
-          principalId: user.id
+          principalId: user.id,
+          aminoRoleId: role.id
         }, cb);
       },
-      (principal, cb) => {
-        return cb(null);
-        /*        ACL.create([
-                  {
-                    accessType: '*',
-                    principalType: 'ROLE',
-                    principalId: '$everyone',
-                    permission: 'DENY'
-                  },
-                  {
-                    accessType: 'EXECUTE',
-                    principalType: 'ROLE',
-                    principalId: '$everyone',
-                    permission: 'ALLOW',
-                    property: 'aminoLogin'
-                  },
-                  {
-                    accessType: 'EXECUTE',
-                    principalType: 'ROLE',
-                    principalId: 'superuser',
-                    permission: 'ALLOW',
-                    property: 'createUser'
-                  },
-                  {
-                    accessType: '*',
-                    principalType: 'ROLE',
-                    principalId: 'superuser',
-                    permission: 'ALLOW',
-                    property: '*'
-                  }
-                ], (err, acls) => {
-                  U.settings.acls = [];
-                  acls.forEach((acl) => {
-                    U.settings.acls.push(acl);
-                  });
-                  cb(err);
-                });*/
+      (principal, created, cb) => {
+        const adminAcls = [
+          {
+            model: 'AminoUser',
+            accessType: '*',
+            property: '*',
+            principalType: 'ROLE',
+            principalId: '$everyone',
+            permission: 'DENY'
+          },
+          {
+            model: 'AminoUser',
+            accessType: '*',
+            property: '*',
+            principalType: 'ROLE',
+            principalId: 'superuser',
+            permission: 'ALLOW'
+          },
+          {
+            model: 'AminoUser',
+            accessType: 'EXECUTE',
+            property: 'createUser',
+            principalType: 'ROLE',
+            principalId: 'superuser',
+            permission: 'ALLOW'
+          },
+          {
+            model: 'AminoUser',
+            accessType: 'EXECUTE',
+            property: 'aminoLogin',
+            principalType: 'ROLE',
+            principalId: '$everyone',
+            permission: 'ALLOW'
+          }
+        ];
+        async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
       }
-    ], (err, /*acl*/) => {
-      cb(err);
-    });
+    ], cb);
   }
 }

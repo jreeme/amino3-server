@@ -1,0 +1,16 @@
+.git
+.idea
+.dockerignore
+.editorconfig
+.gitignore
+Dockerfile
+README.md
+_build_amino3_docker_container.sh
+_run_amino3_docker_container.sh
+client
+node_modules
+dist
+docker
+firmament
+supervisor
+yarn.lock
