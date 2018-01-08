@@ -4,6 +4,7 @@ RUN npm install -g yarn
 RUN apk update
 #RUN apk add --virtual build-dependencies build-base gcc wget git
 ENV ALPINE_VERSION=3.4.6
+ENV NODE_ENV=development
 
 # Install needed packages. Notes:
 #   * dumb-init: a proper init system for containers, to reap zombie children
@@ -54,6 +55,11 @@ RUN pip install --upgrade pip
 RUN if [[ ! -e /usr/bin/pip ]]; then ln -sf /usr/bin/pip2.7 /usr/bin/pip; fi
 
 COPY . /src
+WORKDIR /src
+
+RUN yarn run build
+ENTRYPOINT ["/usr/bin/dumb-init","--"]
+CMD ["/usr/bin/node","server/server.js"]
 
 # since we will be "always" mounting the volume, we can set this up
 #ENTRYPOINT ["/usr/bin/dumb-init"]
