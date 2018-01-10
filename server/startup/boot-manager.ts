@@ -2,6 +2,7 @@ import {injectable, inject} from 'inversify';
 import {LogService} from '../services/interfaces/log-service';
 import {LoopBackApplication2} from '../custom-typings';
 import {IPostal} from "firmament-yargs";
+import {Globals} from "../globals";
 
 export interface BootManager {
   start(loopback: any, loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
@@ -37,6 +38,10 @@ export class BootManagerImpl implements BootManager {
       throw new Error(errorMsg);
     }
     //Sometimes, for building the client, etc., you just don't want to sit and listen
+    if (Globals.noServices) {
+      me.log.warning(`Environment variable 'AMINO3_NO_SERVICES' was defined so bailing out!`);
+      process.exit(0);
+    }
     if (!me.startListening) {
       me.log.warning(`Environment variable 'AMINO3_NO_LISTEN' was defined so bailing out!`);
       process.exit(0);

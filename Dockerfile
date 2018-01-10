@@ -58,6 +58,8 @@ COPY . /src
 WORKDIR /src
 
 RUN yarn run build
+#Set AMINO3_NO_LISTEN=TRUE and run server to pull and build client
+ENV AMINO3_NO_LISTEN TRUE
 RUN /usr/bin/node server/server.js
 #ENTRYPOINT ["/usr/bin/dumb-init","--"]
 #CMD ["/usr/bin/node","server/server.js"]
