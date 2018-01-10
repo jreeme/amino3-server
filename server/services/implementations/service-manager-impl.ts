@@ -43,10 +43,12 @@ export class ServiceManagerImpl implements ServiceManager {
     fnArray.push(this.fileUpload.initSubscriptions.bind(this.fileUpload));
     if (Globals.suppressLoadPlugins) {
       fnArray.push(this.pluginManager.initSubscriptions.bind(this.pluginManager));
+      fnArray.push(this.folderMonitor.initSubscriptions.bind(this.folderMonitor));
     }
-    fnArray.push(this.rebuildClient.initSubscriptions.bind(this.rebuildClient));
+    if (Globals.env !== 'production') {
+      fnArray.push(this.rebuildClient.initSubscriptions.bind(this.rebuildClient));
+    }
     fnArray.push(this.authentication.initSubscriptions.bind(this.authentication));
-    fnArray.push(this.folderMonitor.initSubscriptions.bind(this.folderMonitor));
     fnArray.push(this.staticService.initSubscriptions.bind(this.staticService));
     fnArray.push(this.rootService.initSubscriptions.bind(this.rootService));
     fnArray.push(this.logService.initSubscriptions.bind(this.logService));
@@ -63,10 +65,12 @@ export class ServiceManagerImpl implements ServiceManager {
     fnArray.push(this.fileUpload.init.bind(this.fileUpload));
     if (Globals.suppressLoadPlugins) {
       fnArray.push(this.pluginManager.init.bind(this.pluginManager));
+      fnArray.push(this.folderMonitor.init.bind(this.folderMonitor));
     }
-    fnArray.push(this.rebuildClient.init.bind(this.rebuildClient));
+    if (Globals.env !== 'production') {
+      fnArray.push(this.rebuildClient.init.bind(this.rebuildClient));
+    }
     fnArray.push(this.authentication.init.bind(this.authentication));
-    fnArray.push(this.folderMonitor.init.bind(this.folderMonitor));
     fnArray.push(this.staticService.init.bind(this.staticService));
     fnArray.push(this.rootService.init.bind(this.rootService));
     fnArray.push(this.logService.init.bind(this.logService));
