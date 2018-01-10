@@ -15,6 +15,6 @@ bootManager.start(
   loopback,
   loopbackApplication,
   __dirname,
-  require.main === module
+  (require.main === module) && !Globals.noListen
 );
 

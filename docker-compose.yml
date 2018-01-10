@@ -3,7 +3,7 @@ networks:
   default:
 services:
   postgres:
-    image: postgres:9.5.3
+    image: 52.0.211.45:5000/postgres:9.5.10
     environment:
       - POSTGRES_PASSWORD=password
     deploy:

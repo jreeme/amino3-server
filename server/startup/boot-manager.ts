@@ -36,19 +36,18 @@ export class BootManagerImpl implements BootManager {
       me.log.error(errorMsg);
       throw new Error(errorMsg);
     }
+    //Sometimes, for building the client, etc., you just don't want to sit and listen
+    if (!me.startListening) {
+      me.log.warning(`Environment variable 'AMINO3_NO_LISTEN' was defined so bailing out!`);
+      process.exit(0);
+    }
     // tell loopback to use AminoAccessToken for auth
     me.app.use(me.loopback.token({
       model: me.app.models.AminoAccessToken
     }));
-    // start the server if `$ node server.js`
-    if (!me.startListening) {
-      me.log.debug(`Starting Amino3`);
-      return;
-    }
     me.log.debug(`Starting Amino3 by 'node server.js'`);
     me.log.debug(`Starting Socket.IO server`);
-    me
-      .postal
+    me.postal
       .publish({
         channel: 'ServiceBus',
         topic: 'SetSocketIO',

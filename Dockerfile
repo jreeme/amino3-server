@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:6.12.3
+FROM mhart/alpine-node:6.12.3 AS build
 
 RUN npm install -g yarn
 RUN apk update
@@ -58,8 +58,9 @@ COPY . /src
 WORKDIR /src
 
 RUN yarn run build
-ENTRYPOINT ["/usr/bin/dumb-init","--"]
-CMD ["/usr/bin/node","server/server.js"]
+RUN /usr/bin/node server/server.js
+#ENTRYPOINT ["/usr/bin/dumb-init","--"]
+#CMD ["/usr/bin/node","server/server.js"]
 
 # since we will be "always" mounting the volume, we can set this up
 #ENTRYPOINT ["/usr/bin/dumb-init"]

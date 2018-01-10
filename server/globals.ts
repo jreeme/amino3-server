@@ -3,6 +3,7 @@ import path = require('path');
 export class Globals {
   static logLevel = 'warning';// debug, info, notice, warning, error, critical, alert, emergency
   static env = process.env.NODE_ENV || 'development';
+  static noListen = !!process.env.AMINO3_NO_LISTEN;
   static serverChannel = 'server-channel';
   static suppressLoadPlugins = true;
   static suppressClientRebuild = Globals.env === 'test';
