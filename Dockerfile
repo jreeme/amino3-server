@@ -62,49 +62,50 @@ RUN easy_install pip && \
 COPY . /src
 WORKDIR /src
 
-RUN yarn run build
+#-->RUN yarn run build
 #Set AMINO3_NO_LISTEN=TRUE and run server to pull and build client (use ARG so it doesn't wind up in image)
-ARG AMINO3_NO_LISTEN=TRUE
-RUN /usr/bin/node server/server.js && \
-  find /src -name '*.map' -exec rm {} \; && \
-  find /src -name '*.ts' -exec rm {} \; && \
-  /usr/bin/npm prune --production
+#-->ARG AMINO3_NO_LISTEN=TRUE
+#-->RUN /usr/bin/node server/server.js
+#RUN /usr/bin/node server/server.js && \
+#  find /src -name '*.map' -exec rm {} \; && \
+#  find /src -name '*.ts' -exec rm {} \; && \
+#  /usr/bin/npm prune --production
 
-########################################
-# production
-########################################
-FROM mhart/alpine-node:6.12.3 AS production
-LABEL maintainer="john.d.reeme@keywcorp.com"
-
-ENV ALPINE_VERSION=3.4.6
-ENV NODE_ENV=production
-
-# Install needed packages. Notes:
-#   * dumb-init: a proper init system for containers, to reap zombie children
-#   * bash: so we can access /bin/bash
-ENV PACKAGES="\
-  bash \
-  dumb-init \
-"
-RUN echo "alias ll='ls -Fal'" >> /root/.bashrc && \
-  echo "set -o vi" >> /root/.bashrc && \
-  apk update && \
-  # replacing default repositories with edge ones
-  echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" > /etc/apk/repositories && \
-  echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
-  echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
-  apk add --no-cache $PACKAGES || (sed -i -e 's/dl-cdn/dl-4/g' /etc/apk/repositories && apk add --no-cache $PACKAGES) && \
-  echo "http://dl-cdn.alpinelinux.org/alpine/v$ALPINE_VERSION/main/" > /etc/apk/repositories
-
-COPY --from=build /src/common /src/common/
-COPY --from=build /src/dist /src/dist/
-COPY --from=build /src/node_modules /src/node_modules/
-COPY --from=build /src/server /src/server/
-COPY --from=build /src/static /src/static/
-
-EXPOSE 3000
-ENV NODE_ENV=production
-WORKDIR /src
-ENTRYPOINT ["/usr/bin/dumb-init","--"]
-CMD ["/usr/bin/node","/src/server/server.js"]
+#########################################
+## production
+#########################################
+#FROM mhart/alpine-node:6.12.3 AS production
+#LABEL maintainer="john.d.reeme@keywcorp.com"
+#
+#ENV ALPINE_VERSION=3.4.6
+#ENV NODE_ENV=production
+#
+## Install needed packages. Notes:
+##   * dumb-init: a proper init system for containers, to reap zombie children
+##   * bash: so we can access /bin/bash
+#ENV PACKAGES="\
+#  bash \
+#  dumb-init \
+#"
+#RUN echo "alias ll='ls -Fal'" >> /root/.bashrc && \
+#  echo "set -o vi" >> /root/.bashrc && \
+#  apk update && \
+#  # replacing default repositories with edge ones
+#  echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" > /etc/apk/repositories && \
+#  echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
+#  echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
+#  apk add --no-cache $PACKAGES || (sed -i -e 's/dl-cdn/dl-4/g' /etc/apk/repositories && apk add --no-cache $PACKAGES) && \
+#  echo "http://dl-cdn.alpinelinux.org/alpine/v$ALPINE_VERSION/main/" > /etc/apk/repositories
+#
+#COPY --from=build /src/common /src/common/
+#COPY --from=build /src/dist /src/dist/
+#COPY --from=build /src/node_modules /src/node_modules/
+#COPY --from=build /src/server /src/server/
+#COPY --from=build /src/static /src/static/
+#
+#EXPOSE 3000
+#ENV NODE_ENV=production
+#WORKDIR /src
+#ENTRYPOINT ["/usr/bin/dumb-init","--"]
+#CMD ["/usr/bin/node","/src/server/server.js"]
 
