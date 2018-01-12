@@ -25,7 +25,7 @@ services:
         condition: on-failure
       placement:
         constraints:
-          - node.role == manager
+          - node.role == worker
     ports:
       - "3000:3000"
 
