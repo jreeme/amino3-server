@@ -3,8 +3,6 @@ set -evx
 
 CLUSTER_PREFIX=amino3
 NUM_WORKER_HOSTS=1
-POSTGRES_IMAGE=52.0.211.45:5000/postgres:9.5.10
-AMINO3_IMAGE=52.0.211.45:5000/amino3:latest
 
 DRIVER_OPTIONS="\
 --driver virtualbox \
