@@ -1,20 +1,20 @@
 import {injectable, inject} from 'inversify';
 import {CommandUtil, IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
-import path = require('path');
-import fs = require('fs');
-import tar = require('tar');
-import rimraf = require('rimraf');
-import async = require('async');
-import mkdirp = require('mkdirp');
-import recursiveReaddir = require('recursive-readdir');
-import jsonfile = require('jsonfile');
 import {PluginManager} from '../interfaces/plugin-manager';
 import {Util} from '../../util/util';
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
 import {Globals} from '../../globals';
 import {LoopBackApplication2, PluginManifest} from '../../custom-typings';
 import {LogService} from '../interfaces/log-service';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as tar from 'tar';
+import * as rimraf from 'rimraf';
+import * as async from 'async';
+import * as mkdirp from 'mkdirp';
+import * as recursiveReaddir from 'recursive-readdir';
+import * as jsonfile from 'jsonfile';
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()
@@ -46,7 +46,7 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
-    if(Globals.env === 'test'){
+    if (Globals.env === 'test') {
       return cb(null, {message: `Initialize PluginManager Subscriptions (bypassed by NODE_ENV === 'test'`});
     }
     const me = this;
@@ -70,11 +70,11 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    if(Globals.env === 'test'){
+    if (Globals.env === 'test') {
       return cb(null, {message: `Initialize PluginManager (bypassed by NODE_ENV === 'test'`});
     }
     const me = this;
-    me.gitClientCode((err) => {
+    me.gitClientCode((/*err:Error*/) => {
       me.postal.publish({
         channel: 'FolderMonitor',
         topic: 'AddFolderToMonitor',
@@ -200,7 +200,7 @@ export class PluginManagerImpl implements PluginManager {
         recursiveReaddir(Globals.pluginUploadFolderToMonitor, cb);
       }
     ], (err, results) => {
-      const files = results[2];
+      const files = <any[]> results[2];
       async.map(files,
         (file, cb) => {
           tar.x({
@@ -214,7 +214,7 @@ export class PluginManagerImpl implements PluginManager {
             .catch((err) => {
               me.log.logIfError(err);
             });
-        }, (err) => {
+        }, (err: Error) => {
           me.log.logIfError(err);
           cb(err);
         });
@@ -223,7 +223,7 @@ export class PluginManagerImpl implements PluginManager {
 
   private loadPlugins(cb: (err?) => void) {
     const me = this;
-    if(Globals.suppressLoadPlugins){
+    if (Globals.suppressLoadPlugins) {
       cb();
       return;
     }

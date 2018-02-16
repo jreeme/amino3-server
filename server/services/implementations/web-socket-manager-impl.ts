@@ -6,7 +6,7 @@ import {LogService} from '../interfaces/log-service';
 import {WebSocketManager} from '../interfaces/web-socket-manager';
 import {AminoMessage, LoopBackApplication2, PostalSocketConnection, SocketIO} from '../../custom-typings';
 
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 const Rx = require('rxjs');
 

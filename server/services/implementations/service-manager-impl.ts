@@ -10,7 +10,7 @@ import {RootService} from "../interfaces/root-service";
 import {FolderMonitor} from "../interfaces/folder-monitor";
 import {LogService} from "../interfaces/log-service";
 
-import async = require('async');
+import * as async from 'async';
 import {LoopBackApplication2} from "../../custom-typings";
 import {WebSocketManager} from "../interfaces/web-socket-manager";
 import {Globals} from "../../globals";

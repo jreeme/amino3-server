@@ -1,4 +1,4 @@
-import path = require('path');
+import * as path from 'path';
 
 export class Globals {
   static logLevel = 'warning';// debug, info, notice, warning, error, critical, alert, emergency
@@ -10,7 +10,7 @@ export class Globals {
   static suppressClientRebuild = Globals.env === 'test';
   static adminUserName = 'root';
   static adminUserDefaultPassword = 'password';
-  static adminUserEmail= 'root@amino3.com';
+  static adminUserEmail = 'root@amino3.com';
   static adminRoleName = 'superuser';
   static accessTokenTimeToLiveSeconds = 60 * 60;
 
@@ -26,8 +26,8 @@ export class Globals {
   static uploadedFilesFolder = path.resolve(Globals.uploadedFilesBaseFolder, 'files');
   static uploadFileUrl = '/uploaded-files/files';
   static uploadFilePostUrl = '/upload-files';
-  static uploadFileGetUrl = Globals.uploadFilePostUrl;
-  static uploadFileDeleteUrl = '/uploaded-files/files/:name';
+  //static uploadFileGetUrl = Globals.uploadFilePostUrl;
+  //static uploadFileDeleteUrl = '/uploaded-files/files/:name';
   //Plugin uploader, etc.
   static uploadedPluginUrl = '/amino3-plugins/files';
   static pluginUploadFolderToMonitor = path.resolve(Globals.serverFolder, 'amino3-plugins/files');
@@ -42,10 +42,10 @@ export class Globals {
   static npmInstallClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-install-client.json');
   static ngBuildClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client.json');
   static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
-/*  static influentPath = path.resolve(Globals.projectRootPath, 'static/influent-app-2.0.0');
-  static gartnerPath = path.resolve(Globals.projectRootPath, 'static/static-gartner');
-  static chatterPath = path.resolve(Globals.projectRootPath, 'static/chatter');
-  static lodashLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/lodash/lodash.min.js');
-  static postalLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/postal/lib/postal.min.js');
-  static clientSideWebSocketLibraryPath = path.resolve(Globals.serverFolder, 'util/clientSideWebSocket.js');*/
+  /*  static influentPath = path.resolve(Globals.projectRootPath, 'static/influent-app-2.0.0');
+    static gartnerPath = path.resolve(Globals.projectRootPath, 'static/static-gartner');
+    static chatterPath = path.resolve(Globals.projectRootPath, 'static/chatter');
+    static lodashLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/lodash/lodash.min.js');
+    static postalLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/postal/lib/postal.min.js');
+    static clientSideWebSocketLibraryPath = path.resolve(Globals.serverFolder, 'util/clientSideWebSocket.js');*/
 }

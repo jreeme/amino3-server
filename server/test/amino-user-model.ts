@@ -1,5 +1,5 @@
 import 'mocha';
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 const chakram = require('chakram');
 const async = require('async');
@@ -143,7 +143,7 @@ describe('AminoUsers static operations', () => {
                               const updatedDataSet = _.clone(res.body);
                               updatedDataSet.recordCount = count;
                               const response = chakram.put(`${dataSetsUrlBase}/${updatedDataSet.id}`, updatedDataSet);
-                              response.then((res) => {
+                              response.then((/*res*/) => {
                                 cb();
                               });
                             });
