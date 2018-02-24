@@ -5,7 +5,6 @@ import {PluginManager} from '../interfaces/plugin-manager';
 import {Util} from '../../util/util';
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
 import {Globals} from '../../globals';
-import {LoopBackApplication2, PluginManifest} from '../../custom-typings';
 import {LogService} from '../interfaces/log-service';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -46,9 +45,6 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
-    if (Globals.env === 'test') {
-      return cb(null, {message: `Initialize PluginManager Subscriptions (bypassed by NODE_ENV === 'test'`});
-    }
     const me = this;
     me.postal.subscribe({
       channel: 'FolderMonitor',
@@ -70,9 +66,6 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    if (Globals.env === 'test') {
-      return cb(null, {message: `Initialize PluginManager (bypassed by NODE_ENV === 'test'`});
-    }
     const me = this;
     me.gitClientCode((/*err:Error*/) => {
       me.postal.publish({

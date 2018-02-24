@@ -11,7 +11,6 @@ import {FolderMonitor} from "../interfaces/folder-monitor";
 import {LogService} from "../interfaces/log-service";
 
 import * as async from 'async';
-import {LoopBackApplication2} from "../../custom-typings";
 import {WebSocketManager} from "../interfaces/web-socket-manager";
 import {Globals} from "../../globals";
 import {FileUpload} from "../interfaces/file-upload";
@@ -37,21 +36,9 @@ export class ServiceManagerImpl implements ServiceManager {
   }
 
   initSubscriptions(cb: (err?: Error, result?: any) => void) {
-    const fnArray = [];
-    fnArray.push(this.initializeDatabase.initSubscriptions.bind(this.initializeDatabase));
-    fnArray.push(this.webSocketManager.initSubscriptions.bind(this.webSocketManager));
-    fnArray.push(this.fileUpload.initSubscriptions.bind(this.fileUpload));
-    if (Globals.suppressLoadPlugins) {
-      fnArray.push(this.pluginManager.initSubscriptions.bind(this.pluginManager));
-      fnArray.push(this.folderMonitor.initSubscriptions.bind(this.folderMonitor));
-    }
-    if (Globals.env !== 'production') {
-      fnArray.push(this.rebuildClient.initSubscriptions.bind(this.rebuildClient));
-    }
-    fnArray.push(this.authentication.initSubscriptions.bind(this.authentication));
-    fnArray.push(this.staticService.initSubscriptions.bind(this.staticService));
-    fnArray.push(this.rootService.initSubscriptions.bind(this.rootService));
-    fnArray.push(this.logService.initSubscriptions.bind(this.logService));
+    const fnArray = Globals.activeServices.map((activeService) => {
+      return this[activeService].initSubscriptions.bind(this[activeService]);
+    });
     async.mapSeries(fnArray,
       (fn, cb) => {
         fn(cb);
@@ -59,21 +46,9 @@ export class ServiceManagerImpl implements ServiceManager {
   }
 
   init(cb: (err?: Error, result?: any) => void) {
-    const fnArray = [];
-    fnArray.push(this.initializeDatabase.init.bind(this.initializeDatabase));
-    fnArray.push(this.webSocketManager.init.bind(this.webSocketManager));
-    fnArray.push(this.fileUpload.init.bind(this.fileUpload));
-    if (Globals.suppressLoadPlugins) {
-      fnArray.push(this.pluginManager.init.bind(this.pluginManager));
-      fnArray.push(this.folderMonitor.init.bind(this.folderMonitor));
-    }
-    if (Globals.env !== 'production') {
-      fnArray.push(this.rebuildClient.init.bind(this.rebuildClient));
-    }
-    fnArray.push(this.authentication.init.bind(this.authentication));
-    fnArray.push(this.staticService.init.bind(this.staticService));
-    fnArray.push(this.rootService.init.bind(this.rootService));
-    fnArray.push(this.logService.init.bind(this.logService));
+    const fnArray = Globals.activeServices.map((activeService) => {
+      return this[activeService].init.bind(this[activeService]);
+    });
     async.mapSeries(fnArray,
       (fn, cb) => {
         fn(cb);

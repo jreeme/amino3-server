@@ -6,7 +6,6 @@ import {ProcessCommandJson} from "firmament-bash/js/interfaces/process-command-j
 import {Util} from "../../util/util";
 import {Globals} from "../../globals";
 import {LogService} from "../interfaces/log-service";
-import {LoopBackApplication2} from "../../custom-typings";
 
 //noinspection JSUnusedGlobalSymbols
 @injectable()

@@ -1,5 +1,4 @@
 import {injectable, inject} from 'inversify';
-import {AminoMessage, PostalSocketConnection, SocketIO} from '../../custom-typings';
 import {Observable} from 'rxjs/Observable';
 import {Observer} from 'rxjs/Observer';
 import {Globals} from "../../globals";

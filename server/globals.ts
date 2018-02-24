@@ -1,13 +1,42 @@
 import * as path from 'path';
 
 export class Globals {
+  static init() {
+    Globals.suppressClientRebuild = true;
+    //Globals.noServices = true;
+    if (Globals.noServices) {
+      Globals.activeServices = [];
+    }
+    Globals.activeServices = Globals.activeServices.filter((service) => {
+      if (Globals.suppressLoadPlugins) {
+        return service !== 'pluginManager' && service !== 'folderMonitor';
+      }
+      if (Globals.suppressClientRebuild) {
+        return service !== 'rebuildClient';
+      }
+    });
+  }
+
+  static activeServices: string[] = [
+    'initializeDatabase',
+    'webSocketManager',
+    'fileUpload',
+    'pluginManager',
+    'folderMonitor',
+    'rebuildClient',
+    'authentication',
+    'staticService',
+    'rootService',
+    'logService',
+  ];
+
   static logLevel = 'warning';// debug, info, notice, warning, error, critical, alert, emergency
-  static env = process.env.NODE_ENV || 'development';
+  static node_env = process.env.NODE_ENV || 'development';
   static noListen = !!process.env.AMINO3_NO_LISTEN;
   static noServices = !!process.env.AMINO3_NO_SERVICES;
   static serverChannel = 'server-channel';
   static suppressLoadPlugins = true;
-  static suppressClientRebuild = Globals.env === 'test';
+  static suppressClientRebuild = Globals.node_env === 'test';
   static adminUserName = 'root';
   static adminUserDefaultPassword = 'password';
   static adminUserEmail = 'root@amino3.com';
@@ -49,3 +78,5 @@ export class Globals {
     static postalLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/postal/lib/postal.min.js');
     static clientSideWebSocketLibraryPath = path.resolve(Globals.serverFolder, 'util/clientSideWebSocket.js');*/
 }
+
+Globals.init();

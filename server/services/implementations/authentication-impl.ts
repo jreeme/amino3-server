@@ -3,7 +3,6 @@ import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {Authentication} from '../interfaces/authentication';
 import {LogService} from '../interfaces/log-service';
-import {LoopBackApplication2} from '../../custom-typings';
 import {Globals} from '../../globals';
 import async = require('async');
 

@@ -4,7 +4,6 @@ import {CommandUtil, IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {LogService} from '../interfaces/log-service';
 import {BaseDatabaseHelper} from '../../util/database-helpers/interfaces/base-database-helper';
-import {LoopBackApplication2} from "../../custom-typings";
 
 const async = require('async');
 

@@ -3,7 +3,6 @@ import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {StaticService} from "../interfaces/static-service";
 import {Globals} from "../../globals";
-import {LoopBackApplication2} from "../../custom-typings";
 
 @injectable()
 export class StaticServiceImpl implements StaticService {

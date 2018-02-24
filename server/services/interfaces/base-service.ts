@@ -1,5 +1,3 @@
-import {LoopBackApplication2} from "../../custom-typings";
-
 export interface BaseService {
   servicePostalChannel?: string;
   server: LoopBackApplication2;

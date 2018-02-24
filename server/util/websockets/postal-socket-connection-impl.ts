@@ -1,7 +1,6 @@
 import {injectable, inject} from 'inversify';
 import {IPostal, ISubscriptionDefinition} from 'firmament-yargs';
 import {LogService} from '../../services/interfaces/log-service';
-import {AminoMessage, PostalSocketConnection, SocketConnectionInfo} from '../../custom-typings';
 import {SocketIoWrapper} from "./socketIoWrapper";
 import {WebSocketManager} from "../../services/interfaces/web-socket-manager";
 

@@ -2,7 +2,6 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {Globals} from '../../globals';
-import {LoopBackApplication2} from '../../custom-typings';
 import {LogService} from '../interfaces/log-service';
 import {FileUpload} from "../interfaces/file-upload";
 

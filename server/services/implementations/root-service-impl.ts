@@ -2,7 +2,6 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseService} from '../interfaces/base-service';
 import {RootService} from "../interfaces/root-service";
-import {LoopBackApplication2} from "../../custom-typings";
 
 @injectable()
 export class RootServiceImpl implements RootService {

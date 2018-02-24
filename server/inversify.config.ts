@@ -27,7 +27,6 @@ import {BootManager, BootManagerImpl} from './startup/boot-manager';
 import {PostalSocketConnectionImpl} from './util/websockets/postal-socket-connection-impl';
 import {WebSocketManager} from './services/interfaces/web-socket-manager';
 import {WebSocketManagerImpl} from './services/implementations/web-socket-manager-impl';
-import {PostalSocketConnection} from './custom-typings';
 import {SocketIoWrapper, SocketIoWrapperImpl} from './util/websockets/socketIoWrapper';
 import {FileUpload} from "./services/interfaces/file-upload";
 import {FileUploadImpl} from "./services/implementations/file-upload-impl";
