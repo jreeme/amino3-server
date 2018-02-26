@@ -1,7 +1,6 @@
 import {injectable, inject} from 'inversify';
-import {LogService} from '../services/interfaces/log-service';
-import {IPostal} from "firmament-yargs";
-import {Globals} from "../globals";
+import {IPostal} from 'firmament-yargs';
+import {Logger} from '../util/logging/logger';
 
 export interface BootManager {
   start(loopback: any, loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
@@ -13,7 +12,7 @@ export class BootManagerImpl implements BootManager {
   private app: LoopBackApplication2;
   private startListening: boolean;
 
-  constructor(@inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal) {
   }
 

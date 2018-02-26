@@ -1,8 +1,7 @@
 import {injectable, inject} from 'inversify';
 import {IPostal, ISubscriptionDefinition} from 'firmament-yargs';
-import {LogService} from '../../services/interfaces/log-service';
 import {SocketIoWrapper} from "./socketIoWrapper";
-import {WebSocketManager} from "../../services/interfaces/web-socket-manager";
+import {Logger} from "../logging/logger";
 
 const Rx = require('rxjs');
 
@@ -24,9 +23,9 @@ export class PostalSocketConnectionImpl implements PostalSocketConnection {
     return this.id;
   }
 
-  constructor(@inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('SocketIoWrapper') private socketIoWrapper: SocketIoWrapper,
-              @inject('WebSocketManager') private webSocketManager: WebSocketManager,
+              //@inject('WebSocketManager') private webSocketManager: WebSocketManager,
               @inject('IPostal') private postal: IPostal) {
   }
 
@@ -60,7 +59,8 @@ export class PostalSocketConnectionImpl implements PostalSocketConnection {
 
   private destroyPostalSubscriptions(cb: () => void) {
     const me = this;
-    me.webSocketManager.removePostalSocketConnection(me);
+    //TODO: uncomment when webSocketManager returns
+    //me.webSocketManager.removePostalSocketConnection(me);
     Rx
       .Observable
       .from(me.postalSubscriptions)

@@ -1,10 +1,10 @@
 import {injectable, inject} from 'inversify';
 import {Observable} from 'rxjs/Observable';
 import {Observer} from 'rxjs/Observer';
-import {Globals} from "../../globals";
-import {LogService} from "../../services/interfaces/log-service";
-import {IPostal} from "firmament-yargs";
+import {Globals} from '../../globals';
+import {IPostal} from 'firmament-yargs';
 import Socket = SocketIO.Socket;
+import {Logger} from "../logging/logger";
 
 const Rx = require('rxjs');
 
@@ -20,7 +20,7 @@ export class SocketIoWrapperImpl implements SocketIoWrapper {
   private socket: Socket;
   private _id: string;
 
-  constructor(@inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal) {
   }
 

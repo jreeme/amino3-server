@@ -1,5 +1,7 @@
 import * as path from 'path';
 
+//const config = require('./config.local.json');
+
 export class Globals {
   static init() {
     Globals.suppressClientRebuild = true;

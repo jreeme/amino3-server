@@ -1,12 +1,12 @@
 import {injectable, inject} from 'inversify';
-import {LogService} from "../../../services/interfaces/log-service";
-import {PostgresHelper, PostgresSettings} from "../interfaces/postgres-helper";
+import {PostgresHelper, PostgresSettings} from '../interfaces/postgres-helper';
+import {Logger} from "../../logging/logger";
 
 const async = require('async');
 
 @injectable()
 export class PostgresHelperImpl implements PostgresHelper {
-  constructor(@inject('LogService') private log: LogService) {
+  constructor(@inject('Logger') private log: Logger) {
     this.log.info('PostgresHelperImpl created');
   }
 

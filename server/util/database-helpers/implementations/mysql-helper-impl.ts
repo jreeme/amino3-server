@@ -1,15 +1,15 @@
 import {injectable, inject} from 'inversify';
-import {LogService} from '../../../services/interfaces/log-service';
 import {IConnectionConfig2, MysqlHelper} from '../interfaces/mysql-helper';
 import {IMySql, IConnection} from 'mysql';
 import {CommandUtil} from "firmament-yargs";
+import {Logger} from "../../logging/logger";
 
 //const async = require('async');
 const mysql: IMySql = require('mysql');
 
 @injectable()
 export class MysqlHelperImpl implements MysqlHelper {
-  constructor(@inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('CommandUtil') private commandUtil: CommandUtil) {
     this.log.info('MysqlHelperImpl created');
   }
