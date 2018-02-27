@@ -1,6 +1,6 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import {BaseServiceImpl} from "./base-service";
+import {BaseServiceImpl} from './base-service';
 
 @injectable()
 export class RootServiceImpl extends BaseServiceImpl {
@@ -10,7 +10,7 @@ export class RootServiceImpl extends BaseServiceImpl {
   }
 
   initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void): void {
-    this._server = server;
+    super.initSubscriptions(server);
     cb(null, {message: 'Initialized RootService Subscriptions'});
   }
 

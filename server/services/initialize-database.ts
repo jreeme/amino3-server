@@ -1,25 +1,18 @@
 import {injectable, inject, multiInject} from 'inversify';
-import {InitializeDatabase} from '../interfaces/initialize-database';
 import {CommandUtil, IPostal} from 'firmament-yargs';
-import {BaseService} from '../interfaces/base-service';
-import {LogService} from '../interfaces/log-service';
-import {BaseDatabaseHelper} from '../../util/database-helpers/interfaces/base-database-helper';
+import {BaseServiceImpl} from './base-service';
+import {Logger} from '../util/logging/logger';
+import {BaseDatabaseHelper} from '../util/database-helpers/interfaces/base-database-helper';
 
-const async = require('async');
+import * as async from 'async';
 
-//noinspection JSUnusedGlobalSymbols
 @injectable()
-export class InitializeDatabaseImpl implements InitializeDatabase {
-  //noinspection JSUnusedLocalSymbols
-  constructor(@inject('BaseService') private baseService: BaseService,
-              @inject('LogService') private log: LogService,
+export class InitializeDatabaseImpl extends BaseServiceImpl {
+  constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal,
               @multiInject('BaseDatabaseHelper') private databaseHelpers: BaseDatabaseHelper[],
               @inject('CommandUtil') private commandUtil: CommandUtil) {
-  }
-
-  get server(): LoopBackApplication2 {
-    return this.baseService.server;
+    super();
   }
 
   private verifyDataSources(cb: (err?: Error) => void) {
@@ -32,7 +25,7 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
     const uniqueDataSources = new Set(Object.keys(dataSources).map((key) => {
       return dataSources[key];
     }));
-    async.reject(uniqueDataSources,
+    async.reject(Array.from(uniqueDataSources),
       (dataSource, cb) => {
         function test(err: Error) {
           this.removeListener('error', test);
@@ -53,7 +46,8 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
       });
   }
 
-  initSubscriptions(cb: (err: Error, result: any) => void) {
+  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(server);
     const me = this;
     me.verifyDataSources((err) => {
       if (me.commandUtil.callbackIfError(cb, err)) {
@@ -110,7 +104,7 @@ export class InitializeDatabaseImpl implements InitializeDatabase {
           cb();
         });
       });
-    }, (err) => {
+    }, (err: Error) => {
       cb(err, {message: 'Initialized InitializeDatabase'});
     });
   }

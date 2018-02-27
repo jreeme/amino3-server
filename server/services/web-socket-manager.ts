@@ -1,31 +1,23 @@
-import kernel from '../../inversify.config';
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import {BaseService} from '../interfaces/base-service';
-import {LogService} from '../interfaces/log-service';
-import {WebSocketManager} from '../interfaces/web-socket-manager';
-
 import * as _ from 'lodash';
+import * as Rx from 'rxjs';
+import {BaseServiceImpl} from './base-service';
+import {Logger} from '../util/logging/logger';
+import kernel from '../inversify.config';
 
-const Rx = require('rxjs');
-
-//noinspection JSUnusedGlobalSymbols
 @injectable()
-export class WebSocketManagerImpl implements WebSocketManager {
+export class WebSocketManagerImpl extends BaseServiceImpl {
   private socketIo: SocketIO.Server;
   private postalSocketConnections: Set<PostalSocketConnection> = new Set();
 
-  //noinspection JSUnusedLocalSymbols
-  constructor(@inject('BaseService') private baseService: BaseService,
-              @inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal) {
+    super();
   }
 
-  get server(): LoopBackApplication2 {
-    return this.baseService.server;
-  }
-
-  initSubscriptions(cb: (err: Error, result: any) => void) {
+  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(server);
     const me = this;
     me.postal
       .subscribe({
@@ -38,6 +30,14 @@ export class WebSocketManagerImpl implements WebSocketManager {
             topic: 'Pong',
             data: {}
           });
+        }
+      });
+    me.postal
+      .subscribe({
+        channel: 'ServiceBus',
+        topic: 'RemovePostalSocketConnection',
+        callback: (aminoMessage: AminoMessage) => {
+          me.removePostalSocketConnection(aminoMessage.data);
         }
       });
     me.postal

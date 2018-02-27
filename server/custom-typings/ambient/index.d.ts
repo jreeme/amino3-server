@@ -3,6 +3,21 @@ import {Server} from 'http';
 import {IEnvelope} from "firmament-yargs";
 
 declare global {
+  interface UploadedFileInfoOptions {
+    uploadDir: string
+  }
+
+  interface UploadedFileInfo {
+    name: string,
+    type: string,
+    size: number,
+    options: UploadedFileInfoOptions
+  }
+
+  interface UploadedFilesInfo {
+    files: UploadedFileInfo[]
+  }
+
   interface AminoMessage extends IEnvelope<any> {
   }
 

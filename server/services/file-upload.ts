@@ -1,15 +1,13 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import {BaseService} from '../interfaces/base-service';
-import {Globals} from '../../globals';
-import {LogService} from '../interfaces/log-service';
-import {FileUpload} from "../interfaces/file-upload";
+import {BaseServiceImpl} from './base-service';
+import {Globals} from '../globals';
+import {Logger} from '../util/logging/logger';
 
 const path = require('path');
 
-//noinspection JSUnusedGlobalSymbols
 @injectable()
-export class FileUploadImpl implements FileUpload {
+export class FileUploadImpl extends BaseServiceImpl {
   private static fileUploaderOptions = {
     tmpDir: Globals.uploadedFilesTmpFolder,
     uploadDir: Globals.uploadedFilesFolder,
@@ -22,16 +20,13 @@ export class FileUploadImpl implements FileUpload {
 
   private static fileUploader = require(Globals.fileUploaderPath)(FileUploadImpl.fileUploaderOptions);
 
-  constructor(@inject('BaseService') private baseService: BaseService,
-              @inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal) {
+    super();
   }
 
-  get server(): LoopBackApplication2 {
-    return this.baseService.server;
-  }
-
-  initSubscriptions(cb: (err: Error, result: any) => void) {
+  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(server);
     cb(null, {message: 'Initialized FileUpload Subscriptions'});
   }
 
@@ -63,7 +58,7 @@ export class FileUploadImpl implements FileUpload {
                   uri
                 }
               });
-            UF.create(uploadedFiles, (err, result) => {
+            UF.create(uploadedFiles, (err, /*result*/) => {
               res.status(200).send({status: err ? 'error' : 'OK', error: err});
             });
           });
@@ -84,17 +79,3 @@ export class FileUploadImpl implements FileUpload {
   }
 }
 
-interface UploadedFileInfoOptions {
-  uploadDir: string
-}
-
-interface UploadedFileInfo {
-  name: string,
-  type: string,
-  size: number,
-  options: UploadedFileInfoOptions
-}
-
-interface UploadedFilesInfo {
-  files: UploadedFileInfo[]
-}

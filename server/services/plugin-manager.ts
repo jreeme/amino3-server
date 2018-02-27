@@ -1,11 +1,10 @@
 import {injectable, inject} from 'inversify';
 import {CommandUtil, IPostal} from 'firmament-yargs';
-import {BaseService} from '../interfaces/base-service';
-import {PluginManager} from '../interfaces/plugin-manager';
-import {Util} from '../../util/util';
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
-import {Globals} from '../../globals';
-import {LogService} from '../interfaces/log-service';
+import {BaseServiceImpl} from './base-service';
+import {Globals} from '../globals';
+import {Logger} from '../util/logging/logger';
+import {Util} from '../util/util';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as tar from 'tar';
@@ -15,9 +14,8 @@ import * as mkdirp from 'mkdirp';
 import * as recursiveReaddir from 'recursive-readdir';
 import * as jsonfile from 'jsonfile';
 
-//noinspection JSUnusedGlobalSymbols
 @injectable()
-export class PluginManagerImpl implements PluginManager {
+export class PluginManagerImpl extends BaseServiceImpl {
   private static fileUploaderOptions = {
     tmpDir: Globals.tmpUploaderFolder,
     uploadDir: Globals.pluginUploadFolderToMonitor,
@@ -33,18 +31,15 @@ export class PluginManagerImpl implements PluginManager {
   private pluginManifests: PluginManifest[] = [];
   private loadingPlugins = false;
 
-  constructor(@inject('BaseService') private baseService: BaseService,
-              @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
-              @inject('LogService') private log: LogService,
+  constructor(@inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
+              @inject('Logger') private log: Logger,
               @inject('CommandUtil') private commandUtil: CommandUtil,
               @inject('IPostal') private postal: IPostal) {
+    super();
   }
 
-  get server(): LoopBackApplication2 {
-    return this.baseService.server;
-  }
-
-  initSubscriptions(cb: (err: Error, result: any) => void) {
+  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(server);
     const me = this;
     me.postal.subscribe({
       channel: 'FolderMonitor',

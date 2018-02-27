@@ -1,28 +1,22 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import {BaseService} from '../interfaces/base-service';
-import {RebuildClient} from "../interfaces/rebuild-client";
-import {ProcessCommandJson} from "firmament-bash/js/interfaces/process-command-json";
-import {Util} from "../../util/util";
-import {Globals} from "../../globals";
-import {LogService} from "../interfaces/log-service";
+import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
+import {BaseServiceImpl} from './base-service';
+import {Logger} from '../util/logging/logger';
+import {Util} from '../util/util';
+import {Globals} from '../globals';
 
-//noinspection JSUnusedGlobalSymbols
 @injectable()
-export class RebuildClientImpl implements RebuildClient {
+export class RebuildClientImpl extends BaseServiceImpl {
 
-//noinspection JSUnusedLocalSymbols
-  constructor(@inject('BaseService') private baseService: BaseService,
-              @inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('IPostal') private postal: IPostal) {
+    super();
   }
 
-  get server(): LoopBackApplication2 {
-    return this.baseService.server;
-  }
-
-  initSubscriptions(cb: (err: Error, result: any) => void) {
+  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(server);
     const me = this;
     me.postal.subscribe({
       channel: 'ServiceBus',

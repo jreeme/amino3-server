@@ -1,29 +1,21 @@
 import {injectable, inject} from 'inversify';
 import {CommandUtil, IPostal} from 'firmament-yargs';
-import {BaseService} from '../interfaces/base-service';
-import {FolderMonitor} from '../interfaces/folder-monitor';
-import {LogService} from '../interfaces/log-service';
-const path = require('path');
-const fs = require('fs');
+import {BaseServiceImpl} from './base-service';
+import {Logger} from '../util/logging/logger';
 
 const chokidar = require('chokidar');
 
-//noinspection JSUnusedGlobalSymbols
 @injectable()
-export class FolderMonitorImpl implements FolderMonitor {
+export class FolderMonitorImpl extends BaseServiceImpl {
 
-  constructor(@inject('BaseService') private baseService: BaseService,
-              @inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal,
               @inject('CommandUtil') private commandUtil: CommandUtil) {
-    this.log.info('FolderMonitor created');
+    super();
   }
 
-  get server(): LoopBackApplication2 {
-    return this.baseService.server;
-  }
-
-  initSubscriptions(cb: (err: Error, result: any) => void) {
+  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(server);
     const me = this;
     me.postal.subscribe({
       channel: 'FolderMonitor',

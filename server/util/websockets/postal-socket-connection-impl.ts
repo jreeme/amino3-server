@@ -25,7 +25,6 @@ export class PostalSocketConnectionImpl implements PostalSocketConnection {
 
   constructor(@inject('Logger') private log: Logger,
               @inject('SocketIoWrapper') private socketIoWrapper: SocketIoWrapper,
-              //@inject('WebSocketManager') private webSocketManager: WebSocketManager,
               @inject('IPostal') private postal: IPostal) {
   }
 
@@ -52,15 +51,19 @@ export class PostalSocketConnectionImpl implements PostalSocketConnection {
 
   destroy() {
     const me = this;
-    me.destroyPostalSubscriptions(()=>{
+    me.destroyPostalSubscriptions(() => {
       me.socketIoWrapper = null;
     });
   }
 
   private destroyPostalSubscriptions(cb: () => void) {
     const me = this;
-    //TODO: uncomment when webSocketManager returns
-    //me.webSocketManager.removePostalSocketConnection(me);
+    me.postal.publish({
+      channel: 'ServiceBus',
+      topic: 'RemovePostalSocketConnection',
+      data: me
+    });
+
     Rx
       .Observable
       .from(me.postalSubscriptions)

@@ -1,29 +1,20 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import {BaseService} from '../interfaces/base-service';
-import {Authentication} from '../interfaces/authentication';
-import {LogService} from '../interfaces/log-service';
-import {Globals} from '../../globals';
 import async = require('async');
+import {BaseServiceImpl} from './base-service';
+import {Logger} from '../util/logging/logger';
+import {Globals} from '../globals';
 
-//noinspection JSUnusedGlobalSymbols
 @injectable()
-export class AuthenticationImpl implements Authentication {
+export class AuthenticationImpl extends BaseServiceImpl{
   //noinspection JSUnusedLocalSymbols
-  constructor(@inject('BaseService') private baseService: BaseService,
-              @inject('LogService') private log: LogService,
+  constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal) {
+    super();
   }
 
-  get servicePostalChannel(): string {
-    return 'Authentication';
-  }
-
-  get server(): LoopBackApplication2 {
-    return this.baseService.server;
-  }
-
-  initSubscriptions(cb: (err: Error, result?: any) => void) {
+  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result?: any) => void) {
+    super.initSubscriptions(server);
     const me = this;
     //Required to enable LoopBack authentication
     me.server.enableAuth();
@@ -50,7 +41,7 @@ export class AuthenticationImpl implements Authentication {
     cb(null, {message: 'Initialized Authentication'});
   }
 
-  private dropAllLoopbackSystemTables(cb: (err, result?) => void) {
+/*  private dropAllLoopbackSystemTables(cb: (err, result?) => void) {
     const me = this;
     const loopbackSystemTables = [
       'ACL',
@@ -69,7 +60,7 @@ export class AuthenticationImpl implements Authentication {
     }, (err) => {
       cb(err);
     });
-  }
+  }*/
 
   private createRootUserAndAdminRole(cb: (err: Error, principal?: any) => void) {
     const me = this;
