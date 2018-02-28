@@ -25,7 +25,8 @@ export class BootManagerImpl implements BootManager {
     me.app = _app;
     me.startListening = _startListening;
     me.log.info(`Booting Amino3 using 'loopback-boot'`);
-    require('loopback-boot')(me.app, _applicationFolder, me.bootCallback.bind(me));
+    const loopbackBoot = require('loopback-boot');
+    loopbackBoot(me.app, _applicationFolder, me.bootCallback.bind(me));
   }
 
   private bootCallback(err: Error) {
@@ -36,10 +37,6 @@ export class BootManagerImpl implements BootManager {
       throw new Error(errorMsg);
     }
     //Sometimes, for building the client, etc., you just don't want to sit and listen
-/*    if (Globals.noServices) {
-      me.log.warning(`Environment variable 'AMINO3_NO_SERVICES' was defined so bailing out!`);
-      process.exit(0);
-    }*/
     if (!me.startListening) {
       me.log.warning(`Environment variable 'AMINO3_NO_LISTEN' was defined so bailing out!`);
       process.exit(0);

@@ -1,6 +1,6 @@
 {
-  "db": {
-    "name"     : "db",
+  "amino_admin": {
+    "name"     : "amino_admin",
     "connector": "memory"
   }
 }

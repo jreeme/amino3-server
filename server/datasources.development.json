@@ -1,4 +1,15 @@
 {
+  "amino_admin2" : {
+    "name"          : "amino_admin2",
+    "host"          : "localhost",
+    "port"          : 5432,
+    "database"      : "amino_admin",
+    "password"      : "password",
+    "admin_user"    : "postgres",
+    "admin_password": "password",
+    "user"          : "amino_admin_user",
+    "connector"     : "postgresql"
+  },
   "amino_admin": {
     "name"     : "amino_admin",
     "connector": "memory"

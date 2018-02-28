@@ -32,6 +32,7 @@ export class Globals {
     'logService',
   ];
 
+  //static logLevel = 'debug';// debug, info, notice, warning, error, critical, alert, emergency
   static logLevel = 'warning';// debug, info, notice, warning, error, critical, alert, emergency
   static node_env = process.env.NODE_ENV || 'development';
   static noListen = !!process.env.AMINO3_NO_LISTEN;

@@ -36,8 +36,8 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
       .subscribe({
         channel: 'ServiceBus',
         topic: 'RemovePostalSocketConnection',
-        callback: (aminoMessage: AminoMessage) => {
-          me.removePostalSocketConnection(aminoMessage.data);
+        callback: (postalSocketConnection: PostalSocketConnection) => {
+          me.removePostalSocketConnection(postalSocketConnection);
         }
       });
     me.postal

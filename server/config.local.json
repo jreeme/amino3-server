@@ -1,24 +1,23 @@
 {
-  "restApiRoot": "/amino-api",
-  "host": "0.0.0.0",
-  "port": 3000,
-  "remoting": {
-    "context": false,
-    "rest": {
+  "restApiRoot"   : "/amino-api",
+  "host"          : "0.0.0.0",
+  "port"          : 3000,
+  "remoting"      : {
+    "context"     : false,
+    "rest"        : {
       "normalizeHttpPath": false,
-      "xml": false
+      "xml"              : false
     },
-    "json": {
+    "json"        : {
       "strict": false,
-      "limit": "100kb"
+      "limit" : "100kb"
     },
-    "urlencoded": {
+    "urlencoded"  : {
       "extended": true,
-      "limit": "100kb"
+      "limit"   : "100kb"
     },
-    "cors": false,
+    "cors"        : false,
     "handleErrors": false
   },
-  "legacyExplorer": false,
-  "how":"now brown cow"
+  "legacyExplorer": false
 }
