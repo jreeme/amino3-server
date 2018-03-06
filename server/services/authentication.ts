@@ -83,6 +83,8 @@ export class AuthenticationImpl extends BaseServiceImpl {
     async.waterfall([
       //AminoUser.findOrCreate() does not work. Something to do with base loopback user implementation
       (cb) => {
+        //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
+        U.settings.acls.length = 0;
         U.find({where: {email: Globals.adminUserEmail}}, (err, users) => {//find adminUser
           return cb(err, users.length ? users[0] : null);
         });
@@ -115,24 +117,24 @@ export class AuthenticationImpl extends BaseServiceImpl {
             principalType: 'ROLE',
             principalId: '$everyone',
             permission: 'DENY'
-          },
-          {
+          }
+          , {
             model: 'AminoUser',
             accessType: '*',
             property: '*',
             principalType: 'ROLE',
             principalId: 'superuser',
             permission: 'ALLOW'
-          },
-          {
+          }
+          /*,{
             model: 'AminoUser',
             accessType: 'EXECUTE',
             property: 'createUser',
             principalType: 'ROLE',
             principalId: 'superuser',
             permission: 'ALLOW'
-          },
-          {
+          }*/
+          , {
             model: 'AminoUser',
             accessType: 'EXECUTE',
             property: 'aminoLogin',
@@ -144,12 +146,17 @@ export class AuthenticationImpl extends BaseServiceImpl {
         async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
       }
     ], (err: Error, obj) => {
-      const AAT = me.server.models.AminoAccessToken;
       setInterval(() => {
-        AAT.find((err, aats) => {
+        RM.find((err, aats) => {
           let a = aats;
         });
       }, 3000);
+      /*      const AAT = me.server.models.AminoAccessToken;
+            setInterval(() => {
+              AAT.find((err, aats) => {
+                let a = aats;
+              });
+            }, 3000);*/
       cb(err, obj);
     });
   }
