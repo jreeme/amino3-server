@@ -56,29 +56,23 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
       const AminoUser = me.server.models.AminoUser;
       const ds = AminoUser.dataSource;
       AminoUser.find((err) => {
-        let cbErr = null;
-        let cbMessage = 'Initialized InitializeDatabase Subscriptions';
+        let message = 'Initialized InitializeDatabase Subscriptions';
         if (err) {
-          const filteredDatabaseHelpers = me.databaseHelpers.filter((databaseHelper) => {
-            return ds.settings.connector === databaseHelper.connectorName;
-          });
+          const filteredDatabaseHelpers =
+            me.databaseHelpers.filter((dbh) => ds.settings.connector === dbh.connectorName);
           if (filteredDatabaseHelpers.length !== 1) {
-            cbMessage = `InitializeDatabase FAILED: No helper for '${ds.settings.connector}'`;
-            cbErr = new Error(cbMessage);
-            cb(cbErr, {message: cbMessage});
-            return;
+            message = `InitializeDatabase FAILED: No helper for '${ds.settings.connector}'`;
+            return cb(new Error(message), {message: message});
           }
-          filteredDatabaseHelpers[0].configure(ds, (err) => {
+          return filteredDatabaseHelpers[0].configure(ds, (err: Error) => {
             if (err) {
-              cbMessage = 'InitializeDatabase FAILED: ' + err.message;
-              cbErr = new Error(cbMessage);
-              cb(cbErr, {message: cbMessage});
+              message = 'InitializeDatabase FAILED: ' + err.message;
+              err = new Error(message);
             }
-            cb(cbErr, {message: cbMessage});
+            return cb(err, {message});
           });
-          return;
         }
-        cb(null, {message: cbMessage});
+        return cb(null, {message});
       });
     });
   }

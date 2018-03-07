@@ -6,10 +6,8 @@
     "node": ">=4"
   },
   "scripts": {
-    "lint": "eslint .",
     "start": "node .",
     "build": "yarn && tsc --project server/tsconfig.json",
-    "posttest": "npm run lint && nsp check",
     "test": "mocha --timeout 10000",
     "build:sdk": "AMINO3_NO_LISTEN=TRUE AMINO3_NO_SERVICES=TRUE lb-sdk server/server.js client/src/lb-sdk -i enabled -w enabled"
   },
@@ -54,8 +52,6 @@
     "chai": "^4.1.2",
     "chai-http": "^3.0.0",
     "chakram": "^1.5.0",
-    "eslint": "^3.17.1",
-    "eslint-config-loopback": "^8.0.0",
     "loopback-cli": "^2.5.1",
     "mocha": "^4.0.1",
     "nsp": "^2.1.0",
