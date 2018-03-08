@@ -3,7 +3,8 @@ import * as path from 'path';
 //const config = require('./config.local.json');
 
 export class Globals {
-  static init() {
+  static init(server: LoopBackApplication2) {
+    const tmp = server.get('port');
     Globals.suppressClientRebuild = true;
     //Globals.noServices = true;
     if (Globals.noServices) {
@@ -82,4 +83,3 @@ export class Globals {
     static clientSideWebSocketLibraryPath = path.resolve(Globals.serverFolder, 'util/clientSideWebSocket.js');*/
 }
 
-Globals.init();

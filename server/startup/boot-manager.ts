@@ -1,6 +1,7 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {Logger} from '../util/logging/logger';
+import {Globals} from "../globals";
 
 export interface BootManager {
   start(loopback: any, loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
@@ -36,6 +37,9 @@ export class BootManagerImpl implements BootManager {
       me.log.error(errorMsg);
       throw new Error(errorMsg);
     }
+
+    Globals.init(me.app);
+
     //Sometimes, for building the client, etc., you just don't want to sit and listen
     if (!me.startListening) {
       me.log.warning(`Environment variable 'AMINO3_NO_LISTEN' was defined so bailing out!`);
