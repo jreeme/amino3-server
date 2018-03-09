@@ -28,7 +28,7 @@ export class RebuildClientImpl extends BaseServiceImpl {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    this.server.get('/system-ctl/rebuild-client', (req, res) => {
+    this.app.get('/system-ctl/rebuild-client', (req, res) => {
       me.postal.publish({
         channel: 'ServiceBus',
         topic: 'RebuildClient',

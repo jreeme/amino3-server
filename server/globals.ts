@@ -1,46 +1,41 @@
 import * as path from 'path';
+import * as _ from 'lodash';
+import * as boolifyString from 'boolify-string';
 
-//const config = require('./config.local.json');
-
+//process.env.LB_LAZYCONNECT_DATASOURCES = 1;
 export class Globals {
   static init(server: LoopBackApplication2) {
-    const tmp = server.get('port');
-    Globals.suppressClientRebuild = true;
-    //Globals.noServices = true;
-    if (Globals.noServices) {
-      Globals.activeServices = [];
-    }
-    Globals.activeServices = Globals.activeServices.filter((service) => {
-      if (Globals.suppressLoadPlugins) {
-        return service !== 'pluginManager' && service !== 'folderMonitor';
+    const amino3Config = server.get('amino3Config');
+    //Override Global properties with loopback config values
+    Object.keys(Globals).forEach((key) => {
+      if (typeof Globals[key] === 'function') {
+        return;
       }
-      if (Globals.suppressClientRebuild) {
-        return service !== 'rebuildClient';
+      const envVarName = `AMINO3_${_.toUpper(_.snakeCase(key))}`;
+      const value: any = process.env[envVarName] || amino3Config[key] || Globals[key];
+      switch (typeof Globals[key]) {
+        case('boolean'):
+          //boolifyString also handles non-string values correctly enough
+          return Globals[key] = boolifyString(value);
+        case('number'):
+          return Globals[key] = _.toNumber(value);
+        case('string'):
+          return Globals[key] = _.toString(value);
+        default:
+          return Globals[key] = value;
       }
     });
   }
 
-  static activeServices: string[] = [
-    'initializeDatabase',
-    'webSocketManager',
-    'fileUpload',
-    'pluginManager',
-    'folderMonitor',
-    'rebuildClient',
-    'authentication',
-    'staticService',
-    'rootService',
-    'logService',
-  ];
-
-  //static logLevel = 'debug';// debug, info, notice, warning, error, critical, alert, emergency
+  static suppressedServices: string[] = ['RebuildClient', 'PluginManager'];
+  static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
   static logLevel = 'warning';// debug, info, notice, warning, error, critical, alert, emergency
-  static node_env = process.env.NODE_ENV || 'development';
-  static noListen = !!process.env.AMINO3_NO_LISTEN;
-  static noServices = !!process.env.AMINO3_NO_SERVICES;
+  static noListen = false;
+  static noServices = false;
+  static suppressLoadPlugins = false;
+  static suppressClientRebuild = false;
+
   static serverChannel = 'server-channel';
-  static suppressLoadPlugins = true;
-  static suppressClientRebuild = Globals.node_env === 'test';
   static adminUserName = 'root';
   static adminUserDefaultPassword = 'password';
   static adminUserEmail = 'root@amino3.com';
@@ -75,11 +70,5 @@ export class Globals {
   static npmInstallClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-install-client.json');
   static ngBuildClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client.json');
   static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
-  /*  static influentPath = path.resolve(Globals.projectRootPath, 'static/influent-app-2.0.0');
-    static gartnerPath = path.resolve(Globals.projectRootPath, 'static/static-gartner');
-    static chatterPath = path.resolve(Globals.projectRootPath, 'static/chatter');
-    static lodashLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/lodash/lodash.min.js');
-    static postalLibraryPath = path.resolve(Globals.projectRootPath, 'node_modules/postal/lib/postal.min.js');
-    static clientSideWebSocketLibraryPath = path.resolve(Globals.serverFolder, 'util/clientSideWebSocket.js');*/
 }
 

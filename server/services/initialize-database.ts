@@ -17,16 +17,19 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
 
   private verifyDataSources(cb: (err?: Error) => void) {
     const me = this;
-    const dataSources = me.server.dataSources;
-    if (!dataSources || typeof dataSources !== 'object') {
-      cb();
-      return;
+    const dataSourcesHash = me.app.dataSources;
+    if (!dataSourcesHash || typeof dataSourcesHash !== 'object') {
+      return cb();
     }
-    const uniqueDataSources = new Set(Object.keys(dataSources).map((key) => {
-      return dataSources[key];
-    }));
-    async.reject(Array.from(uniqueDataSources),
+    const dataSources = Object.keys(dataSourcesHash).map((key) => dataSourcesHash[key]);
+    const uniqueDataSources = new Set(dataSources);
+    const uniqueDataSourceArray = Array.from(uniqueDataSources);
+    async.reject(uniqueDataSourceArray,
       (dataSource, cb) => {
+        if (dataSource.connected) {
+          return cb(null, true);
+        }
+
         function test(err: Error) {
           this.removeListener('error', test);
           this.removeListener('connected', test);
@@ -37,23 +40,31 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
         dataSource.once('connected', test);
         dataSource.once('error', test);
       }, (err, dataSourcesBadConnection: any[]) => {
-        if (dataSourcesBadConnection.length) {
-          //TODO: Fix any DataSource errors here
-          cb(null);
-        } else {
-          cb(null);
-        }
+        me.filterUnusedDataSources(dataSourcesBadConnection, (err, usedDataSources) => {
+
+          cb();
+        });
       });
   }
 
-  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
-    super.initSubscriptions(server);
+  private filterUnusedDataSources(dataSourcesBadConnection: any[], cb: (err: Error, usedDataSources: any[]) => void) {
+    const me = this;
+    const models = Object.keys(me.app.models).map((key) => me.app.models[key]);
+    const usedDataSources = dataSourcesBadConnection.filter((dataSourceBadConnection) => {
+      const modelsUsingThisDataSource = models.filter((model) => model.dataSource === dataSourceBadConnection);
+      return modelsUsingThisDataSource.length;
+    });
+    cb(null, usedDataSources);
+  }
+
+  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(app);
     const me = this;
     me.verifyDataSources((err) => {
       if (me.commandUtil.callbackIfError(cb, err)) {
         return;
       }
-      const AminoUser = me.server.models.AminoUser;
+      const AminoUser = me.app.models.AminoUser;
       const ds = AminoUser.dataSource;
       AminoUser.find((err) => {
         let message = 'Initialized InitializeDatabase Subscriptions';
@@ -79,9 +90,9 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    const datasources = Object.keys(me.server.dataSources);
+    const datasources = Object.keys(me.app.dataSources);
     async.eachSeries(datasources, function (dsName, cb) {
-      const ds = me.server.dataSources[dsName];
+      const ds = me.app.dataSources[dsName];
       ds.isActual(function (err, actual) {
         if (err) {
           return cb(err);

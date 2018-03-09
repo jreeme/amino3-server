@@ -38,26 +38,42 @@ export class BootManagerImpl implements BootManager {
       throw new Error(errorMsg);
     }
 
+    //Loopback App booted so all configs are loaded (and available via app.get('config-name')
+    //so this is a good time to initialize our Globals object
     Globals.init(me.app);
 
-    //Sometimes, for building the client, etc., you just don't want to sit and listen
-    if (!me.startListening) {
-      me.log.warning(`Environment variable 'AMINO3_NO_LISTEN' was defined so bailing out!`);
-      process.exit(0);
-    }
-    // tell loopback to use AminoAccessToken for auth
+    //Tell loopback to use AminoAccessToken for auth
     me.app.use(me.loopback.token({
       model: me.app.models.AminoAccessToken
     }));
-    me.log.debug(`Starting Amino3 by 'node server.js'`);
-    me.log.debug(`Starting Socket.IO server`);
+
+    //Signal service manager to start up Amino3 services
+    me.postal
+      .subscribe({
+        channel: 'Amino3Startup',
+        topic: 'services-started',
+        callback: () => {
+          me.log.debug(`[RECV] 'Amino3Startup:services-started': `);
+          //Sometimes, for building the client, etc., you just don't want to sit and listen
+          if (!me.startListening || Globals.noListen) {
+            process.exit(0);
+          }
+          me.log.debug(`Starting Amino3 by 'node server.js'`);
+          me.log.debug(`Starting Socket.IO server`);
+          me.postal
+            .publish({
+              channel: 'ServiceBus',
+              topic: 'SetSocketIO',
+              data: {io: require('socket.io')(me.listen())}
+            });
+          me.app.emit('started');
+        }
+      });
     me.postal
       .publish({
-        channel: 'ServiceBus',
-        topic: 'SetSocketIO',
-        data: {io: require('socket.io')(me.listen())}
+        channel: 'Amino3Startup',
+        topic: 'loopback-booted'
       });
-    me.app.emit('started');
   }
 
   private listen() {

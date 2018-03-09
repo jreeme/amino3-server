@@ -12,6 +12,7 @@
     "build:sdk": "AMINO3_NO_LISTEN=TRUE AMINO3_NO_SERVICES=TRUE lb-sdk server/server.js client/src/lb-sdk -i enabled -w enabled"
   },
   "dependencies": {
+    "boolify-string": "^2.0.2",
     "camelcase": "^4.1.0",
     "chokidar": "^1.7.0",
     "compression": "^1.0.3",

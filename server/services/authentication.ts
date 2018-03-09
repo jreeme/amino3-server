@@ -17,7 +17,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
     super.initSubscriptions(server);
     const me = this;
     //Required to enable LoopBack authentication
-    me.server.enableAuth();
+    me.app.enableAuth();
     me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'CreateRootUserAndAdminRole',
@@ -69,10 +69,10 @@ export class AuthenticationImpl extends BaseServiceImpl {
 
   private createRootUserAndAdminRole(cb: (err: Error, principal?: any) => void) {
     const me = this;
-    const R = me.server.models.AminoRole;
-    const RM = me.server.models.AminoRoleMapping;
-    const U = me.server.models.AminoUser;
-    const ACL = me.server.models.ACL;
+    const R = me.app.models.AminoRole;
+    const RM = me.app.models.AminoRoleMapping;
+    const U = me.app.models.AminoUser;
+    const ACL = me.app.models.ACL;
     const newRootUser = {
       username: Globals.adminUserName,
       firstname: Globals.adminUserName,
@@ -146,11 +146,11 @@ export class AuthenticationImpl extends BaseServiceImpl {
         async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
       }
     ], (err: Error, obj) => {
-      setInterval(() => {
+/*      setInterval(() => {
         RM.find((err, aats) => {
           let a = aats;
         });
-      }, 3000);
+      }, 3000);*/
       /*      const AAT = me.server.models.AminoAccessToken;
             setInterval(() => {
               AAT.find((err, aats) => {

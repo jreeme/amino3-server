@@ -11,12 +11,11 @@ const bootManager: BootManager = kernel.get<BootManager>('BootManager');
 const loopback = require('loopback');
 const loopbackApplication = loopback();
 module.exports = loopbackApplication;
-process.env.LB_LAZYCONNECT_DATASOURCES = 1;
 bootManager.start(
   loopback,
   loopbackApplication,
   __dirname,
-  (require.main === module) && !Globals.noListen
+  (require.main === module)
 );
 
 

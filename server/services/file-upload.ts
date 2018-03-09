@@ -43,11 +43,11 @@ export class FileUploadImpl extends BaseServiceImpl {
             res.status(500).send({status: 'error', error: err});
           }
         });*/
-    me.server.post(Globals.uploadFilePostUrl, (req, res) => {
+    me.app.post(Globals.uploadFilePostUrl, (req, res) => {
       try {
         FileUploadImpl.fileUploader.post(req, res,
           (err, uploadedFilesInfo: UploadedFilesInfo) => {
-            const UF = me.server.models.UploadedFile;
+            const UF = me.app.models.UploadedFile;
             const uploadedFiles =
               uploadedFilesInfo.files.map((fileInfo: UploadedFileInfo) => {
                 const uri = path.resolve(fileInfo.options.uploadDir, fileInfo.name);

@@ -1,33 +1,40 @@
 import {injectable} from 'inversify';
 
 export interface BaseService {
-  server: LoopBackApplication2;
+  app: LoopBackApplication2;
+  serviceName: string;
   servicePostalChannel: string;
 
-  initSubscriptions(server: LoopBackApplication2, cb?: (err?: Error, result?: any) => void): void;
+  initSubscriptions(app: LoopBackApplication2, cb?: (err?: Error, result?: any) => void): void;
 
   init(cb: (err?: Error, result?: any) => void): void;
 }
 
 @injectable()
 export abstract class BaseServiceImpl implements BaseService {
+  private _serviceName: string;
   private _servicePostalChannel: string;
-  private _server: LoopBackApplication2;
+  private _app: LoopBackApplication2;
 
   constructor() {
-    this._servicePostalChannel = this.constructor.name;
+    this._serviceName = this.constructor.name.replace('Impl','');
+    this._servicePostalChannel = `PostalChannel-${this.constructor.name}`;
+  }
+
+  get serviceName(): string {
+    return this._serviceName;
   }
 
   get servicePostalChannel(): string {
     return this._servicePostalChannel;
   }
 
-  get server(): LoopBackApplication2 {
-    return this._server;
+  get app(): LoopBackApplication2 {
+    return this._app;
   }
 
-  initSubscriptions(server: LoopBackApplication2, cb?: (err: Error, result: any) => void): void {
-    this._server = server;
+  initSubscriptions(app: LoopBackApplication2, cb?: (err: Error, result: any) => void): void {
+    this._app = app;
   }
 
   abstract init(cb: (err: Error, result: any) => void): void;

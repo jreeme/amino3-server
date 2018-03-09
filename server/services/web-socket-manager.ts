@@ -65,7 +65,7 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    me.server.get('/util/get-websocket-info', (req, res) => {
+    me.app.get('/util/get-websocket-info', (req, res) => {
       try {
         res.status(200).send({
           serverUrl: `http://${req.connection.localAddress}:${req.connection.localPort}`,

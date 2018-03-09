@@ -1,2 +1,10 @@
 {
+  "amino3Config": {
+    "noListen": true,
+    "logLevel": "debug",
+    "suppressedServices": [
+      "FileUpload",
+      "PluginManager"
+    ]
+  }
 }

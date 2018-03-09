@@ -73,17 +73,17 @@ export class PluginManagerImpl extends BaseServiceImpl {
           }
         }
       });
-      me.server.get('/upload', function (req, res) {
+      me.app.get('/upload', function (req, res) {
         PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
           res.send(JSON.stringify(obj));
         });
       });
-      me.server.post('/upload', function (req, res) {
+      me.app.post('/upload', function (req, res) {
         PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
           return res.status(200).send({status: err ? 'error' : 'OK', error: err});
         });
       });
-      me.server.delete('/uploaded/files/:name', function (req, res) {
+      me.app.delete('/uploaded/files/:name', function (req, res) {
         PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
           res.send(JSON.stringify(result));
         });

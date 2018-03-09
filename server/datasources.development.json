@@ -1,17 +1,17 @@
 {
-  "amino_admin" : {
-    "name"          : "amino_admin",
+  "amino_admin_mysql": {
+    "name"          : "amino_admin_mysql",
     "host"          : "localhost",
-    "port"          : 5432,
+    "port"          : 3306,
+    "connector"     : "mysql",
     "database"      : "amino_admin",
+    "username"      : "amino_admin_user",
     "password"      : "password",
-    "admin_user"    : "postgres",
-    "admin_password": "password",
-    "user"          : "amino_admin_user",
-    "connector"     : "postgresql"
+    "admin_user"    : "root",
+    "admin_password": "password"
   },
-  "amino_admin2": {
-    "name"     : "amino_admin2",
+  "amino_admin_mem"  : {
+    "name"     : "amino_admin_mem",
     "connector": "memory"
   }
 }

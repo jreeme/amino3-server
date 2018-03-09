@@ -19,5 +19,7 @@
     "cors"        : false,
     "handleErrors": false
   },
-  "legacyExplorer": false
+  "legacyExplorer": false,
+  "amino3Config"  : {
+  }
 }
