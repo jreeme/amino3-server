@@ -27,13 +27,12 @@ export class Globals {
     });
   }
 
-  static suppressedServices: string[] = ['RebuildClient', 'PluginManager'];
+  static suppressedServices: string[] = [];
   static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
   static logLevel = 'warning';// debug, info, notice, warning, error, critical, alert, emergency
   static noListen = false;
   static noServices = false;
-  static suppressLoadPlugins = false;
-  static suppressClientRebuild = false;
+  static noClientRebuild = false;
 
   static serverChannel = 'server-channel';
   static adminUserName = 'root';

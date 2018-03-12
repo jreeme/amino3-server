@@ -1,6 +1,7 @@
 import {LoopBackApplication} from 'loopback';
 import {Server} from 'http';
 import {IEnvelope} from "firmament-yargs";
+import {RequestHandlerParams} from "express-serve-static-core";
 
 declare global {
   interface UploadedFileInfoOptions {
@@ -80,6 +81,9 @@ declare global {
     http: Server;
     models: any;
     dataSources: any;
+    loopback: {
+      status: () => RequestHandlerParams;
+    }
     emit: (eventName: string, data?: any) => void;
   }
 

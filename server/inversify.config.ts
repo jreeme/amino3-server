@@ -2,7 +2,6 @@ import {kernel} from 'firmament-bash';
 
 import {Logger, LoggerImpl} from './util/logging/logger';
 import {BootManager, BootManagerImpl} from './startup/boot-manager';
-import {RootServiceImpl} from './services/root-service';
 import {BaseService} from './services/base-service';
 import {StaticServiceImpl} from './services/static-service';
 import {AuthenticationImpl} from './services/authentication';
@@ -17,10 +16,11 @@ import {MysqlHelperImpl} from './util/database-helpers/implementations/mysql-hel
 import {PostalSocketConnectionImpl} from './util/websockets/postal-socket-connection-impl';
 import {SocketIoWrapper, SocketIoWrapperImpl} from './util/websockets/socketIoWrapper';
 import {WebSocketManagerImpl} from './services/web-socket-manager';
+import {ServiceManager, ServiceManagerImpl} from './util/service-manager';
 
 //Singletons
+kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
 //Services
-kernel.bind<BaseService>('BaseService').to(RootServiceImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(StaticServiceImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(AuthenticationImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(FileUploadImpl).inSingletonScope();

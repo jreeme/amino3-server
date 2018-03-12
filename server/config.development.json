@@ -1,10 +1,17 @@
 {
   "amino3Config": {
-    "noListen": true,
-    "logLevel": "debug",
+    "noListen"          : false,
+    "noServices"        : false,
+    "logLevel"          : "debug",
     "suppressedServices": [
+      "Authentication",
       "FileUpload",
-      "PluginManager"
+      "FolderMonitor",
+      "InitializeDatabase",
+      "PluginManager",
+      "RebuildClient",
+      "StaticService",
+      "_WebSocketManager"
     ]
   }
 }

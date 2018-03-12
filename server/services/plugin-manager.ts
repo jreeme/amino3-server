@@ -41,6 +41,24 @@ export class PluginManagerImpl extends BaseServiceImpl {
   initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
     super.initSubscriptions(server);
     const me = this;
+    me.app.get('/upload', function (req, res) {
+      PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
+        res.send(JSON.stringify(obj));
+      });
+    });
+    me.app.post('/upload', function (req, res) {
+      PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
+        return res.status(200).send({status: err ? 'error' : 'OK', error: err});
+      });
+    });
+    me.app.delete('/uploaded/files/:name', function (req, res) {
+      PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
+        res.send(JSON.stringify(result));
+      });
+    });
+    me.loadPlugins((err) => {
+      cb(err, {message: 'Initialized PluginManager'});
+    });
     me.postal.subscribe({
       channel: 'FolderMonitor',
       topic: Globals.pluginUploadFolderToMonitor,
@@ -62,55 +80,17 @@ export class PluginManagerImpl extends BaseServiceImpl {
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    me.gitClientCode((/*err:Error*/) => {
-      me.postal.publish({
-        channel: 'FolderMonitor',
-        topic: 'AddFolderToMonitor',
-        data: {
-          folderMonitorPath: Globals.pluginUploadFolderToMonitor,
-          watcherConfig: {
-            ignoreInitial: false
-          }
+    me.postal.publish({
+      channel: 'FolderMonitor',
+      topic: 'AddFolderToMonitor',
+      data: {
+        folderMonitorPath: Globals.pluginUploadFolderToMonitor,
+        watcherConfig: {
+          ignoreInitial: false
         }
-      });
-      me.app.get('/upload', function (req, res) {
-        PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {
-          res.send(JSON.stringify(obj));
-        });
-      });
-      me.app.post('/upload', function (req, res) {
-        PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
-          return res.status(200).send({status: err ? 'error' : 'OK', error: err});
-        });
-      });
-      me.app.delete('/uploaded/files/:name', function (req, res) {
-        PluginManagerImpl.fileUploader.delete(req, res, function (err, result) {
-          res.send(JSON.stringify(result));
-        });
-      });
-      me.loadPlugins((err) => {
-        cb(err, {message: 'Initialized PluginManager'});
-      });
+      }
     });
   }
-
-  private gitClientCode(cb: (err?) => void) {
-    const me = this;
-    if (!fs.existsSync(Globals.clientFolder)) {
-      //Make sure cwd is as expected by shell processes
-      process.chdir(Globals.projectRootPath);
-      async.series([
-        (cb) => {
-          me.processCommandJson.processAbsoluteUrl(Globals.gitCloneClientExecutionGraph, cb);
-        },
-        (cb) => {
-          me.processCommandJson.processAbsoluteUrl(Globals.npmInstallClientExecutionGraph, cb);
-        }
-      ], cb);
-      return;
-    }
-    cb();
-  };
 
   private modifyClientPagesRouting(cb: (err) => void) {
     const me = this;
@@ -211,10 +191,6 @@ export class PluginManagerImpl extends BaseServiceImpl {
 
   private loadPlugins(cb: (err?) => void) {
     const me = this;
-    if (Globals.suppressLoadPlugins) {
-      cb();
-      return;
-    }
     if (!me.loadingPlugins) {
       me.loadingPlugins = true;
       async.series([

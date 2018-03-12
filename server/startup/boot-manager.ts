@@ -2,6 +2,7 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {Logger} from '../util/logging/logger';
 import {Globals} from "../globals";
+import {ServiceManager} from "../util/service-manager";
 
 export interface BootManager {
   start(loopback: any, loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
@@ -14,6 +15,7 @@ export class BootManagerImpl implements BootManager {
   private startListening: boolean;
 
   constructor(@inject('Logger') private log: Logger,
+              @inject('ServiceManager') private serviceManager: ServiceManager,
               @inject('IPostal') private postal: IPostal) {
   }
 
@@ -38,16 +40,16 @@ export class BootManagerImpl implements BootManager {
       throw new Error(errorMsg);
     }
 
-    //Loopback App booted so all configs are loaded (and available via app.get('config-name')
-    //so this is a good time to initialize our Globals object
-    Globals.init(me.app);
-
     //Tell loopback to use AminoAccessToken for auth
     me.app.use(me.loopback.token({
       model: me.app.models.AminoAccessToken
     }));
 
-    //Signal service manager to start up Amino3 services
+    //Loopback App booted so all configs are loaded (and available via app.get('config-name')
+    //so this is a good time to initialize our Globals object
+    Globals.init(me.app);
+
+    //Sign up to hear back from ServiceManager when all the services (if any) are started
     me.postal
       .subscribe({
         channel: 'Amino3Startup',
@@ -69,11 +71,20 @@ export class BootManagerImpl implements BootManager {
           me.app.emit('started');
         }
       });
-    me.postal
-      .publish({
-        channel: 'Amino3Startup',
-        topic: 'loopback-booted'
-      });
+
+    //Bring ServiceManager to life
+    me.serviceManager.initSubscriptions(me.app, (err: Error) => {
+      if (err) {
+        const errorMsg = `Failed to initialize 'ServiceManager': ${err.message}`;
+        me.log.error(errorMsg);
+        throw new Error(errorMsg);
+      }
+      me.postal
+        .publish({
+          channel: 'Amino3Startup',
+          topic: 'loopback-booted'
+        });
+    });
   }
 
   private listen() {

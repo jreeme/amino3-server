@@ -6,6 +6,9 @@ import {Logger} from '../util/logging/logger';
 import {Util} from '../util/util';
 import {Globals} from '../globals';
 
+import * as fs from 'fs';
+import * as async from 'async';
+
 @injectable()
 export class RebuildClientImpl extends BaseServiceImpl {
 
@@ -18,51 +21,57 @@ export class RebuildClientImpl extends BaseServiceImpl {
   initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
     super.initSubscriptions(server);
     const me = this;
-    me.postal.subscribe({
-      channel: 'ServiceBus',
-      topic: 'RebuildClient',
-      callback: me.rebuildClient.bind(me)
+    me.app.get('/system-ctl/rebuild-client', (req, res) => {
+      me.rebuildClient.bind(me)((err: Error) => {
+        res.status(200).json({status: 'OK'});
+      });
     });
     cb(null, {message: 'Initialized RebuildClient Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    this.app.get('/system-ctl/rebuild-client', (req, res) => {
-      me.postal.publish({
-        channel: 'ServiceBus',
-        topic: 'RebuildClient',
-        data: {}
-      });
-      return res.status(200).json({status: 'OK'});
-    });
-    me.ngBuildClient((err, result) => {
+    me.rebuildClient((err, result) => {
       cb(err, err ? result : {message: 'Initialized RebuildClient'});
     });
   }
 
-  private rebuildClient(cb: (err, result) => void) {
+  private rebuildClient(cb: (err: Error, result: any) => void) {
     const me = this;
     cb = Util.checkCallback(cb);
-    me.ngBuildClient((err, result) => {
-      if (!err) {
-        me.postal.publish({
+    me.gitClientCode((err, result) => {
+      err && cb(err, result);
+      !err && me.ngBuildClient((err, result) => {
+        !err && me.postal.publish({
           channel: 'ServiceBus',
           topic: 'BroadcastToClients',
           data: {
             topic: 'RefreshPage'
           }
         });
-      }
-      cb(err, result);
+        cb(err, result);
+      });
     });
   }
 
-  private ngBuildClient(cb: (err?: Error, result?: any) => void) {
-    if (Globals.suppressClientRebuild) {
-      const err = null;
-      return cb(err, {message: err ? 'Error Rebuilding Client' : 'Client Rebuilt'});
+  private gitClientCode(cb: (err?, result?) => void) {
+    const me = this;
+    if (fs.existsSync(Globals.clientFolder)) {
+      return cb();
     }
+    //Make sure cwd is as expected by shell processes
+    process.chdir(Globals.projectRootPath);
+    async.series([
+      (cb) => {
+        me.processCommandJson.processAbsoluteUrl(Globals.gitCloneClientExecutionGraph, cb);
+      },
+      (cb) => {
+        me.processCommandJson.processAbsoluteUrl(Globals.npmInstallClientExecutionGraph, cb);
+      }
+    ], cb);
+  };
+
+  private ngBuildClient(cb: (err?: Error, result?: any) => void) {
     process.chdir(Globals.clientFolder);
     this.processCommandJson.processAbsoluteUrl(Globals.ngBuildClientExecutionGraph, (err) => {
       cb(err, {message: err ? 'Error Rebuilding Client' : 'Client Rebuilt'});

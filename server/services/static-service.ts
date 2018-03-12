@@ -16,7 +16,7 @@ export class StaticServiceImpl extends BaseServiceImpl {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    const loopback = require('loopback');
+    //const loopback = require('loopback');
     //this.server.use('/', loopback.static(Globals.clientDistFolder));
     cb(null, {message: 'Initialized StaticService'});
   }
