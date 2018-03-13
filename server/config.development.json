@@ -2,10 +2,10 @@
   "amino3Config": {
     "noListen"          : false,
     "noServices"        : false,
-    "logLevel"          : "debug",
+    "logLevel"          : "warning",
     "suppressedServices": [
       "Authentication",
-      "FileUpload",
+      "_FileUpload",
       "FolderMonitor",
       "InitializeDatabase",
       "PluginManager",

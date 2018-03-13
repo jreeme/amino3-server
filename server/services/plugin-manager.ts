@@ -16,7 +16,9 @@ import * as jsonfile from 'jsonfile';
 
 @injectable()
 export class PluginManagerImpl extends BaseServiceImpl {
-  private static fileUploaderOptions = {
+  init(cb: (err: Error, result: any) => void): void {
+  }
+/*  private static fileUploaderOptions = {
     tmpDir: Globals.tmpUploaderFolder,
     uploadDir: Globals.pluginUploadFolderToMonitor,
     uploadUrl: Globals.uploadedPluginUrl,
@@ -47,7 +49,7 @@ export class PluginManagerImpl extends BaseServiceImpl {
       });
     });
     me.app.post('/upload', function (req, res) {
-      PluginManagerImpl.fileUploader.post(req, res, function (err/*,uploadedFileInfo*/) {
+      PluginManagerImpl.fileUploader.post(req, res, function (err/!*,uploadedFileInfo*!/) {
         return res.status(200).send({status: err ? 'error' : 'OK', error: err});
       });
     });
@@ -62,8 +64,8 @@ export class PluginManagerImpl extends BaseServiceImpl {
     me.postal.subscribe({
       channel: 'FolderMonitor',
       topic: Globals.pluginUploadFolderToMonitor,
-      callback: (/*fileWatcherPayload: FileWatcherPayload*/) => {
-        me.loadPlugins((/*err*/) => {
+      callback: (/!*fileWatcherPayload: FileWatcherPayload*!/) => {
+        me.loadPlugins((/!*err*!/) => {
           me.broadcastPluginList();
         });
       }
@@ -71,7 +73,7 @@ export class PluginManagerImpl extends BaseServiceImpl {
     me.postal.subscribe({
       channel: 'PluginManager',
       topic: 'GetPluginList',
-      callback: (/*data*/) => {
+      callback: (/!*data*!/) => {
         me.broadcastPluginList();
       }
     });
@@ -225,5 +227,5 @@ export class PluginManagerImpl extends BaseServiceImpl {
         , data: me.pluginManifests
       }
     });
-  }
+  }*/
 }

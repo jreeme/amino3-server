@@ -31,6 +31,10 @@
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.0.5.tgz#b6e250e281b47e0192e236619e9b1afe62fd345c"
 
+"@types/events@*":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@types/events/-/events-1.2.0.tgz#81a6731ce4df43619e5c8c945383b3e62a89ea86"
+
 "@types/express-serve-static-core@*":
   version "4.0.57"
   resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-4.0.57.tgz#3cd8ab4b11d5ecd70393bada7fc1c480491537dd"
@@ -44,6 +48,13 @@
     "@types/body-parser" "*"
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
+
+"@types/formidable@^1.0.30":
+  version "1.0.30"
+  resolved "https://registry.yarnpkg.com/@types/formidable/-/formidable-1.0.30.tgz#145e0f8a7ad13e4b4546ad9d98d390cae132e409"
+  dependencies:
+    "@types/events" "*"
+    "@types/node" "*"
 
 "@types/lodash@^4.14.80":
   version "4.14.85"
@@ -1937,9 +1948,13 @@ formatio@1.2.0:
   dependencies:
     samsam "1.x"
 
-formidable@^1.0.17, formidable@^1.1.1:
+formidable@^1.0.17:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.1.1.tgz#96b8886f7c3c3508b932d6bd70c4d3a88f35f1a9"
+
+formidable@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.2.0.tgz#ce291bfec67c176e282f891ece2c37de0c83ae84"
 
 forwarded@~0.1.2:
   version "0.1.2"
