@@ -51,10 +51,6 @@ export class Globals {
   static uploadedFilesBaseFolder = path.resolve(Globals.serverFolder, 'uploaded-files');
   static uploadedFilesTmpFolder = path.resolve(Globals.uploadedFilesBaseFolder, 'tmp');
   static uploadedFilesFolder = path.resolve(Globals.uploadedFilesBaseFolder, 'files');
-  static uploadFileUrl = '/uploaded-files/files';
-  static uploadFilePostUrl = '/upload-files';
-  //static uploadFileGetUrl = Globals.uploadFilePostUrl;
-  //static uploadFileDeleteUrl = '/uploaded-files/files/:name';
   //Plugin uploader, etc.
   static uploadedPluginUrl = '/amino3-plugins/files';
   static pluginUploadFolderToMonitor = path.resolve(Globals.serverFolder, 'amino3-plugins/files');
@@ -69,5 +65,9 @@ export class Globals {
   static npmInstallClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-install-client.json');
   static ngBuildClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client.json');
   static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
+  //URLs
+  static uploadFileUrl = '/uploaded-files/files';
+  static uploadFilePostUrl = '/upload-files';
+  static remoteLoggingUrl = '/log';
 }
 

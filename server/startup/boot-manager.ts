@@ -55,13 +55,13 @@ export class BootManagerImpl implements BootManager {
         channel: 'Amino3Startup',
         topic: 'services-started',
         callback: () => {
-          me.log.debug(`[RECV] 'Amino3Startup:services-started': `);
+          me.log.info(`[RECV] 'Amino3Startup:services-started': `);
           //Sometimes, for building the client, etc., you just don't want to sit and listen
           if (!me.startListening || Globals.noListen) {
             process.exit(0);
           }
-          me.log.debug(`Starting Amino3 by 'node server.js'`);
-          me.log.debug(`Starting Socket.IO server`);
+          me.log.info(`Starting Amino3 by 'node server.js'`);
+          me.log.info(`Starting Socket.IO server`);
           me.postal
             .publish({
               channel: 'ServiceBus',
@@ -93,9 +93,9 @@ export class BootManagerImpl implements BootManager {
       let baseUrl = me.app.get('url').replace(/\/$/, '');
       if (me.app.get('loopback-component-explorer')) {
         let explorerPath = me.app.get('loopback-component-explorer').mountPath;
-        me.log.info(`Browse your REST API at ${baseUrl} ${explorerPath}`);
+        me.log.notice(`Browse your REST API at ${baseUrl} ${explorerPath}`);
       }
-      me.log.info(`Web server listening at: ${baseUrl}`);
+      me.log.notice(`Web server listening at: ${baseUrl}`);
     });
   }
 }

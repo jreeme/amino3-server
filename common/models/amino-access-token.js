@@ -17,7 +17,9 @@ module.exports = function (AminoAccessToken) {
 function createToken(aminoUser) {
   try {
     const ttl = global.accessTokenTimeToLiveSeconds;
-    return jwt.sign(aminoUser, 'mySecret', {expiresIn: ttl});
+    const au = aminoUser.toObject();
+    delete au.password;
+    return jwt.sign(au, 'mySecret', {expiresIn: ttl});
   } catch (err) {
     return 'could not generate JSON web token';
   }

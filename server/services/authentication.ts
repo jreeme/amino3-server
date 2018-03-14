@@ -72,6 +72,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
     const R = me.app.models.AminoRole;
     const RM = me.app.models.AminoRoleMapping;
     const U = me.app.models.AminoUser;
+    const AAT = me.app.models.AminoAccessToken;
     const ACL = me.app.models.ACL;
     const newRootUser = {
       username: Globals.adminUserName,
@@ -80,11 +81,12 @@ export class AuthenticationImpl extends BaseServiceImpl {
       email: Globals.adminUserEmail,
       password: Globals.adminUserDefaultPassword
     };
+    AAT.settings.acls.length = 0;
+    U.settings.acls.length = 0;
     async.waterfall([
       //AminoUser.findOrCreate() does not work. Something to do with base loopback user implementation
       (cb) => {
         //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
-        U.settings.acls.length = 0;
         U.find({where: {email: Globals.adminUserEmail}}, (err, users) => {//find adminUser
           return cb(err, users.length ? users[0] : null);
         });
@@ -110,7 +112,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
       },
       (principal, created, cb) => {
         const adminAcls = [
-          {
+/*          {
             model: 'AminoUser',
             accessType: '*',
             property: '*',
@@ -126,14 +128,14 @@ export class AuthenticationImpl extends BaseServiceImpl {
             principalId: 'superuser',
             permission: 'ALLOW'
           }
-          /*,{
+          ,{
             model: 'AminoUser',
             accessType: 'EXECUTE',
             property: 'createUser',
             principalType: 'ROLE',
             principalId: 'superuser',
             permission: 'ALLOW'
-          }*/
+          }
           , {
             model: 'AminoUser',
             accessType: 'EXECUTE',
@@ -141,7 +143,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
             principalType: 'ROLE',
             principalId: '$everyone',
             permission: 'ALLOW'
-          }
+          }*/
         ];
         async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
       }
