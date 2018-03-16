@@ -1,5 +1,6 @@
 'use strict';
 const jwt = require('jsonwebtoken');
+const MD5 = require('md5.js');
 
 module.exports = function (AminoAccessToken) {
   AminoAccessToken.observe('before save', (ctx, cb) => {
@@ -8,18 +9,19 @@ module.exports = function (AminoAccessToken) {
       if (err) {
         return cb(err);
       }
-      ctx.instance.id = createToken(aminoUser);
-      cb();
+      aminoUser = aminoUser.toObject();
+      delete aminoUser.password;
+      const webToken = createToken(aminoUser, ctx.instance.ttl);
+      aminoUser.accessTokenMD5 = (new MD5()).update(webToken).digest('hex');
+      ctx.instance.id = createToken(aminoUser, ctx.instance.ttl);
+      return cb();
     });
   });
 };
 
-function createToken(aminoUser) {
+function createToken(aminoUser, ttl) {
   try {
-    const ttl = global.accessTokenTimeToLiveSeconds;
-    const au = aminoUser.toObject();
-    delete au.password;
-    return jwt.sign(au, 'mySecret', {expiresIn: ttl});
+    return jwt.sign(aminoUser, 'irJ8EZnmUtliF9dFjL5g', {expiresIn: ttl});
   } catch (err) {
     return 'could not generate JSON web token';
   }

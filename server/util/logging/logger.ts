@@ -16,6 +16,13 @@ export interface Logger {
   alert(msg: string);
   emergency(msg: string);
   logIfError(err: Error): void;
+  logFromRemoteClient(remoteLoggingMessage: RemoteLoggingMessage): void;
+}
+
+export interface RemoteLoggingMessage {
+  accessTokenMD5: string,
+  level: string,
+  message: string
 }
 
 @injectable()
@@ -46,6 +53,27 @@ export class LoggerImpl implements Logger {
       ];
     }
     return this._loggers;
+  }
+
+  logFromRemoteClient(remoteLoggingMessage: RemoteLoggingMessage) {
+    const me = this;
+    const logMethodName = remoteLoggingMessage.level.toLowerCase();
+    const logMethod: (msg: string) => void = me[logMethodName].bind(me);
+    const clientId = `${remoteLoggingMessage.accessTokenMD5 || '<unknown>'}`;
+    if (typeof  logMethod === 'function') {
+      const message = `[CLIENT] ${clientId} : ${remoteLoggingMessage.message}`;
+      return logMethod(message);
+    }
+    me.warning(`Received bad log message level from client '${clientId}'`)
+  }
+
+  logIfError(err: Error): boolean {
+    if (err) {
+      this.loggers.forEach((logger) => {
+        logger.error(err.message);
+      });
+    }
+    return !!err;
   }
 
   debug(msg: string) {
@@ -94,14 +122,5 @@ export class LoggerImpl implements Logger {
     this.loggers.forEach((logger) => {
       logger.emergency(msg);
     });
-  }
-
-  logIfError(err: Error): boolean {
-    if (err) {
-      this.loggers.forEach((logger) => {
-        logger.error(err.message);
-      });
-    }
-    return !!err;
   }
 }
