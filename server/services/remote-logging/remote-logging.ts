@@ -11,9 +11,9 @@ export class RemoteLoggingImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
-    super.initSubscriptions(server);
-    cb(null, {message: 'Initialized FileUpload Subscriptions'});
+  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(app);
+    cb(null, {message: 'Initialized RemoteLogging Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
@@ -22,7 +22,7 @@ export class RemoteLoggingImpl extends BaseServiceImpl {
       me.log.logFromRemoteClient(req.body);
       res.status(200).json({status: 'OK'});
     });
-    cb(null, {message: 'Initialized FileUpload'});
+    cb(null, {message: 'Initialized RemoteLogging'});
   }
 }
 

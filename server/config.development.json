@@ -5,13 +5,13 @@
     "logLevel"          : "notice",
     "suppressedServices": [
       "_Authentication",
-      "_FileUpload",
+      "FileUpload",
       "FolderMonitor",
       "InitializeDatabase",
       "PluginManager",
       "_RebuildClient",
       "StaticService",
-      "_WebSocketManager"
+      "WebSocketManager"
     ]
   }
 }

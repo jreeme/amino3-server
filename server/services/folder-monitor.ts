@@ -14,8 +14,8 @@ export class FolderMonitorImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
-    super.initSubscriptions(server);
+  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(app);
     const me = this;
     me.postal.subscribe({
       channel: 'FolderMonitor',

@@ -4,8 +4,8 @@ import * as boolifyString from 'boolify-string';
 
 //process.env.LB_LAZYCONNECT_DATASOURCES = 1;
 export class Globals {
-  static init(server: LoopBackApplication2) {
-    const amino3Config = server.get('amino3Config');
+  static init(app: LoopBackApplication2) {
+    const amino3Config = app.get('amino3Config');
     //Override Global properties with loopback config values
     Object.keys(Globals).forEach((key) => {
       if (typeof Globals[key] === 'function') {

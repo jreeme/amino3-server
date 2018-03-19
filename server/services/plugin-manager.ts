@@ -40,8 +40,8 @@ export class PluginManagerImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
-    super.initSubscriptions(server);
+  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(app);
     const me = this;
     me.app.get('/upload', function (req, res) {
       PluginManagerImpl.fileUploader.get(req, res, function (err, obj) {

@@ -18,8 +18,8 @@ export class RebuildClientImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void) {
-    super.initSubscriptions(server);
+  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
+    super.initSubscriptions(app);
     const me = this;
     me.app.get('/system-ctl/rebuild-client', (req, res) => {
       me.rebuildClient.bind(me)((err: Error) => {

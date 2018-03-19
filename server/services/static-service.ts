@@ -10,8 +10,8 @@ export class StaticServiceImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result: any) => void): void {
-    super.initSubscriptions(server);
+  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void): void {
+    super.initSubscriptions(app);
     cb(null, {message: 'Initialized StaticService Subscriptions'});
   }
 

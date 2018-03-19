@@ -2,26 +2,26 @@
   "initial:before": {
     "loopback#favicon": {}
   },
-  "initial"       : {
+  "initial": {
     "compression": {},
-    "cors"       : {
+    "cors": {
       "params": {
-        "origin"     : true,
+        "origin": true,
         "credentials": true,
-        "maxAge"     : 86400
+        "maxAge": 86400
       }
     }
   },
-  "session"       : {},
-  "auth"          : {
+  "session": {},
+  "auth": {
     "loopback#token": {
       "params": {
         "model": "AminoAccessToken"
       }
     }
   },
-  "parse"         : {
-    "body-parser#json"      : {
+  "parse": {
+    "body-parser#json": {
       "params": {
         "limit": "15mb"
       }
@@ -29,26 +29,26 @@
     "body-parser#urlencoded": {
       "params": {
         "extended": true,
-        "limit"   : "15mb"
+        "limit": "15mb"
       }
     }
   },
-  "routes"        : {
+  "routes": {
     "loopback#rest": {
       "paths": [
         "${restApiRoot}"
       ]
     }
   },
-  "files"         : {
+  "files": {
     "loopback#static": {
       "params": "$!../dist/client"
     }
   },
-  "final"         : {
+  "final": {
     "loopback#urlNotFound": {}
   },
-  "final:after"   : {
+  "final:after": {
     "strong-error-handler": {}
   }
 }

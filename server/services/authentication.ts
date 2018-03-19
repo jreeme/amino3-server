@@ -7,14 +7,13 @@ import {Globals} from '../globals';
 
 @injectable()
 export class AuthenticationImpl extends BaseServiceImpl {
-  //noinspection JSUnusedLocalSymbols
   constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal) {
     super();
   }
 
-  initSubscriptions(server: LoopBackApplication2, cb: (err: Error, result?: any) => void) {
-    super.initSubscriptions(server);
+  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result?: any) => void) {
+    super.initSubscriptions(app);
     const me = this;
     //Required to enable LoopBack authentication
     me.app.enableAuth();
