@@ -8,13 +8,16 @@ import kernel from '../../inversify.config';
 @injectable()
 export class ServerServicesManagerImpl extends BaseServiceImpl {
   constructor(@inject('Logger') private log: Logger,
-              //@multiInject('BaseService') private services: BaseService[],
               @inject('IPostal') private postal: IPostal) {
     super();
   }
 
   initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
     super.initSubscriptions(app);
+    const me = this;
+    me.app.get('/download-service-tar/:serviceName', (req, res) => {
+      res.status(200).json({status: 'OK'});
+    });
     cb(null, {message: 'Initialized ServerServicesManager Subscriptions'});
   }
 
