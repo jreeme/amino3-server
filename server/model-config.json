@@ -1,6 +1,2 @@
 {
-  "ServerService": {
-    "dataSource": "amino_admin_mem",
-    "public": true
-  }
 }

@@ -34,25 +34,35 @@ export class ServiceManagerImpl implements ServiceManager {
         topic: 'loopback-booted',
         callback: () => {
           me.log.debug(`[RECV] 'Amino3Startup:loopback-booted': starting Amino3 services`);
-          const filteredServices: any[] = me.services
-            .filter((service) => {
-              return (-1 === _.findIndex(Globals.suppressedServices, (serviceName) => {
-                return service.serviceName === serviceName;
-              })) && !Globals.noServices;//<== filters all services if 'noServices' is set
+          //Put services and their enabled state in the database
+          const SS = app.models.ServerService;
+          SS.destroyAll((err, results) => {
+            const serverServices = me.services.map((service) => {
+              return {
+                name: service.serviceName,
+                enabled: !!me.enabledServices.find((element) => {
+                  return element.serviceName === service.serviceName;
+                })
+              };
             });
+            SS.create(serverServices, (err) => {
+              me.log.logIfError(err);
+            });
+          });
+          //Initialize enabled services
           async.series([
             (cb) => {
-              async.map(filteredServices, (service, cb) => {
+              async.map(me.enabledServices, (service, cb) => {
                 service.initSubscriptions(app, cb);
               }, cb);
             },
             (cb) => {
-              async.map(filteredServices, (service, cb) => {
+              async.map(me.enabledServices, (service, cb) => {
                 service.init(cb);
               }, cb);
             }
-          ], (err: Error, results: any[]) => {
-            err && me.log.error(`Error starting Amino3 services: '${err.message}'`)
+          ], (err: any, results: any[]) => {
+            me.log.logIfError(err);
             results.forEach((result) => {
               const msg = JSON.stringify(result, null, 2);
               me.log.debug(msg);
@@ -66,5 +76,14 @@ export class ServiceManagerImpl implements ServiceManager {
         }
       });
     return cb();
+  }
+
+  private get enabledServices(): any[] {
+    return this.services
+      .filter((service) => {
+        return (-1 === _.findIndex(Globals.suppressedServices, (serviceName) => {
+          return service.serviceName === serviceName;
+        })) && !Globals.noServices;//<== filters all services if 'noServices' is set
+      });
   }
 }

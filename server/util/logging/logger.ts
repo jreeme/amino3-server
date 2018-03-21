@@ -68,12 +68,19 @@ export class LoggerImpl implements Logger {
   }
 
   logIfError(err: Error): boolean {
+    const me = this;
     if (err) {
-      this.loggers.forEach((logger) => {
-        logger.error(err.message);
-      });
+      if (err instanceof Array) {
+        (<Error[]>err).forEach((err) => {
+          me.error(err.message);
+        });
+      }
+      else if (err instanceof Error) {
+        me.error(err.message);
+      }
+      return true;
     }
-    return !!err;
+    return false;
   }
 
   debug(msg: string) {
