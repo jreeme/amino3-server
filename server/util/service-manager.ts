@@ -8,82 +8,98 @@ import * as _ from 'lodash';
 
 export interface ServiceManager {
   initSubscriptions(app: LoopBackApplication2, cb: (err?: Error) => void): void;
+  services: BaseService[];
 }
 
 @injectable()
 export class ServiceManagerImpl implements ServiceManager {
+  private app: LoopBackApplication2;
+
   constructor(@inject('Logger') private log: Logger,
-              @multiInject('BaseService') private services: BaseService[],
+              @multiInject('BaseService') public services: BaseService[],
               @inject('IPostal') private postal: IPostal) {
   }
 
   initSubscriptions(app: LoopBackApplication2, cb?: (err?: Error, result?: any) => void): void {
     const me = this;
+    me.app = app;
     if (Globals.noServices) {
-      me.log.warning(`Amino3 services suppressed by AMINO3_NO_SERVICES environment variable or 'noServices' config`);
       //Add default route to avoid error in browser if someone hits us when we're not running services
-      app.get('/', app.loopback.status());
+      me.app.get('/', me.app.loopback.status());
+      me.log.warning(`Amino3 services suppressed by AMINO3_NO_SERVICES environment variable or 'noServices' config`);
+      return cb();
     }
-    app.get('/hack-get-services', (req, res) => {
-      res.status(200).send(me.services.map((service) => service.serviceName).sort());
-    });
     //Sign up for 'loopback-booted' event so we can start up services
     me.postal
       .subscribe({
         channel: 'Amino3Startup',
         topic: 'loopback-booted',
         callback: () => {
-          me.log.debug(`[RECV] 'Amino3Startup:loopback-booted': starting Amino3 services`);
-          //Put services and their enabled state in the database
-          const SS = app.models.ServerService;
-          SS.destroyAll((err, results) => {
-            const serverServices = me.services.map((service) => {
-              return {
-                name: service.serviceName,
-                enabled: !!me.enabledServices.find((element) => {
-                  return element.serviceName === service.serviceName;
-                })
-              };
-            });
-            SS.create(serverServices, (err) => {
-              me.log.logIfError(err);
-            });
-          });
-          //Initialize enabled services
-          async.series([
-            (cb) => {
-              async.map(me.enabledServices, (service, cb) => {
-                service.initSubscriptions(app, cb);
-              }, cb);
-            },
-            (cb) => {
-              async.map(me.enabledServices, (service, cb) => {
-                service.init(cb);
-              }, cb);
-            }
-          ], (err: any, results: any[]) => {
-            me.log.logIfError(err);
-            results.forEach((result) => {
-              const msg = JSON.stringify(result, null, 2);
-              me.log.debug(msg);
-            });
-            !err && me.postal
-              .publish({
-                channel: 'Amino3Startup',
-                topic: 'services-started'
-              });
-          });
+          me.loopbackBooted();
         }
       });
-    return cb();
+    cb();
   }
 
-  private get enabledServices(): any[] {
+  private getEnabledServices(cb: (err: Error, enabledServices: BaseService[]) => void): void {
+    const me = this;
+    async.waterfall([
+      (cb) => {
+        //First, let's see what's in our ServerService database. Generally, the only time we won't have
+        //services described there is if this is the first run of Amino3 or there's a bad DB error
+        const SS = me.app.models.ServerService;
+        SS.find({where: {enabled: false}}, (err, results) => {
+          const suppressedServiceNames = (err || !results || !results.length)
+            ? Globals.suppressedServices
+            : results.map((result) => result.name);
+          return cb(null, me._getEnabledServices(suppressedServiceNames));
+        });
+      }
+    ], (err: Error, results: BaseService[]) => {
+      cb(err, results);
+    });
+  }
+
+  private _getEnabledServices(suppressedServices: string[]): BaseService[] {
     return this.services
       .filter((service) => {
-        return (-1 === _.findIndex(Globals.suppressedServices, (serviceName) => {
+        return (-1 === _.findIndex(suppressedServices, (serviceName) => {
           return service.serviceName === serviceName;
         })) && !Globals.noServices;//<== filters all services if 'noServices' is set
       });
+  }
+
+  private loopbackBooted() {
+    const me = this;
+    me.log.debug(`[RECV] 'Amino3Startup:loopback-booted': starting Amino3 services`);
+    //Initialize enabled services
+    me.getEnabledServices((err, enabledServices) => {
+      if (me.log.logIfError(err)) {
+        return;
+      }
+      async.series([
+        (cb) => {
+          async.map(enabledServices, (service, cb) => {
+            service.initSubscriptions(me.app, cb);
+          }, cb);
+        },
+        (cb) => {
+          async.map(enabledServices, (service, cb) => {
+            service.init(cb);
+          }, cb);
+        }
+      ], (err: any, results: any[]) => {
+        me.log.logIfError(err);
+        results.forEach((result) => {
+          const msg = JSON.stringify(result, null, 2);
+          me.log.debug(msg);
+        });
+        !err && me.postal
+          .publish({
+            channel: 'Amino3Startup',
+            topic: 'services-started'
+          });
+      });
+    });
   }
 }

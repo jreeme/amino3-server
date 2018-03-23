@@ -2,6 +2,17 @@
   "amino_admin_mem"  : {
     "name"     : "amino_admin_mem",
     "connector": "memory"
+  },
+  "amino_admin_pg": {
+    "name": "amino_admin_pg",
+    "host": "localhost",
+    "port": 5432,
+    "connector": "postgresql",
+    "database": "amino_admin",
+    "user": "amino_admin_user",
+    "password": "password",
+    "admin_user": "postgres",
+    "admin_password": "password"
   }
 }
 

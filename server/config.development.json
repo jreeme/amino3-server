@@ -7,7 +7,7 @@
       "_Authentication",
       "FileUpload",
       "FolderMonitor",
-      "InitializeDatabase",
+      "_InitializeDatabase",
       "PluginManager",
       "_RebuildClient",
       "StaticService",

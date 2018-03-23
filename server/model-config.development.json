@@ -5,39 +5,39 @@
     ]
   },
   "AminoAccessToken"  : {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   },
   "AminoUser"         : {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   },
   "AminoRole"         : {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   },
   "AminoPostalMessage": {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   },
   "AminoRoleMapping"  : {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   },
   "ACL"               : {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   },
   "UploadedFile"      : {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   },
   "DataSet"           : {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   },
   "ServerService"     : {
-    "dataSource": "amino_admin_mem",
+    "dataSource": "amino_admin_pg",
     "public"    : true
   }
 }

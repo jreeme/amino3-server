@@ -15,6 +15,7 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
     super();
   }
 
+/*
   private verifyDataSources(cb: (err?: Error) => void) {
     const me = this;
     const dataSourcesHash = me.app.dataSources;
@@ -40,8 +41,7 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
         dataSource.once('connected', test);
         dataSource.once('error', test);
       }, (err, dataSourcesBadConnection: any[]) => {
-        me.filterUnusedDataSources(dataSourcesBadConnection, (err, usedDataSources) => {
-
+        me.filterUnusedDataSources(dataSourcesBadConnection, (/!*err, usedDataSources*!/) => {
           cb();
         });
       });
@@ -56,61 +56,68 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
     });
     cb(null, usedDataSources);
   }
+*/
 
   initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
     super.initSubscriptions(app);
     const me = this;
-    me.verifyDataSources((err) => {
-      if (me.commandUtil.callbackIfError(cb, err)) {
-        return;
-      }
-      const AminoUser = me.app.models.AminoUser;
-      const ds = AminoUser.dataSource;
-      AminoUser.find((err) => {
-        let message = 'Initialized InitializeDatabase Subscriptions';
-        if (err) {
-          const filteredDatabaseHelpers =
-            me.databaseHelpers.filter((dbh) => ds.settings.connector === dbh.connectorName);
-          if (filteredDatabaseHelpers.length !== 1) {
-            message = `InitializeDatabase FAILED: No helper for '${ds.settings.connector}'`;
-            return cb(new Error(message), {message: message});
-          }
-          return filteredDatabaseHelpers[0].configure(ds, (err: Error) => {
-            if (err) {
-              message = 'InitializeDatabase FAILED: ' + err.message;
-              err = new Error(message);
+    async.waterfall([
+/*      (cb) => {
+        me.verifyDataSources(cb);
+      },*/
+      (cb) => {
+        const AminoUser = me.app.models.AminoUser;
+        const ds = AminoUser.dataSource;
+        AminoUser.find((err) => {
+          let message = 'Initialized InitializeDatabase Subscriptions';
+          if (err) {
+            const filteredDatabaseHelpers =
+              me.databaseHelpers.filter((dbh) => ds.settings.connector === dbh.connectorName);
+            if (filteredDatabaseHelpers.length !== 1) {
+              message = `InitializeDatabase FAILED: No helper for '${ds.settings.connector}'`;
+              return cb(new Error(message), {message: message});
             }
-            return cb(err, {message});
+            return filteredDatabaseHelpers[0].configure(ds, (err: Error) => {
+              if (err) {
+                message = 'InitializeDatabase FAILED: ' + err.message;
+                err = new Error(message);
+              }
+              return cb(err, {message});
+            });
+          }
+          return cb(null, {message});
+        });
+      },
+      (message, cb) => {
+        const datasources: string[] = Object.keys(me.app.dataSources);
+        async.each(datasources, (dsName, cb) => {
+          const ds = me.app.dataSources[dsName];
+          ds.isActual(function (err, actual) {
+            if (err) {
+              return cb(err);
+            }
+            if (actual) {
+              me.log.debug(`datasource '${dsName}' is up to date`);
+              return cb();
+            }
+            ds.autoupdate(function (err) {
+              if (err) {
+                return cb(err);
+              }
+              me.log.debug(`datasource '${dsName}' updated`);
+              return cb();
+            });
           });
-        }
-        return cb(null, {message});
-      });
+        }, (err:Error)=>{
+          cb(err, message);
+        });
+      }
+    ], (err: Error, results) => {
+      cb(err, results);
     });
   }
 
   init(cb: (err: Error, result: any) => void) {
-    const me = this;
-    const datasources = Object.keys(me.app.dataSources);
-    async.eachSeries(datasources, function (dsName, cb) {
-      const ds = me.app.dataSources[dsName];
-      ds.isActual(function (err, actual) {
-        if (err) {
-          return cb(err);
-        }
-        if (actual) {
-          me.log.debug(`datasource '${dsName}' is up to date`);
-          return cb();
-        }
-        ds.autoupdate(function (err) {
-          if (err) {
-            return cb(err);
-          }
-          me.log.debug(`datasource '${dsName}' updated`);
-          cb();
-        });
-      });
-    }, (err: Error) => {
-      cb(err, {message: 'Initialized InitializeDatabase'});
-    });
+    cb(null, {message: 'Initialized InitializeDatabase'});
   }
 }
