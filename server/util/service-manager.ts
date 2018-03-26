@@ -87,6 +87,22 @@ export class ServiceManagerImpl implements ServiceManager {
           async.map(enabledServices, (service, cb) => {
             service.init(cb);
           }, cb);
+        },
+        (cb) => {
+          //Update ServerServices table
+          const SS = me.app.models.ServerService;
+          SS.destroyAll((/*err:Error,info:any*/) => {
+            const serverServices = me.services.map((service) => {
+              return {
+                name: service.serviceName,
+                enabled: service.enabled
+              };
+            });
+            SS.create(serverServices, (err) => {
+              me.log.logIfError(err);
+              cb();
+            });
+          });
         }
       ], (err: any, results: any[]) => {
         me.log.logIfError(err);

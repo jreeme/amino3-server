@@ -21,27 +21,12 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
     me.app.get('/download-service-tar/:serviceName', (req, res) => {
       res.status(200).json({status: 'OK'});
     });
-    me.app.get('/hack-get-services', (req, res) => {
-      res.status(200).send(me.serviceManager.services.map((service) => service.serviceName).sort());
-    });
     cb(null, {message: 'Initialized ServerServicesManager Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
     const me = this;
-    const SS = me.app.models.ServerService;
-    SS.destroyAll((/*err:Error,info:any*/) => {
-      const serverServices = me.serviceManager.services.map((service) => {
-        return {
-          name: service.serviceName,
-          enabled: service.enabled
-        };
-      });
-      SS.create(serverServices, (err) => {
-        me.log.logIfError(err);
-        cb(null, {message: 'Initialized ServerServicesManager'});
-      });
-    });
+    cb(null, {message: 'Initialized ServerServicesManager'});
   }
 }
 
