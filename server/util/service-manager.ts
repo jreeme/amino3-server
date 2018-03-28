@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 
 export interface ServiceManager {
   initSubscriptions(app: LoopBackApplication2, cb: (err?: Error) => void): void;
+
   services: BaseService[];
 }
 
@@ -80,12 +81,20 @@ export class ServiceManagerImpl implements ServiceManager {
       async.series([
         (cb) => {
           async.map(enabledServices, (service, cb) => {
-            service.initSubscriptions(me.app, cb);
+            me.log.info(`Calling: ${service.serviceName}.initSubscriptions()`);
+            service.initSubscriptions(me.app, (err, result) => {
+              me.log.debug(`${service.serviceName}.initSubscriptions(): called back`);
+              cb(err, result);
+            });
           }, cb);
         },
         (cb) => {
           async.map(enabledServices, (service, cb) => {
-            service.init(cb);
+            me.log.info(`Calling: ${service.serviceName}.init()`);
+            service.init((err, result) => {
+              me.log.debug(`${service.serviceName}.init(): called back`);
+              cb(err, result);
+            });
           }, cb);
         },
         (cb) => {

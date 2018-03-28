@@ -13,14 +13,14 @@ export interface BaseService {
 
 @injectable()
 export abstract class BaseServiceImpl implements BaseService {
+  private readonly _serviceName: string;
+  private readonly _servicePostalChannel: string;
   private _enabled: boolean;
-  private _serviceName: string;
-  private _servicePostalChannel: string;
   private _app: LoopBackApplication2;
 
-  constructor() {
+  protected constructor() {
     this._enabled = false;
-    this._serviceName = this.constructor.name.replace('Impl','');
+    this._serviceName = this.constructor.name.replace('Impl', '');
     this._servicePostalChannel = `PostalChannel-${this.constructor.name}`;
   }
 
@@ -40,9 +40,10 @@ export abstract class BaseServiceImpl implements BaseService {
     return this._app;
   }
 
-  initSubscriptions(app: LoopBackApplication2, cb?: (err: Error, result: any) => void): void {
+  initSubscriptions(app: LoopBackApplication2, cb?: (err?: Error, result?: any) => void): void {
     this._app = app;
     this._enabled = true;
+    cb && cb(null, {message: '[Warning] Initialized BaseServiceImpl Subscriptions'});
   }
 
   abstract init(cb: (err: Error, result: any) => void): void;
