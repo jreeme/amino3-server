@@ -2,7 +2,7 @@ import {injectable, inject,} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
-import {ServiceManager} from '../../util/service-manager';
+import {ServiceManager} from '../../startup/service-manager';
 import kernel from '../../inversify.config';
 
 @injectable()
@@ -25,7 +25,6 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    const me = this;
     cb(null, {message: 'Initialized ServerServicesManager'});
   }
 }

@@ -3,21 +3,23 @@ import {Observable} from 'rxjs/Observable';
 import {Observer} from 'rxjs/Observer';
 import {Globals} from '../../globals';
 import {IPostal} from 'firmament-yargs';
-import Socket = SocketIO.Socket;
-import {Logger} from "../logging/logger";
+import {Logger} from '../logging/logger';
+import * as SocketIO from "socket.io";
 
 const Rx = require('rxjs');
 
 export interface SocketIoWrapper {
   id: string;
-  init(socket: Socket, postalSocketConnection: PostalSocketConnection);
+
+  init(socket: SocketIO.Socket, postalSocketConnection: PostalSocketConnection);
+
   publishToClient(aminoMessage: AminoMessage);
 }
 
 @injectable()
 export class SocketIoWrapperImpl implements SocketIoWrapper {
   private postalSocketConnection: PostalSocketConnection;
-  private socket: Socket;
+  private socket: SocketIO.Socket;
   private _id: string;
 
   constructor(@inject('Logger') private log: Logger,
@@ -42,7 +44,7 @@ export class SocketIoWrapperImpl implements SocketIoWrapper {
     }
   }
 
-  init(_socket: Socket, _postalSocketConnection: PostalSocketConnection) {
+  init(_socket: SocketIO.Socket, _postalSocketConnection: PostalSocketConnection) {
     const me = this;
     me.postalSocketConnection = _postalSocketConnection;
     me.socket = _socket;

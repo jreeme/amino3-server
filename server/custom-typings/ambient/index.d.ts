@@ -76,7 +76,7 @@ declare global {
   }
 
   interface LoopBackApplication2 extends LoopBackApplication {
-    on: (eventName: string, cb: () => void) => void;
+    //on: (eventName: string, cb: () => void) => void;
     start: () => Server;
     http: Server;
     models: any;
@@ -84,7 +84,7 @@ declare global {
     loopback: {
       status: () => RequestHandlerParams;
     }
-    emit: (eventName: string, data?: any) => void;
+    //emit: (eventName: string, data?: any) => void;
   }
 
 // Type definitions for socket.io 1.4.4
@@ -100,36 +100,36 @@ declare global {
     export = server;
   }*/
 
-  interface SocketIOStatic {
-    /**
+/*  interface SocketIOStatic {
+    /!**
      * Default Server constructor
-     */
+     *!/
     (): SocketIO.Server;
 
-    /**
+    /!**
      * Creates a new Server
      * @param srv The HTTP server that we're going to bind to
      * @param opts An optional parameters object
-     */
+     *!/
     (srv: any, opts?: SocketIO.ServerOptions): SocketIO.Server;
 
-    /**
+    /!**
      * Creates a new Server
      * @param port A port to bind to, as a number, or a string
      * @param An optional parameters object
-     */
+     *!/
     (port: string | number, opts?: SocketIO.ServerOptions): SocketIO.Server;
 
-    /**
+    /!**
      * Creates a new Server
      * @param A parameters object
-     */
+     *!/
     (opts: SocketIO.ServerOptions): SocketIO.Server;
 
-    /**
+    /!**
      * Backwards compatibility
      * @see io().listen()
-     */
+     *!/
     listen: SocketIOStatic;
-  }
+  }*/
 }

@@ -16,6 +16,10 @@ import * as jsonfile from 'jsonfile';
 
 @injectable()
 export class PluginManagerImpl extends BaseServiceImpl {
+  constructor() {
+    super();
+  }
+
   init(cb: (err?: Error, result?: any) => void): void {
     cb && cb();
   }

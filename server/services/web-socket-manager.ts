@@ -5,6 +5,7 @@ import * as Rx from 'rxjs';
 import {BaseServiceImpl} from './base-service';
 import {Logger} from '../util/logging/logger';
 import kernel from '../inversify.config';
+import * as SocketIO from 'socket.io';
 
 @injectable()
 export class WebSocketManagerImpl extends BaseServiceImpl {

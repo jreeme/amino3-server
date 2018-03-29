@@ -3,6 +3,7 @@ import {injectable} from 'inversify';
 export interface BaseService {
   app: LoopBackApplication2;
   enabled: boolean;
+  canBeDisabled: boolean;
   serviceName: string;
   servicePostalChannel: string;
 
@@ -16,12 +17,22 @@ export abstract class BaseServiceImpl implements BaseService {
   private readonly _serviceName: string;
   private readonly _servicePostalChannel: string;
   private _enabled: boolean;
+  private _canBeDisabled: boolean;
   private _app: LoopBackApplication2;
 
   protected constructor() {
     this._enabled = false;
+    this._canBeDisabled = true;
     this._serviceName = this.constructor.name.replace('Impl', '');
     this._servicePostalChannel = `PostalChannel-${this.constructor.name}`;
+  }
+
+  set canBeDisabled(newValue: boolean) {
+    this._canBeDisabled = newValue;
+  }
+
+  get canBeDisabled(): boolean {
+    return this._canBeDisabled;
   }
 
   get enabled(): boolean {

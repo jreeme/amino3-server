@@ -2,7 +2,7 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {Logger} from '../util/logging/logger';
 import {Globals} from "../globals";
-import {ServiceManager} from "../util/service-manager";
+import {ServiceManager} from "./service-manager";
 
 export interface BootManager {
   start(loopback: any, loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
@@ -58,7 +58,11 @@ export class BootManagerImpl implements BootManager {
           me.log.info(`[RECV] 'Amino3Startup:services-started': `);
           //Sometimes, for building the client, etc., you just don't want to sit and listen
           if (!me.startListening || Globals.noListen) {
-            process.exit(0);
+            Globals.noListen && me.log.warning(`Amino3 halting due to AMINO3_NO_LISTEN environment variable or 'noListen' config`);
+            //Wait 3s to bail so log file has opportunity to flush
+            return setTimeout(() => {
+              process.exit(0);
+            }, 2511);//<== Goofy number of MS so searches for 3000, etc. won't find it
           }
           me.log.info(`Starting Amino3 by 'node server.js'`);
           me.log.info(`Starting Socket.IO server`);

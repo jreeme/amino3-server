@@ -1,6 +1,6 @@
 import {injectable, inject, multiInject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import {Logger} from './logging/logger';
+import {Logger} from '../util/logging/logger';
 import {BaseService} from '../services/base-service';
 import {Globals} from '../globals';
 import * as async from 'async';
@@ -26,9 +26,9 @@ export class ServiceManagerImpl implements ServiceManager {
     me.app = app;
     if (Globals.noServices) {
       //Add default route to avoid error in browser if someone hits us when we're not running services
-      me.app.get('/', me.app.loopback.status());
+      //me.app.get('/', me.app.loopback.status());
       me.log.warning(`Amino3 services suppressed by AMINO3_NO_SERVICES environment variable or 'noServices' config`);
-      return cb();
+      //return cb();
     }
     //Sign up for 'loopback-booted' event so we can start up services
     me.postal
@@ -64,7 +64,7 @@ export class ServiceManagerImpl implements ServiceManager {
   private _getEnabledServices(suppressedServices: string[]): BaseService[] {
     return this.services
       .filter((service) => {
-        return (-1 === _.findIndex(suppressedServices, (serviceName) => {
+        return !service.canBeDisabled || (-1 === _.findIndex(suppressedServices, (serviceName) => {
           return service.serviceName === serviceName;
         })) && !Globals.noServices;//<== filters all services if 'noServices' is set
       });
@@ -104,7 +104,8 @@ export class ServiceManagerImpl implements ServiceManager {
             const serverServices = me.services.map((service) => {
               return {
                 name: service.serviceName,
-                enabled: service.enabled
+                enabled: service.enabled,
+                canBeDisabled: service.canBeDisabled
               };
             });
             SS.create(serverServices, (err) => {
@@ -115,9 +116,9 @@ export class ServiceManagerImpl implements ServiceManager {
         }
       ], (err: any, results: any[]) => {
         me.log.logIfError(err);
+        me.log.debug('Service start results:');
         results.forEach((result) => {
-          const msg = JSON.stringify(result, null, 2);
-          me.log.debug(msg);
+          me.log.debug(JSON.stringify(result, null, 2));
         });
         !err && me.postal
           .publish({
