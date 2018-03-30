@@ -1,4 +1,7 @@
 import {Stream} from "stream";
+import CallSite = NodeJS.CallSite;
+
+const stackTracer = require('stack-tracer');
 
 export class Util {
   static generateUUID() {
@@ -13,6 +16,19 @@ export class Util {
   static checkCallback(cb: any) {
     return (typeof cb === 'function') ? cb : (() => {
     });
+  }
+
+  static getCallSite(index: number): any {
+    return stackTracer(index);
+  }
+
+  static getCallingMethodFullName(index: number): string {
+    return Util.getCallSite(index + 1).functionName;
+  }
+
+  static getCallingMethodName(index: number): string {
+    let functionName = Util.getCallingMethodFullName(index + 1);
+    return functionName.slice(functionName.indexOf('.') + 1);
   }
 
   static readLinesFromTextFile(input: Stream, func: (line: string) => void) {

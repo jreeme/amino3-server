@@ -17,8 +17,8 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
-    super.initSubscriptions(app);
+  initSubscriptions(cb: (err: Error, result: any) => void) {
+    super.initSubscriptions();
     const me = this;
     me.postal
       .subscribe({

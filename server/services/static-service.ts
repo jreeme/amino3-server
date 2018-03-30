@@ -1,6 +1,7 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseServiceImpl} from './base-service';
+
 //import {Globals} from '../globals';
 
 @injectable()
@@ -10,8 +11,8 @@ export class StaticServiceImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void): void {
-    super.initSubscriptions(app);
+  initSubscriptions(cb: (err: Error, result: any) => void): void {
+    super.initSubscriptions();
     cb(null, {message: 'Initialized StaticService Subscriptions'});
   }
 

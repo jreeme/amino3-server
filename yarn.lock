@@ -5621,6 +5621,10 @@ stable@^0.1.5, stable@^0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/stable/-/stable-0.1.6.tgz#910f5d2aed7b520c6e777499c1f32e139fdecb10"
 
+stack-tracer@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/stack-tracer/-/stack-tracer-1.0.6.tgz#6cfca7e0396066b951712b6db3b38c79f07a91c3"
+
 stat-mode@^0.2.0:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/stat-mode/-/stat-mode-0.2.2.tgz#e6c80b623123d7d80cf132ce538f346289072502"

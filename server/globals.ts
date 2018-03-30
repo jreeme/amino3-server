@@ -29,7 +29,9 @@ export class Globals {
 
   static suppressedServices: string[] = [];
   static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-  static logLevel = 'warning';// debug, info, notice, warning, error, critical, alert, emergency
+  //I like to start the logLevel at 'debug' to get all the startup log messages before the loopback-boot
+  //sequence gets the logLevel from configs (either from the database or loopback config files)
+  static logLevel = 'debug';// debug, info, notice, warning, error, critical, alert, emergency
   static noListen = false;
   static noServices = false;
   static noClientRebuild = false;

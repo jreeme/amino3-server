@@ -7,8 +7,8 @@ export interface BaseService {
   serviceName: string;
   servicePostalChannel: string;
 
-  initSubscriptions(app: LoopBackApplication2, cb?: (err?: Error, result?: any) => void): void;
-
+  setApplicationObject(app: LoopBackApplication2): void;
+  initSubscriptions(cb?: (err?: Error, result?: any) => void): void;
   init(cb: (err?: Error, result?: any) => void): void;
 }
 
@@ -51,10 +51,13 @@ export abstract class BaseServiceImpl implements BaseService {
     return this._app;
   }
 
-  initSubscriptions(app: LoopBackApplication2, cb?: (err?: Error, result?: any) => void): void {
+  setApplicationObject(app: LoopBackApplication2): void {
     this._app = app;
+  }
+
+  initSubscriptions(cb?: (err?: Error, result?: any) => void): void {
     this._enabled = true;
-    cb && cb(null, {message: '[Warning] Initialized BaseServiceImpl Subscriptions'});
+    cb && cb(null, {message: `[Warning] Initialized BaseServiceImpl Subscriptions: '${this.serviceName}'`});
   }
 
   abstract init(cb: (err: Error, result: any) => void): void;

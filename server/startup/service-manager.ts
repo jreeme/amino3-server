@@ -35,9 +35,7 @@ export class ServiceManagerImpl implements ServiceManager {
       .subscribe({
         channel: 'Amino3Startup',
         topic: 'loopback-booted',
-        callback: () => {
-          me.loopbackBooted();
-        }
+        callback: me.loopbackBooted.bind(me)
       });
     cb();
   }
@@ -73,6 +71,11 @@ export class ServiceManagerImpl implements ServiceManager {
   private loopbackBooted() {
     const me = this;
     me.log.debug(`[RECV] 'Amino3Startup:loopback-booted': starting Amino3 services`);
+    //Set application object in services. Even if a service is not enabled it is still loaded
+    //and may need to do some things with the application object.
+    me.services.forEach((service) => {
+      service.setApplicationObject(me.app);
+    });
     //Initialize enabled services
     me.getEnabledServices((err, enabledServices) => {
       if (me.log.logIfError(err)) {
@@ -82,7 +85,7 @@ export class ServiceManagerImpl implements ServiceManager {
         (cb) => {
           async.map(enabledServices, (service, cb) => {
             me.log.info(`Calling: ${service.serviceName}.initSubscriptions()`);
-            service.initSubscriptions(me.app, (err, result) => {
+            service.initSubscriptions((err, result) => {
               me.log.debug(`${service.serviceName}.initSubscriptions(): called back`);
               cb(err, result);
             });

@@ -1,9 +1,12 @@
-import {injectable} from 'inversify';
+import {inject, injectable} from 'inversify';
 import {Globals} from '../../globals';
 import {Logger} from './logger';
+import {Util} from '../util';
+import * as path from 'path';
+import {SafeJson} from "firmament-yargs";
 
 const lineEnding = '\n';
-const stackIndex = 3; //How far up to call stack to look to get file:# for logging call
+const stackIndex = 4; //How far up to call stack to look to get file:# for logging call
 const format = '${timestamp} <${title}> ${file}:${line} ${message}';
 
 export interface Logger {
@@ -15,6 +18,7 @@ export interface Logger {
   critical(msg: string);
   alert(msg: string);
   emergency(msg: string);
+  setApplicationObject(app: LoopBackApplication2): void;
   logIfError(err: Error): void;
   logFromRemoteClient(remoteLoggingMessage: RemoteLoggingMessage): void;
 }
@@ -27,10 +31,99 @@ export interface RemoteLoggingMessage {
 
 @injectable()
 export class LoggerImpl implements Logger {
+  private filenameCallersToIgnore = new Set<string>();
+  private readonly allFilenameCallers = new Set<string>();
+  private _app: LoopBackApplication2;
   private logLevel = '';
   private _loggers: any[] = [];
 
-  constructor() {
+  constructor(@inject('SafeJson') private safeJson: SafeJson) {
+
+  }
+
+  setApplicationObject(app: LoopBackApplication2) {
+    const me = this;
+    if (me._app) {
+      return;
+    }
+    me._app = app;
+    me.app.get('/get-logger-called-from-files', (req, res) => {
+      res.status(200).send(Array.from(me.allFilenameCallers));
+    });
+    me.app.get('/set-logger-calling-files-to-ignore', (req, res) => {
+      const json = `{"files-to-ignore": ${req.query['files-to-ignore']}}`;
+      me.safeJson.safeParse(json, (err, obj) => {
+        if(err){
+          return res.status(417).send({status: err.message});
+        }
+        me.filenameCallersToIgnore = new Set<string>(obj['files-to-ignore']);
+        res.status(200).send({status: 'OK'});
+      });
+    });
+  }
+
+  get app(): LoopBackApplication2 {
+    return this._app;
+  }
+
+  logFromRemoteClient(remoteLoggingMessage: RemoteLoggingMessage) {
+    const me = this;
+    const logMethodName = remoteLoggingMessage.level.toLowerCase();
+    const logMethod: (msg: string) => void = me[logMethodName].bind(me);
+    const clientId = `${remoteLoggingMessage.accessTokenMD5 || '<unknown>'}`;
+    if (typeof  logMethod === 'function') {
+      const message = `[CLIENT] ${clientId} : ${remoteLoggingMessage.message}`;
+      return logMethod(message);
+    }
+    me.warning(`Received bad log message level from client '${clientId}'`)
+  }
+
+  logIfError(err: any): boolean {
+    const me = this;
+    if (err) {
+      if (err instanceof Array) {
+        (<any[]>err).forEach((err) => {
+          me.error(err.message);
+        });
+      }
+      else if (err.hasOwnProperty('message')) {
+        me.error(err.message);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  debug(msg: string) {
+    this.actualLog(msg);
+  }
+
+  info(msg: string) {
+    this.actualLog(msg);
+  }
+
+  notice(msg: string) {
+    this.actualLog(msg);
+  }
+
+  warning(msg: string) {
+    this.actualLog(msg);
+  }
+
+  error(msg: string) {
+    this.actualLog(msg);
+  }
+
+  critical(msg: string) {
+    this.actualLog(msg);
+  }
+
+  alert(msg: string) {
+    this.actualLog(msg);
+  }
+
+  emergency(msg: string) {
+    this.actualLog(msg);
   }
 
   private get loggers(): any[] {
@@ -55,79 +148,21 @@ export class LoggerImpl implements Logger {
     return this._loggers;
   }
 
-  logFromRemoteClient(remoteLoggingMessage: RemoteLoggingMessage) {
+  private actualLog(message: string) {
     const me = this;
-    const logMethodName = remoteLoggingMessage.level.toLowerCase();
-    const logMethod: (msg: string) => void = me[logMethodName].bind(me);
-    const clientId = `${remoteLoggingMessage.accessTokenMD5 || '<unknown>'}`;
-    if (typeof  logMethod === 'function') {
-      const message = `[CLIENT] ${clientId} : ${remoteLoggingMessage.message}`;
-      return logMethod(message);
+    const callingFile = path.basename(Util.getCallSite(3).fileName, '.js');
+    me.allFilenameCallers.add(callingFile);
+    if (me.filenameCallersToIgnore.has(callingFile)) {
+      return;
     }
-    me.warning(`Received bad log message level from client '${clientId}'`)
-  }
+    //me.loggers[1]['error'](callingFile);
 
-  logIfError(err: Error): boolean {
-    const me = this;
-    if (err) {
-      if (err instanceof Array) {
-        (<Error[]>err).forEach((err) => {
-          me.error(err.message);
-        });
+    //--> LogIt
+    const logMethodName = Util.getCallingMethodName(2);
+    me.loggers.forEach((logger) => {
+      if (typeof logger[logMethodName] === 'function') {
+        logger[logMethodName](message);
       }
-      else if (err instanceof Error) {
-        me.error(err.message);
-      }
-      return true;
-    }
-    return false;
-  }
-
-  debug(msg: string) {
-    this.loggers.forEach((logger) => {
-      logger.debug(msg);
-    });
-  }
-
-  info(msg: string) {
-    this.loggers.forEach((logger) => {
-      logger.info(msg);
-    });
-  }
-
-  notice(msg: string) {
-    this.loggers.forEach((logger) => {
-      logger.notice(msg);
-    });
-  }
-
-  warning(msg: string) {
-    this.loggers.forEach((logger) => {
-      logger.warning(msg);
-    });
-  }
-
-  error(msg: string) {
-    this.loggers.forEach((logger) => {
-      logger.error(msg);
-    });
-  }
-
-  critical(msg: string) {
-    this.loggers.forEach((logger) => {
-      logger.critical(msg);
-    });
-  }
-
-  alert(msg: string) {
-    this.loggers.forEach((logger) => {
-      logger.alert(msg);
-    });
-  }
-
-  emergency(msg: string) {
-    this.loggers.forEach((logger) => {
-      logger.emergency(msg);
     });
   }
 }

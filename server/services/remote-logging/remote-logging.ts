@@ -11,8 +11,8 @@ export class RemoteLoggingImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
-    super.initSubscriptions(app);
+  initSubscriptions(cb: (err: Error, result: any) => void) {
+    super.initSubscriptions();
     cb(null, {message: 'Initialized RemoteLogging Subscriptions'});
   }
 

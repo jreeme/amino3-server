@@ -18,14 +18,26 @@ export class RebuildClientImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result: any) => void) {
-    super.initSubscriptions(app);
+  setApplicationObject(app: LoopBackApplication2): void {
+    super.setApplicationObject(app);
     const me = this;
     me.app.get('/system-ctl/rebuild-client', (req, res) => {
       me.rebuildClient.bind(me)((err: Error) => {
         res.status(200).json({status: 'OK'});
+        me.postal.publish({
+          channel: 'ServiceBus',
+          topic: 'BroadcastToClients',
+          data: {
+            topic: 'RefreshPage',
+            data: {serverTime: Date.now()}
+          }
+        });
       });
     });
+  }
+
+  initSubscriptions(cb: (err: Error, result: any) => void) {
+    super.initSubscriptions();
     cb(null, {message: 'Initialized RebuildClient Subscriptions'});
   }
 

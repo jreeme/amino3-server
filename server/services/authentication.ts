@@ -12,8 +12,8 @@ export class AuthenticationImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(app: LoopBackApplication2, cb: (err: Error, result?: any) => void) {
-    super.initSubscriptions(app);
+  initSubscriptions(cb: (err: Error, result?: any) => void) {
+    super.initSubscriptions();
     const me = this;
     //Required to enable LoopBack authentication
     me.app.enableAuth();
@@ -111,47 +111,47 @@ export class AuthenticationImpl extends BaseServiceImpl {
       },
       (principal, created, cb) => {
         const adminAcls = [
-/*          {
-            model: 'AminoUser',
-            accessType: '*',
-            property: '*',
-            principalType: 'ROLE',
-            principalId: '$everyone',
-            permission: 'DENY'
-          }
-          , {
-            model: 'AminoUser',
-            accessType: '*',
-            property: '*',
-            principalType: 'ROLE',
-            principalId: 'superuser',
-            permission: 'ALLOW'
-          }
-          ,{
-            model: 'AminoUser',
-            accessType: 'EXECUTE',
-            property: 'createUser',
-            principalType: 'ROLE',
-            principalId: 'superuser',
-            permission: 'ALLOW'
-          }
-          , {
-            model: 'AminoUser',
-            accessType: 'EXECUTE',
-            property: 'aminoLogin',
-            principalType: 'ROLE',
-            principalId: '$everyone',
-            permission: 'ALLOW'
-          }*/
+          /*          {
+                      model: 'AminoUser',
+                      accessType: '*',
+                      property: '*',
+                      principalType: 'ROLE',
+                      principalId: '$everyone',
+                      permission: 'DENY'
+                    }
+                    , {
+                      model: 'AminoUser',
+                      accessType: '*',
+                      property: '*',
+                      principalType: 'ROLE',
+                      principalId: 'superuser',
+                      permission: 'ALLOW'
+                    }
+                    ,{
+                      model: 'AminoUser',
+                      accessType: 'EXECUTE',
+                      property: 'createUser',
+                      principalType: 'ROLE',
+                      principalId: 'superuser',
+                      permission: 'ALLOW'
+                    }
+                    , {
+                      model: 'AminoUser',
+                      accessType: 'EXECUTE',
+                      property: 'aminoLogin',
+                      principalType: 'ROLE',
+                      principalId: '$everyone',
+                      permission: 'ALLOW'
+                    }*/
         ];
         async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
       }
     ], (err: Error, obj) => {
-/*      setInterval(() => {
-        RM.find((err, aats) => {
-          let a = aats;
-        });
-      }, 3000);*/
+      /*      setInterval(() => {
+              RM.find((err, aats) => {
+                let a = aats;
+              });
+            }, 3000);*/
       /*      const AAT = me.server.models.AminoAccessToken;
             setInterval(() => {
               AAT.find((err, aats) => {

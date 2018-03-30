@@ -25,11 +25,10 @@ export class BootManagerImpl implements BootManager {
         _startListening: boolean) {
     const me = this;
     me.loopback = _loopback;
-    me.app = _app;
+    me.log.setApplicationObject(me.app = _app);
     me.startListening = _startListening;
     me.log.info(`Booting Amino3 using 'loopback-boot'`);
-    const loopbackBoot = require('loopback-boot');
-    loopbackBoot(me.app, _applicationFolder, me.bootCallback.bind(me));
+    require('loopback-boot')(me.app, _applicationFolder, me.bootCallback.bind(me));
   }
 
   private bootCallback(err: Error) {
