@@ -1,8 +1,8 @@
 {
   "amino3Config": {
-    "noListen"          : false,
-    "noServices"        : false,
-    "logLevel"          : "debug",
+    "noListen": false,
+    "noServices": false,
+    "logLevel": "debug",
     "suppressedServices": [
       "_Authentication",
       "FileUpload",
@@ -13,6 +13,9 @@
       "StaticService",
       "ServerServicesManager",
       "WebSocketManager"
+    ],
+    "loggerCallerFilenamesToIgnore": [
+      "postal-socket-connection-impl"
     ]
   }
 }

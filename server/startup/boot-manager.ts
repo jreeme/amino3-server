@@ -25,7 +25,7 @@ export class BootManagerImpl implements BootManager {
         _startListening: boolean) {
     const me = this;
     me.loopback = _loopback;
-    me.log.setApplicationObject(me.app = _app);
+    me.app = _app;
     me.startListening = _startListening;
     me.log.info(`Booting Amino3 using 'loopback-boot'`);
     require('loopback-boot')(me.app, _applicationFolder, me.bootCallback.bind(me));
@@ -47,6 +47,7 @@ export class BootManagerImpl implements BootManager {
     //Loopback App booted so all configs are loaded (and available via app.get('config-name')
     //so this is a good time to initialize our Globals object
     Globals.init(me.app);
+    me.log.setApplicationObject(me.app);
 
     //Sign up to hear back from ServiceManager when all the services (if any) are started
     me.postal

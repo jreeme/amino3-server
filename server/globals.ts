@@ -28,6 +28,7 @@ export class Globals {
   }
 
   static suppressedServices: string[] = [];
+  static loggerCallerFilenamesToIgnore: string[] = [];
   static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
   //I like to start the logLevel at 'debug' to get all the startup log messages before the loopback-boot
   //sequence gets the logLevel from configs (either from the database or loopback config files)

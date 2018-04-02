@@ -31,7 +31,7 @@ export interface RemoteLoggingMessage {
 
 @injectable()
 export class LoggerImpl implements Logger {
-  private filenameCallersToIgnore = new Set<string>();
+  private callerFilenamesToIgnore = new Set<string>();
   private readonly allFilenameCallers = new Set<string>();
   private _app: LoopBackApplication2;
   private logLevel = '';
@@ -53,13 +53,14 @@ export class LoggerImpl implements Logger {
     me.app.get('/set-logger-calling-files-to-ignore', (req, res) => {
       const json = `{"files-to-ignore": ${req.query['files-to-ignore']}}`;
       me.safeJson.safeParse(json, (err, obj) => {
-        if(err){
+        if (err) {
           return res.status(417).send({status: err.message});
         }
-        me.filenameCallersToIgnore = new Set<string>(obj['files-to-ignore']);
+        me.callerFilenamesToIgnore = new Set<string>(obj['files-to-ignore']);
         res.status(200).send({status: 'OK'});
       });
     });
+    me.callerFilenamesToIgnore = new Set<string>(Globals.loggerCallerFilenamesToIgnore);
   }
 
   get app(): LoopBackApplication2 {
@@ -152,7 +153,7 @@ export class LoggerImpl implements Logger {
     const me = this;
     const callingFile = path.basename(Util.getCallSite(3).fileName, '.js');
     me.allFilenameCallers.add(callingFile);
-    if (me.filenameCallersToIgnore.has(callingFile)) {
+    if (me.callerFilenamesToIgnore.has(callingFile)) {
       return;
     }
     //me.loggers[1]['error'](callingFile);
