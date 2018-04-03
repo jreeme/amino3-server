@@ -1,8 +1,8 @@
 import {injectable, inject, multiInject} from 'inversify';
 import {CommandUtil, IPostal} from 'firmament-yargs';
-import {BaseServiceImpl} from './base-service';
-import {Logger} from '../util/logging/logger';
-import {BaseDatabaseHelper} from '../util/database-helpers/interfaces/base-database-helper';
+import {BaseServiceImpl} from '../base-service';
+import {Logger} from '../../util/logging/logger';
+import {BaseDatabaseHelper} from '../../util/database-helpers/interfaces/base-database-helper';
 
 import * as async from 'async';
 

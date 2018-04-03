@@ -2,9 +2,9 @@ import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import * as _ from 'lodash';
 import * as Rx from 'rxjs';
-import {BaseServiceImpl} from './base-service';
-import {Logger} from '../util/logging/logger';
-import kernel from '../inversify.config';
+import {BaseServiceImpl} from '../base-service';
+import {Logger} from '../../util/logging/logger';
+import kernel from '../../inversify.config';
 import * as SocketIO from 'socket.io';
 
 @injectable()

@@ -1,10 +1,10 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
-import {BaseServiceImpl} from './base-service';
-import {Logger} from '../util/logging/logger';
-import {Util} from '../util/util';
-import {Globals} from '../globals';
+import {BaseServiceImpl} from '../base-service';
+import {Logger} from '../../util/logging/logger';
+import {Util} from '../../util/util';
+import {Globals} from '../../globals';
 
 import * as fs from 'fs';
 import * as async from 'async';
@@ -23,6 +23,7 @@ export class RebuildClientImpl extends BaseServiceImpl {
     const me = this;
     me.app.get('/system-ctl/rebuild-client', (req, res) => {
       me.rebuildClient.bind(me)((err: Error) => {
+        me.log.logIfError(err);
         res.status(200).json({status: 'OK'});
         me.postal.publish({
           channel: 'ServiceBus',

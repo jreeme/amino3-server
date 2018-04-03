@@ -1,6 +1,6 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import {BaseServiceImpl} from './base-service';
+import {BaseServiceImpl} from '../base-service';
 
 //import {Globals} from '../globals';
 

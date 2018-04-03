@@ -1,7 +1,7 @@
 import {injectable, inject} from 'inversify';
 import {CommandUtil, IPostal} from 'firmament-yargs';
-import {BaseServiceImpl} from './base-service';
-import {Logger} from '../util/logging/logger';
+import {BaseServiceImpl} from '../base-service';
+import {Logger} from '../../util/logging/logger';
 
 const chokidar = require('chokidar');
 

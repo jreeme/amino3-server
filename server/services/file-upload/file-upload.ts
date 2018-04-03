@@ -1,8 +1,8 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import {BaseServiceImpl} from './base-service';
-import {Globals} from '../globals';
-import {Logger} from '../util/logging/logger';
+import {BaseServiceImpl} from '../base-service';
+import {Globals} from '../../globals';
+import {Logger} from '../../util/logging/logger';
 import * as formidable from 'formidable';
 
 @injectable()
@@ -19,8 +19,8 @@ export class FileUploadImpl extends BaseServiceImpl {
       try {
         const form = new formidable.IncomingForm();
         (<any>form).maxFileSize = 1024 * 1024 * 1024;
-        form.parse(req, (err, fields, files) => {
-          let e = err;
+        form.parse(req, (err/*, fields, files*/) => {
+          me.log.logIfError(err);
         });
       } catch (err) {
         res.status(500).send({status: 'error', error: err});

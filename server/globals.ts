@@ -46,8 +46,9 @@ export class Globals {
 
   //Resolve some server side paths
   static projectRootPath = path.resolve(__dirname, '..');
-  static clientFolder = path.resolve(Globals.projectRootPath, 'client');
   static serverFolder = path.resolve(Globals.projectRootPath, 'server');
+  static serverServicesFolder = path.resolve(Globals.serverFolder, 'services');
+  static clientFolder = path.resolve(Globals.projectRootPath, 'client');
   static clientDistFolder = path.resolve(Globals.projectRootPath, 'dist/client');
   //File uploader, etc.
   static fileUploaderPath = path.resolve(Globals.serverFolder, 'util/blueimp-file-upload-expressjs/fileupload');

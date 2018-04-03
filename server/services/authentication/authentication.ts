@@ -1,9 +1,9 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import async = require('async');
-import {BaseServiceImpl} from './base-service';
-import {Logger} from '../util/logging/logger';
-import {Globals} from '../globals';
+import {BaseServiceImpl} from '../base-service';
+import {Logger} from '../../util/logging/logger';
+import {Globals} from '../../globals';
 
 @injectable()
 export class AuthenticationImpl extends BaseServiceImpl {
@@ -80,30 +80,33 @@ export class AuthenticationImpl extends BaseServiceImpl {
       email: Globals.adminUserEmail,
       password: Globals.adminUserDefaultPassword
     };
+    const newRootRole = {
+      name: Globals.adminRoleName
+    }
+    //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
     AAT.settings.acls.length = 0;
     U.settings.acls.length = 0;
     async.waterfall([
       //AminoUser.findOrCreate() does not work. Something to do with base loopback user implementation
       (cb) => {
-        //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
-        U.find({where: {email: Globals.adminUserEmail}}, (err, users) => {//find adminUser
-          return cb(err, users.length ? users[0] : null);
-        });
+        U.findOrCreate({where: {email: Globals.adminUserEmail}}, <any>newRootUser, cb);
       },
-      (user, cb) => {
-        if (!user) {//create adminUser if not found
-          return U.create(newRootUser, cb);
-        }
-        cb(null, user);
-      },
-      (user, cb) => {
-        R.findOrCreate({name: Globals.adminRoleName}, (err, role/*, created*/) => {
-          cb(null, user, role);
-        });
+      (user, created, cb) => {
+        R.findOrCreate({where: newRootRole},
+          <any>newRootRole,
+          (err, role/*, created*/) => {
+            cb(null, user, role);
+          });
       },
       (user, role, cb) => {
         //Create roleMapping to put adminUser in adminRole
         RM.findOrCreate({
+          where: {
+            principalType: RM.USER,
+            principalId: user.id,
+            aminoRoleId: role.id
+          }
+        }, <any>{
           principalType: RM.USER,
           principalId: user.id,
           aminoRoleId: role.id

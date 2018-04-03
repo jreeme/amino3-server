@@ -1,10 +1,10 @@
-import {injectable, inject} from 'inversify';
-import {CommandUtil, IPostal} from 'firmament-yargs';
+import {injectable/*, inject*/} from 'inversify';
+import {BaseServiceImpl} from '../base-service';
+/*import {CommandUtil, IPostal} from 'firmament-yargs';
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
-import {BaseServiceImpl} from './base-service';
-import {Globals} from '../globals';
-import {Logger} from '../util/logging/logger';
-import {Util} from '../util/util';
+import {Globals} from '../../globals';
+import {Logger} from '../../util/logging/logger';
+import {Util} from '../../util/util';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as tar from 'tar';
@@ -12,7 +12,7 @@ import * as rimraf from 'rimraf';
 import * as async from 'async';
 import * as mkdirp from 'mkdirp';
 import * as recursiveReaddir from 'recursive-readdir';
-import * as jsonfile from 'jsonfile';
+import * as jsonfile from 'jsonfile';*/
 
 @injectable()
 export class PluginManagerImpl extends BaseServiceImpl {
