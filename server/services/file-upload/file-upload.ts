@@ -15,15 +15,25 @@ export class FileUploadImpl extends BaseServiceImpl {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
-    me.app.post(Globals.uploadFilePostUrl, (req, res) => {
-      try {
-        const form = new formidable.IncomingForm();
-        (<any>form).maxFileSize = 1024 * 1024 * 1024;
-        form.parse(req, (err/*, fields, files*/) => {
-          me.log.logIfError(err);
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'AddFileUploadEndpoint',
+      callback: (data) => {
+        me.app.post(data.uploadRoute, (req, res) => {
+          try {
+            const form = new formidable.IncomingForm();
+            (<any>form).maxFileSize = 25 * 1024;
+            form.parse(req, (err, fields, files) => {
+              if (err) {
+                return res.status(500).send({status: 'error', error: err});
+              }
+              data.cb(fields, files);
+              res.status(500).send({status: 'OK'});
+            });
+          } catch (err) {
+            res.status(500).send({status: 'error', error: err});
+          }
         });
-      } catch (err) {
-        res.status(500).send({status: 'error', error: err});
       }
     });
     cb(null, {message: 'Initialized FileUpload Subscriptions'});

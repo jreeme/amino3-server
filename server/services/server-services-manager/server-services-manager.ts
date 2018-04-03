@@ -45,6 +45,18 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
   }
 
   init(cb: (err: Error, result: any) => void) {
+    const me = this;
+    me.postal.publish({
+      channel: 'PostalChannel-FileUploadImpl',
+      topic: 'AddFileUploadEndpoint',
+      data: {
+        uploadRoute: '/grundig-proof',
+        cb: (fields, files) => {
+          let f = files;
+        }
+      }
+    });
+
     cb(null, {message: 'Initialized ServerServicesManager'});
   }
 }
