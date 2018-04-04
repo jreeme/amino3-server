@@ -49,6 +49,7 @@ export class Globals {
   static serverFolder = path.resolve(Globals.projectRootPath, 'server');
   static serverServicesFolder = path.resolve(Globals.serverFolder, 'services');
   static clientFolder = path.resolve(Globals.projectRootPath, 'client');
+  static inversifyConfigFilePath = path.resolve(Globals.serverFolder, 'inversify.config.ts');
   static clientDistFolder = path.resolve(Globals.projectRootPath, 'dist/client');
   //File uploader, etc.
   static fileUploaderPath = path.resolve(Globals.serverFolder, 'util/blueimp-file-upload-expressjs/fileupload');
@@ -68,6 +69,7 @@ export class Globals {
   static gitCloneClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/git-clone-client.json');
   static npmInstallClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-install-client.json');
   static ngBuildClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client.json');
+  static npmRebuildServerExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-rebuild-server.json');
   static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
   //URLs
   static uploadFileUrl = '/uploaded-files/files';

@@ -1,0 +1,25 @@
+{
+  "description"               : "NPM Rebuild Server",
+  "options"                   : {
+    "displayExecutionGraphDescription": true
+  },
+  "asynchronousCommands"      : [
+  ],
+  "serialSynchronizedCommands": [
+    {
+      "description"                : "npm run build_no_yarn",
+      "suppressOutput"             : false,
+      "showDiagnostics"            : false,
+      "showPreAndPostSpawnMessages": true,
+      "outputColor"                : "",
+      "useSudo"                    : false,
+      "workingDirectory"           : ".",
+      "command"                    : "/usr/bin/env",
+      "args"                       : [
+        "bash",
+        "-c",
+        "npm run build_no_yarn"
+      ]
+    }
+  ]
+}

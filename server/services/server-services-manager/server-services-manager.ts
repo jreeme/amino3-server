@@ -2,14 +2,18 @@ import {injectable, inject,} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
-import * as fs from 'fs';
-import * as path from 'path';
 import {Util} from '../../util/util';
 import {Globals} from '../../globals';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as rimraf from 'rimraf';
+import * as async from 'async';
+import {ProcessCommandJson} from "firmament-bash/js/interfaces/process-command-json";
 
 @injectable()
 export class ServerServicesManagerImpl extends BaseServiceImpl {
   constructor(@inject('Logger') private log: Logger,
+              @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('IPostal') private postal: IPostal) {
     super();
   }
@@ -17,6 +21,45 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
+    me.app.get('/destroy-service/:serviceName', (req, res) => {
+      const serviceName = Util.camelToSnake(req.params.serviceName, '-');
+      const serviceFolderToDelete = path.resolve(Globals.serverServicesFolder, serviceName);
+      async
+        .series([
+            (cb) => {
+              //Blast service directory
+              rimraf(serviceFolderToDelete, (err) => {
+                cb(err);
+              });
+            },
+            (cb) => {
+              //Remove service entry from Inversify config file
+              const lineDriver = require('line-driver');
+              lineDriver.write({
+                in: Globals.inversifyConfigFilePath,
+                line: (props, parser) => {
+                  if (parser.line.indexOf(req.params.serviceName) === -1) {
+                    parser.write(parser.line);
+                  }
+                },
+                close: (/*props, parser*/) => {
+                  cb();
+                }
+              });
+            },
+            (cb) => {
+              //Recompile server
+              process.chdir(Globals.serverFolder);
+              me.processCommandJson.processAbsoluteUrl(Globals.npmRebuildServerExecutionGraph, cb);
+            }
+          ],
+          (err) => {
+            if (err) {
+              return res.status(417).send(err);
+            }
+            res.status(200).send({status: 'OK'});
+          });
+    });
     me.app.get('/download-service-tar/:serviceName', (req, res) => {
       const serviceName = Util.camelToSnake(req.params.serviceName, '-');
       const serviceFolderToSend = path.resolve(Globals.serverServicesFolder, serviceName);
@@ -58,7 +101,7 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
     cb(null, {message: 'Initialized ServerServicesManager'});
   }
 
-  private turnTarFilesIntoServerServices(fields:any[],files:any[]){
+  private turnTarFilesIntoServerServices(fields: any[], files: any[]) {
     let f = files;
   }
 }
