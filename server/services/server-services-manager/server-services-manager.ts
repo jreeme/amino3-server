@@ -50,14 +50,16 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
       channel: 'PostalChannel-FileUploadImpl',
       topic: 'AddFileUploadEndpoint',
       data: {
-        uploadRoute: '/grundig-proof',
-        cb: (fields, files) => {
-          let f = files;
-        }
+        uploadRoute: Globals.serverServiceUploadFileUrl,
+        cb: me.turnTarFilesIntoServerServices.bind(me)
       }
     });
 
     cb(null, {message: 'Initialized ServerServicesManager'});
+  }
+
+  private turnTarFilesIntoServerServices(fields:any[],files:any[]){
+    let f = files;
   }
 }
 

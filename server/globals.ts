@@ -71,6 +71,7 @@ export class Globals {
   static logFilePath = path.resolve(Globals.projectRootPath, 'logs');
   //URLs
   static uploadFileUrl = '/uploaded-files/files';
+  static serverServiceUploadFileUrl = '/server-service-upload-files';
   static uploadFilePostUrl = '/upload-files';
   static remoteLoggingUrl = '/log';
 }
