@@ -3387,6 +3387,10 @@ libqp@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/libqp/-/libqp-1.1.0.tgz#f5e6e06ad74b794fb5b5b66988bf728ef1dedbe8"
 
+line-driver@^1.1.9:
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/line-driver/-/line-driver-1.1.9.tgz#95c5fd3edefd708678c2c647016a80e5d5e5e497"
+
 load-json-file@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/load-json-file/-/load-json-file-1.1.0.tgz#956905708d58b4bab4c2261b04f59f31c99374c0"
@@ -5214,7 +5218,7 @@ restore-cursor@^2.0.0:
     onetime "^2.0.0"
     signal-exit "^3.0.2"
 
-rimraf@2, rimraf@^2.2.0, rimraf@^2.2.8, rimraf@^2.4.4, rimraf@^2.5.1, rimraf@^2.6.1:
+rimraf@2, rimraf@^2.2.0, rimraf@^2.2.8, rimraf@^2.4.4, rimraf@^2.5.1, rimraf@^2.6.1, rimraf@^2.6.2:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.2.tgz#2ed8150d24a16ea8651e6d6ef0f47c4158ce7a36"
   dependencies:

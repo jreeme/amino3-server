@@ -102,7 +102,21 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
   }
 
   private turnTarFilesIntoServerServices(fields: any[], files: any[]) {
-    let f = files;
+    const me = this;
+    (files && files.length) && files.forEach((file) => {
+      const unpack = require('tar-pack').unpack;
+      const readStream = fs.createReadStream(file.path);
+      const serviceName = path.basename(file.name, '.tar.gz');
+      const packStream = unpack(Globals.serverServicesFolder,
+        {strip: 0},
+        (err) => {
+          if (me.log.logIfError(new Error(`Unpack '${file.path}' FAILED: ${err.message}`)){
+            return;
+          }
+
+        });
+      readStream.pipe(packStream);
+    });
   }
 }
 

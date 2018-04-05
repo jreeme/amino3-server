@@ -17,7 +17,6 @@ import {PostalSocketConnectionImpl} from './util/websockets/postal-socket-connec
 import {SocketIoWrapper, SocketIoWrapperImpl} from './util/websockets/socketIoWrapper';
 import {WebSocketManagerImpl} from './services/web-socket-manager/web-socket-manager';
 import {ServiceManager, ServiceManagerImpl} from './startup/service-manager';
-import {RemoteLoggingImpl} from './services/remote-logging/remote-logging';
 import {ServerServicesManagerImpl} from './services/server-services-manager/server-services-manager';
 
 //Singletons
@@ -31,7 +30,6 @@ kernel.bind<BaseService>('BaseService').to(InitializeDatabaseImpl).inSingletonSc
 kernel.bind<BaseService>('BaseService').to(PluginManagerImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(RebuildClientImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(WebSocketManagerImpl).inSingletonScope();
-kernel.bind<BaseService>('BaseService').to(RemoteLoggingImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(ServerServicesManagerImpl).inSingletonScope();
 
 //Non-services
