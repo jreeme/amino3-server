@@ -42,3 +42,6 @@ kernel.bind<PostalSocketConnection>('PostalSocketConnection').to(PostalSocketCon
 kernel.bind<SocketIoWrapper>('SocketIoWrapper').to(SocketIoWrapperImpl).inTransientScope();
 //noinspection JSUnusedGlobalSymbols
 export default kernel;
+
+import {RemoteLoggingImpl} from './services/remote-logging/remote-logging';
+kernel.bind<BaseService>('BaseService').to(RemoteLoggingImpl).inSingletonScope();

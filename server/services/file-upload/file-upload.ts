@@ -38,8 +38,12 @@ export class FileUploadImpl extends BaseServiceImpl {
             return res.status(500).send({status: 'error', error});
           });
           form.on('end', () => {
-            data.cb(fields, files);
-            res.status(200).send({status: 'OK'});
+            data.cb(files, (err: Error) => {
+              if (err) {
+                return res.status(417).send({status: err.message});
+              }
+              res.status(200).send({status: 'OK'});
+            });
           });
           form.parse(req);
         });

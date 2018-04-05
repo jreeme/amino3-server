@@ -22,7 +22,7 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
     super.initSubscriptions();
     const me = this;
     me.app.get('/destroy-service/:serviceName', (req, res) => {
-      const serviceName = Util.camelToSnake(req.params.serviceName, '-');
+      const serviceName = Util.camelToKebab(req.params.serviceName);
       const serviceFolderToDelete = path.resolve(Globals.serverServicesFolder, serviceName);
       async
         .series([
@@ -101,19 +101,38 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
     cb(null, {message: 'Initialized ServerServicesManager'});
   }
 
-  private turnTarFilesIntoServerServices(fields: any[], files: any[]) {
+  private turnTarFilesIntoServerServices(files: any[], cb: (err?: Error) => void) {
     const me = this;
     (files && files.length) && files.forEach((file) => {
       const unpack = require('tar-pack').unpack;
       const readStream = fs.createReadStream(file.path);
-      const serviceName = path.basename(file.name, '.tar.gz');
+      const serviceFileName = path.basename(file.name, '.tar.gz');
       const packStream = unpack(Globals.serverServicesFolder,
-        {strip: 0},
+        {
+          strip: 0,
+          keepFiles: true
+        },
         (err) => {
-          if (me.log.logIfError(new Error(`Unpack '${file.path}' FAILED: ${err.message}`)){
-            return;
+          if (err) {
+            me.log.logIfError(new Error(`Unpack '${file.path}' FAILED: ${err.message}`));
+            return cb(err);
           }
-
+          //Add service entry to Inversify config file
+          const serviceClassName = `${Util.kebabToCamel(serviceFileName)}Impl`;
+          const lineDriver = require('line-driver');
+          lineDriver.write({
+            in: Globals.inversifyConfigFilePath,
+            line: (props, parser) => {
+              if (parser.line.indexOf(serviceClassName) === -1) {
+                parser.write(parser.line);
+              }
+            },
+            close: (props, parser) => {
+              parser.write(`import {${serviceClassName}} from './services/${serviceFileName}/${serviceFileName}';`);
+              parser.write(`kernel.bind<BaseService>('BaseService').to(${serviceClassName}).inSingletonScope();`);
+              cb();
+            }
+          });
         });
       readStream.pipe(packStream);
     });

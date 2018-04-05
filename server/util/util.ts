@@ -13,6 +13,16 @@ export class Util {
     });
   }
 
+  static kebabToCamel(name) {
+    return name.replace(/(-|^)([a-z])/g, function (_, $1, $2) {
+      return $2.toUpperCase();
+    });
+  }
+
+  static camelToKebab(name) {
+    return Util.camelToSnake(name, '-');
+  }
+
   static camelToSnake(name, separator) {
     return name.replace(/([a-z]|(?:[A-Z]+))([A-Z]|$)/g, function (_, $1, $2) {
       return $1 + ($2 && (separator || '_') + $2);
