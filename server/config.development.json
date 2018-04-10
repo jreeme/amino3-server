@@ -9,10 +9,10 @@
       "FolderMonitor",
       "_InitializeDatabase",
       "PluginManager",
-      "_RebuildClient",
+      "RebuildClient",
       "StaticService",
-      "ServerServicesManager",
-      "WebSocketManager"
+      "_ServerServicesManager",
+      "_WebSocketManager"
     ],
     "loggerCallerFilenamesToIgnore": [
       "postal-socket-connection-impl"

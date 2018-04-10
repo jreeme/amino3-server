@@ -1,6 +1,6 @@
 {
-  "name": "ServerService",
-  "plural": "ServerServices",
+  "name": "LoopbackModel",
+  "plural": "LoopbackModels",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -9,14 +9,6 @@
   "properties": {
     "name": {
       "type": "string",
-      "required": true
-    },
-    "enabled": {
-      "type": "boolean",
-      "required": true
-    },
-    "canBeDisabled": {
-      "type": "boolean",
       "required": true
     }
   },

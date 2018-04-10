@@ -116,6 +116,22 @@ export class ServiceManagerImpl implements ServiceManager {
               cb();
             });
           });
+        },
+        (cb) => {
+          //Update LoopbackModels table
+          const LM = me.app.models.LoopbackModel;
+          LM.destroyAll((/*err:Error,info:any*/) => {
+            const modelNames = Object.keys(me.app.models);
+            const loopbackModels = modelNames.map((name) => {
+              return {
+                name
+              };
+            });
+            LM.create(loopbackModels, (err) => {
+              me.log.logIfError(err);
+              cb();
+            });
+          });
         }
       ], (err: any, results: any[]) => {
         me.log.logIfError(err);
