@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as async from 'async';
+import * as tmp from 'tmp';
 import {ProcessCommandJson} from "firmament-bash/js/interfaces/process-command-json";
 
 @injectable()
@@ -21,6 +22,12 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
+    me.app.post('/download-services-and-models-tar', (req, res) => {
+      tmp.dir({unsafeCleanup: true}, (err, path, cbCleanup) => {
+        cbCleanup();
+        res.status(200).send({status: 'OK'});
+      });
+    });
     me.app.get('/destroy-service/:serviceName', (req, res) => {
       const serviceName = Util.camelToKebab(req.params.serviceName);
       const serviceFolderToDelete = path.resolve(Globals.serverServicesFolder, serviceName);

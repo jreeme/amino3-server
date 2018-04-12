@@ -44,7 +44,8 @@
     "socket.io": "^2.0.3",
     "stack-tracer": "^1.0.6",
     "strong-error-handler": "^2.0.0",
-    "tar-pack": "^3.4.1"
+    "tar-pack": "^3.4.1",
+    "tmp": "^0.0.33"
   },
   "devDependencies": {
     "@mean-expert/loopback-sdk-builder": "^2.1.0-rc.13.5",
