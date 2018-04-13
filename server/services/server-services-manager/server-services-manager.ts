@@ -9,7 +9,16 @@ import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as async from 'async';
 import * as tmp from 'tmp';
+import * as mkdirp from 'mkdirp';
 import {ProcessCommandJson} from "firmament-bash/js/interfaces/process-command-json";
+
+interface NamedObject {
+  name: string
+}
+
+interface TarManifest {
+  loopbackFileRelativePaths: string[]
+}
 
 @injectable()
 export class ServerServicesManagerImpl extends BaseServiceImpl {
@@ -22,12 +31,7 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
-    me.app.post('/download-services-and-models-tar', (req, res) => {
-      tmp.dir({unsafeCleanup: true}, (err, path, cbCleanup) => {
-        cbCleanup();
-        res.status(200).send({status: 'OK'});
-      });
-    });
+    me.app.post('/download-services-and-models-tar', me.downloadServicesAndModelsTar.bind(me));
     me.app.get('/destroy-service/:serviceName', (req, res) => {
       const serviceName = Util.camelToKebab(req.params.serviceName);
       const serviceFolderToDelete = path.resolve(Globals.serverServicesFolder, serviceName);
@@ -106,6 +110,63 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
     });
 
     cb(null, {message: 'Initialized ServerServicesManager'});
+  }
+
+  private downloadServicesAndModelsTar(req, res) {
+    const me = this;
+    const tarManifest: TarManifest = {
+      loopbackFileRelativePaths: []
+    };
+    async
+      .waterfall([
+        (cb) => {
+          tmp.dir({unsafeCleanup: true}, (err: Error, tmpDir: string, cbCleanup: () => void) => {
+            cbCleanup();
+            cb(err, tmpDir);
+          });
+        },
+        (tmpDir, cb) => {
+          ServerServicesManagerImpl.copyLoopbackModelFilesToTmpDir(req.body.loopbackModels, tmpDir, tarManifest, cb);
+        }
+      ], (err, result) => {
+        res.status(500).send({status: 'OK'});
+      });
+  }
+
+  private static copyLoopbackModelFilesToTmpDir(
+    loopbackModels: NamedObject[],
+    tmpDir: string,
+    tarManifest: TarManifest,
+    cb: (err: Error) => void) {
+    const dstFolder = path.resolve(tmpDir, Globals.loopbackModelRelativePath);
+    mkdirp(dstFolder, (err) => {
+      async.each(loopbackModels, (loopbackModel, cb) => {
+        async.each(['.js', '.json'], (fileExtension, cb) => {
+          const {srcFilePath, dstFilePath, loopbackModelRelativePath} =
+            ServerServicesManagerImpl.getLoopbackModelProcessingPaths(loopbackModel, fileExtension, dstFolder);
+          fs.copyFile(srcFilePath, dstFilePath, (err) => {
+            if (err) {
+              return cb();
+            }
+            //Make note of copied LoopbackModel files in manifest
+            tarManifest.loopbackFileRelativePaths.push(loopbackModelRelativePath);
+            return cb();
+          });
+        }, (err: Error) => {
+          cb(err);
+        });
+      }, (err: Error) => {
+        cb(err);
+      });
+    });
+  }
+
+  private static getLoopbackModelProcessingPaths(loopbackModel: NamedObject, fileExtension: string, dstFolder: string) {
+    const loopbackModelFilename = `${Util.camelToKebab(loopbackModel.name)}${fileExtension}`;
+    const loopbackModelRelativePath = `${Globals.loopbackModelRelativePath}/${loopbackModelFilename}`;
+    const srcFilePath = path.resolve(Globals.projectRootPath, loopbackModelRelativePath);
+    const dstFilePath = path.resolve(dstFolder, loopbackModelFilename);
+    return {srcFilePath, dstFilePath, loopbackModelRelativePath};
   }
 
   private turnTarFilesIntoServerServices(files: any[], cb: (err?: Error) => void) {
