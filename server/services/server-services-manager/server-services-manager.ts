@@ -32,69 +32,8 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
     super.initSubscriptions();
     const me = this;
     me.app.post('/download-services-and-models-tar', me.downloadServicesAndModelsTar.bind(me));
-    me.app.get('/destroy-service/:serviceName', (req, res) => {
-      const serviceName = Util.camelToKebab(req.params.serviceName);
-      const serviceFolderToDelete = path.resolve(Globals.serverServicesFolder, serviceName);
-      async
-        .series([
-            (cb) => {
-              //Blast service directory
-              rimraf(serviceFolderToDelete, (err) => {
-                cb(err);
-              });
-            },
-            (cb) => {
-              //Remove service entry from Inversify config file
-              const lineDriver = require('line-driver');
-              lineDriver.write({
-                in: Globals.inversifyConfigFilePath,
-                line: (props, parser) => {
-                  if (parser.line.indexOf(req.params.serviceName) === -1) {
-                    parser.write(parser.line);
-                  }
-                },
-                close: (/*props, parser*/) => {
-                  cb();
-                }
-              });
-            },
-            (cb) => {
-              //Recompile server
-              process.chdir(Globals.serverFolder);
-              me.processCommandJson.processAbsoluteUrl(Globals.npmRebuildServerExecutionGraph, cb);
-            }
-          ],
-          (err) => {
-            if (err) {
-              return res.status(417).send(err);
-            }
-            res.status(200).send({status: 'OK'});
-          });
-    });
-    me.app.get('/download-service-tar/:serviceName', (req, res) => {
-      const serviceName = Util.camelToSnake(req.params.serviceName, '-');
-      const serviceFolderToSend = path.resolve(Globals.serverServicesFolder, serviceName);
-
-      fs.stat(serviceFolderToSend, (err, stats) => {
-        if (err) {
-          return res.status(417).send(err);
-        }
-        if (!stats.isDirectory()) {
-          return res.status(417).send(new Error('Unknown directory'));
-        }
-        const memoryStreams = require('memory-streams');
-        const writer = new memoryStreams.WritableStream();
-        const pack = require('tar-pack').pack;
-        const packStream = pack(serviceFolderToSend);
-        writer
-          .on('finish', () => {
-              res.set('x-amino-service-filename', `${serviceName}.tar.gz`);
-              res.status(200).send(writer.toBuffer());
-            }
-          );
-        packStream.pipe(writer);
-      });
-    });
+    me.app.get('/destroy-service/:serviceName', me.destroyService.bind(me));
+    me.app.get('/download-service-tar/:serviceName', me.downloadServiceTar.bind(me));
     cb(null, {message: 'Initialized ServerServicesManager Subscriptions'});
   }
 
@@ -113,24 +52,38 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
   }
 
   private downloadServicesAndModelsTar(req, res) {
-    const me = this;
     const tarManifest: TarManifest = {
       loopbackFileRelativePaths: []
     };
     async
       .waterfall([
         (cb) => {
-          tmp.dir({unsafeCleanup: true}, (err: Error, tmpDir: string, cbCleanup: () => void) => {
-            cbCleanup();
+          tmp.dir({unsafeCleanup: true}, cb);
+        },
+        (tmpDir, cbTmpCleanup, cb) => {
+          ServerServicesManagerImpl.copyLoopbackModelFilesToTmpDir(req.body.loopbackModels, tmpDir, tarManifest, (err) => {
             cb(err, tmpDir);
           });
         },
         (tmpDir, cb) => {
-          ServerServicesManagerImpl.copyLoopbackModelFilesToTmpDir(req.body.loopbackModels, tmpDir, tarManifest, cb);
+          ServerServicesManagerImpl.copyServerServiceFilesToTmpDir(req.body.serverServices, tmpDir, tarManifest, cb);
         }
       ], (err, result) => {
         res.status(500).send({status: 'OK'});
       });
+  }
+
+  private static copyServerServiceFilesToTmpDir(
+    serverServices: NamedObject[],
+    tmpDir: string,
+    tarManifest: TarManifest,
+    cb: (err?: Error) => void) {
+    const dstFolder = path.resolve(tmpDir, Globals.serverServicesRelativePath);
+    mkdirp(dstFolder, (err) => {
+      async.each(serverServices, (serverService, cb) => {
+        cb();
+      });
+    });
   }
 
   private static copyLoopbackModelFilesToTmpDir(
@@ -152,12 +105,8 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
             tarManifest.loopbackFileRelativePaths.push(loopbackModelRelativePath);
             return cb();
           });
-        }, (err: Error) => {
-          cb(err);
-        });
-      }, (err: Error) => {
-        cb(err);
-      });
+        }, cb);
+      }, cb);
     });
   }
 
@@ -205,5 +154,72 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
       readStream.pipe(packStream);
     });
   }
+
+  private destroyService(req, res) {
+    const me = this;
+    const serviceName = Util.camelToKebab(req.params.serviceName);
+    const serviceFolderToDelete = path.resolve(Globals.serverServicesFolder, serviceName);
+    async
+      .series([
+          (cb) => {
+            //Blast service directory
+            rimraf(serviceFolderToDelete, (err) => {
+              cb(err);
+            });
+          },
+          (cb) => {
+            //Remove service entry from Inversify config file
+            const lineDriver = require('line-driver');
+            lineDriver.write({
+              in: Globals.inversifyConfigFilePath,
+              line: (props, parser) => {
+                if (parser.line.indexOf(req.params.serviceName) === -1) {
+                  parser.write(parser.line);
+                }
+              },
+              close: (/*props, parser*/) => {
+                cb();
+              }
+            });
+          },
+          (cb) => {
+            //Recompile server
+            process.chdir(Globals.serverFolder);
+            me.processCommandJson.processAbsoluteUrl(Globals.npmRebuildServerExecutionGraph, cb);
+          }
+        ],
+        (err) => {
+          if (err) {
+            return res.status(417).send(err);
+          }
+          res.status(200).send({status: 'OK'});
+        });
+  }
+
+  private downloadServiceTar(req, res) {
+    const serviceName = Util.camelToSnake(req.params.serviceName, '-');
+    const serviceFolderToSend = path.resolve(Globals.serverServicesFolder, serviceName);
+
+    fs.stat(serviceFolderToSend, (err, stats) => {
+      if (err) {
+        return res.status(417).send(err);
+      }
+      if (!stats.isDirectory()) {
+        return res.status(417).send(new Error('Unknown directory'));
+      }
+      const memoryStreams = require('memory-streams');
+      const writer = new memoryStreams.WritableStream();
+      const pack = require('tar-pack').pack;
+      const packStream = pack(serviceFolderToSend);
+      writer
+        .on('finish', () => {
+            res.set('x-amino-service-filename', `${serviceName}.tar.gz`);
+            res.status(200).send(writer.toBuffer());
+          }
+        );
+      packStream.pipe(writer);
+    });
+  }
+
 }
 

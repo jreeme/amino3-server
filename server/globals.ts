@@ -49,7 +49,8 @@ export class Globals {
   static serverFolder = path.resolve(Globals.projectRootPath, 'server');
   static loopbackModelRelativePath = 'common/models';
   static loopbackModelFolder = path.resolve(Globals.projectRootPath, Globals.loopbackModelRelativePath);
-  static serverServicesFolder = path.resolve(Globals.serverFolder, 'services');
+  static serverServicesRelativePath = 'server/services';
+  static serverServicesFolder = path.resolve(Globals.projectRootPath, Globals.serverServicesRelativePath);
   static clientFolder = path.resolve(Globals.projectRootPath, 'client');
   static inversifyConfigFilePath = path.resolve(Globals.serverFolder, 'inversify.config.ts');
   static clientDistFolder = path.resolve(Globals.projectRootPath, 'dist/client');
