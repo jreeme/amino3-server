@@ -4,15 +4,16 @@
     "noServices": false,
     "logLevel": "debug",
     "suppressedServices": [
-      "_Authentication",
+      "Authentication",
       "FileUpload",
       "FolderMonitor",
       "InitializeDatabase",
       "PluginManager",
       "_RebuildClient",
+      "RemoteLogging",
       "StaticService",
-      "_ServerServicesManager",
-      "_WebSocketManager"
+      "ServerServicesManager",
+      "WebSocketManager"
     ],
     "loggerCallerFilenamesToIgnore": [
       "postal-socket-connection-impl"

@@ -103,7 +103,8 @@ export class ServiceManagerImpl implements ServiceManager {
         (cb) => {
           //Update ServerServices table
           const SS = me.app.models.ServerService;
-          SS.destroyAll((/*err:Error,info:any*/) => {
+          SS.destroyAll((err: Error/*,info:any*/) => {
+            me.log.logIfError(err);
             const serverServices = me.services.map((service) => {
               return {
                 name: service.serviceName,
@@ -120,7 +121,8 @@ export class ServiceManagerImpl implements ServiceManager {
         (cb) => {
           //Update LoopbackModels table
           const LM = me.app.models.LoopbackModel;
-          LM.destroyAll((/*err:Error,info:any*/) => {
+          LM.destroyAll((err: Error/*,info:any*/) => {
+            me.log.logIfError(err);
             const modelNames = Object.keys(me.app.models);
             const loopbackModels = modelNames.map((name) => {
               return {
@@ -148,3 +150,4 @@ export class ServiceManagerImpl implements ServiceManager {
     });
   }
 }
+

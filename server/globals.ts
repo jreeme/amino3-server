@@ -2,7 +2,8 @@ import * as path from 'path';
 import * as _ from 'lodash';
 import * as boolifyString from 'boolify-string';
 
-//process.env.LB_LAZYCONNECT_DATASOURCES = 1;
+process.env.LB_LAZYCONNECT_DATASOURCES = '1';
+
 export class Globals {
   static init(app: LoopBackApplication2) {
     const amino3Config = app.get('amino3Config');
