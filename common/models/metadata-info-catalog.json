@@ -1,0 +1,106 @@
+{
+  "name": "MetadataInfoCatalog",
+  "plural": "MetadataInfoCatalog",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "primeAgency": {
+      "type": "string",
+      "description": "agency providing the data",
+      "required": true
+    },
+    "caseName": {
+      "type": "string",
+      "description": "agency case name",
+      "required": true
+    },
+    "dateReceived": {
+      "type": "date",
+      "description": "date data was received",
+      "required": true
+    },
+    "fileName": {
+      "type": "string",
+      "description": "path of the raw data file",
+      "required": true
+    },
+    "fileAlias": {
+      "type": "string",
+      "description": "path of the raw data file alias; a copy or symlink of the raw data file with the file hash as the alias basename",
+      "required": true
+    },
+    "fileCategory": {
+      "type": "string",
+      "description": "file category; usually the file extension",
+      "required": false
+    },
+    "fileContent": {
+      "type": "string",
+      "description": "file content; e.g. if category is 'xls', content is bank statement data",
+      "required": false
+    },
+    "fileMimeType": {
+      "type": "string",
+      "description": "file mime type; e.g. application/zip, text/plain, text/x-shellscript, ...",
+      "required": false
+    },
+    "fileMimeEncoding": {
+      "type": "string",
+      "description": "file mime encoding; e.g. binary, us-ascii, ...",
+      "required": false
+    },
+    "fileSize": {
+      "type": "number",
+      "description": "file size (in bytes)",
+      "default": 0,
+      "required": false
+    },
+    "fileHash": {
+      "type": "string",
+      "description": "file hash; usually md5",
+      "required": false
+    },
+    "filePedigree": {
+      "type": "number",
+      "description": "pedigree of the data file; stored as id of ancester file instance",
+      "default": null,
+      "required": false
+    },
+    "encrypted": {
+      "type": "boolean",
+      "description": "boolean indicating whether the file is encrypted",
+      "default": "false",
+      "required": false
+    },
+    "quarantined": {
+      "type": "boolean",
+      "description": "boolean indicating whether the file is quarantined (containing malware, virus, ...)",
+      "default": "false",
+      "required": false
+    },
+    "jobDefinition": {
+      "type": "string",
+      "description": "ETL job definition(s) used to process the file (separated by ',')",
+      "required": false
+    },
+    "lastProcessed": {
+      "type": "date",
+      "description": "date (GMT timestamp) file was last ETL'd",
+      "default": null,
+      "required": false
+    },
+    "dateCreated": {
+      "type": "date",
+      "description": "date (timestamp) instance was created in data source",
+      "defaultFn": "now",
+      "required": false
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

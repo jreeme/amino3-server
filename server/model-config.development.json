@@ -1,43 +1,52 @@
 {
-  "_meta"             : {
+  "_meta": {
     "sources": [
       "../common/models"
     ]
   },
-  "AminoAccessToken"  : {
+  "AminoAccessToken": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
   },
-  "AminoUser"         : {
+  "AminoUser": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
   },
-  "AminoRole"         : {
+  "AminoRole": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
   },
   "AminoPostalMessage": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
   },
-  "AminoRoleMapping"  : {
+  "AminoRoleMapping": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
   },
-  "ACL"               : {
+  "ACL": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
   },
-  "UploadedFile"      : {
+  "UploadedFile": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
   },
-  "DataSet"           : {
+  "DataSet": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
   },
-  "ServerService"     : {
+  "MetadataInfoCatalog": {
     "dataSource": "amino_admin_pg",
-    "public"    : true
+    "public": true
+  },
+  "LoopbackModel": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
+  "ServerService": {
+    "dataSource": "amino_admin_pg",
+    "public": true
   }
 }
+

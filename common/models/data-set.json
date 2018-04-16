@@ -7,12 +7,107 @@
     "validateUpsert": true
   },
   "properties": {
-    "name": {
+    "contactFirstName": {
       "type": "string",
+      "description": "Contact First Name",
+      "required": false
+    },
+    "contactLastName": {
+      "type": "string",
+      "description": "Contact Last Name",
+      "required": false
+    },
+    "contactTitle": {
+      "type": "string",
+      "description": "Contact Title",
+      "required": false
+    },
+    "contactEmail": {
+      "type": "string",
+      "description": "Contact Email",
+      "required": false
+    },
+    "contactPhone": {
+      "type": "string",
+      "description": "Contact Phone",
+      "required": false
+    },
+    "caseAgent": {
+      "type": "string",
+      "description": "Case Agent",
+      "required": false
+    },
+    "caseAgentEmail": {
+      "type": "string",
+      "description": "Case Agent Email",
+      "required": false
+    },
+    "caseAgentPhone": {
+      "type": "string",
+      "description": "Case Agent Phone",
+      "required": false
+    },
+    "primeAgency": {
+      "type": "string",
+      "description": "Agency",
       "required": true
     },
-    "recordCount": {
-      "type": "number",
+    "caseName": {
+      "type": "string",
+      "description": "Case Name",
+      "required": true
+    },
+    "caseSupportLocation": {
+      "type": "string",
+      "description": "Case Support Location",
+      "required": false
+    },
+    "caseDescription": {
+      "type": "string",
+      "description": "Case Description",
+      "required": false
+    },
+    "dataDescription": {
+      "type": "string",
+      "description": "Data Description",
+      "required": false
+    },
+    "dataExtractionMethod": {
+      "type": "string",
+      "description": "Data Extraction Method",
+      "required": false
+    },
+    "specialHandlingInstructions": {
+      "type": "string",
+      "description": "Special Handling Instructions",
+      "required": false
+    },
+    "specialAccessInstructions": {
+      "type": "string",
+      "description": "Special Access Instructions",
+      "required": false
+    },
+    "fileName": {
+      "type": ["string"],
+      "description": "Array of the received file names (paths)",
+      "required": true
+    },
+    "datasetName": {
+      "type": "string",
+      "description": "Dataset name",
+      "defaultFn": "initializeDataSetName",
+      "required": false
+    },
+    "dateReceived": {
+      "type": "date",
+      "description": "Date data was received",
+      "defaultFn": "now",
+      "required": false
+    },
+    "uid": {
+      "type": "string",
+      "description": "Unique instamce identifier",
+      "defaultFn": "guid",
       "required": false
     }
   },

@@ -1,8 +1,4 @@
 {
-  "amino_admin_mem"  : {
-    "name"     : "amino_admin_mem",
-    "connector": "memory"
-  },
   "amino_admin_pg": {
     "name": "amino_admin_pg",
     "host": "localhost",

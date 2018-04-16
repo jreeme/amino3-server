@@ -89,4 +89,9 @@ module.exports = function (DataSet) {
       http: {path: '/create-dataset', verb: 'post'}
     }
   );
+
+  DataSet.observe('before save', function initializeDataSetName(ctx, next) {
+    ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
+    next();
+  });
 };
