@@ -5,6 +5,7 @@ import {BaseService} from '../services/base-service';
 import {Globals} from '../globals';
 import * as async from 'async';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 
 export interface ServiceManager {
   initSubscriptions(app: LoopBackApplication2, cb: (err?: Error) => void): void;
@@ -84,20 +85,12 @@ export class ServiceManagerImpl implements ServiceManager {
       async.series([
         (cb) => {
           async.map(enabledServices, (service, cb) => {
-            me.log.info(`Calling: ${service.serviceName}.initSubscriptions()`);
-            service.initSubscriptions((err, result) => {
-              me.log.debug(`${service.serviceName}.initSubscriptions(): called back`);
-              cb(err, result);
-            });
+            me.callInitSubscriptionOrInit.bind(me)(service, 'initSubscriptions', cb);
           }, cb);
         },
         (cb) => {
           async.map(enabledServices, (service, cb) => {
-            me.log.info(`Calling: ${service.serviceName}.init()`);
-            service.init((err, result) => {
-              me.log.debug(`${service.serviceName}.init(): called back`);
-              cb(err, result);
-            });
+            me.callInitSubscriptionOrInit.bind(me)(service, 'init', cb);
           }, cb);
         },
         (cb) => {
@@ -141,12 +134,35 @@ export class ServiceManagerImpl implements ServiceManager {
         results.forEach((result) => {
           me.log.debug(JSON.stringify(result, null, 2));
         });
-        !err && me.postal
+        me.postal
           .publish({
             channel: 'Amino3Startup',
             topic: 'services-started'
           });
       });
+    });
+  }
+
+  private destroyAllAndCreate(loopbackModel,modelsToAdd:any[], cb: (err?: Error) => void) {
+    const me = this;
+    loopbackModel.destroyAll((err: Error/*,info:any*/) => {
+      me.log.logIfError(err);
+      loopbackModel.create(modelsToAdd, (err) => {
+        me.log.logIfError(err);
+        cb();
+      });
+    });
+  }
+
+  private callInitSubscriptionOrInit(service: BaseService, methodName: string, cb: (err: Error, result: any) => void) {
+    const me = this;
+    const startTime = moment();
+    me.log.info(`Calling: ${service.serviceName}.${methodName}()`);
+    (service[methodName])((err, result) => {
+      const durationMS = moment.duration(moment().diff(startTime)).as('milliseconds');
+      me.log.debug(`${service.serviceName}.${methodName}(): called back. Took ${durationMS} milliseconds`);
+      //cb(err, result);
+      cb(null, result);
     });
   }
 }
