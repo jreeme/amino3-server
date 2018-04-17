@@ -1,0 +1,6 @@
+{
+  "amino_admin_mem": {
+    "name": "amino_admin_mem",
+    "connector": "memory"
+  }
+}
