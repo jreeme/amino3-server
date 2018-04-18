@@ -2,12 +2,19 @@ import {inject, injectable} from 'inversify';
 import {Globals} from '../../globals';
 import {Logger} from './logger';
 import {Util} from '../util';
+import {SafeJson} from 'firmament-yargs';
 import * as path from 'path';
-import {SafeJson} from "firmament-yargs";
+import * as moment from 'moment';
 
 const lineEnding = '\n';
 const stackIndex = 4; //How far up to call stack to look to get file:# for logging call
-const format = '${timestamp} <${title}> ${file}:${line} ${message}';
+const format = [
+  '${timestamp} <${title}> ${file}:${line} ${message}',
+  {
+    error: '${timestamp} <${title}> ${message} (in ${file}:${line})\nCall Stack:\n${stack}' // error format
+  }
+];
+const dateformat = 'isoUtcDateTime';
 
 export interface Logger {
   debug(msg: string);
@@ -18,9 +25,10 @@ export interface Logger {
   critical(msg: string);
   alert(msg: string);
   emergency(msg: string);
-  setApplicationObject(app: LoopBackApplication2): void;
+  initSubscriptions(app: LoopBackApplication2): void;
   logIfError(err: Error): void;
   logFromRemoteClient(remoteLoggingMessage: RemoteLoggingMessage): void;
+  setCallerFilenamesToIgnore(callerFilenamesToIgnore: string[]);
 }
 
 export interface RemoteLoggingMessage {
@@ -38,10 +46,16 @@ export class LoggerImpl implements Logger {
   private _loggers: any[] = [];
 
   constructor(@inject('SafeJson') private safeJson: SafeJson) {
-
+    this.critical('');
+    this.critical(`******************************** Logger Initialized @ ${moment().toISOString()} (Log Level: ${Globals.logLevel}) ********************************`);
+    this.critical('');
   }
 
-  setApplicationObject(app: LoopBackApplication2) {
+  setCallerFilenamesToIgnore(callerFilenamesToIgnore: string[]) {
+    this.callerFilenamesToIgnore = new Set<string>(Globals.loggerCallerFilenamesToIgnore);
+  }
+
+  initSubscriptions(app: LoopBackApplication2) {
     const me = this;
     if (me._app) {
       return;
@@ -60,7 +74,6 @@ export class LoggerImpl implements Logger {
         res.status(200).send({status: 'OK'});
       });
     });
-    me.callerFilenamesToIgnore = new Set<string>(Globals.loggerCallerFilenamesToIgnore);
   }
 
   get app(): LoopBackApplication2 {
@@ -134,6 +147,7 @@ export class LoggerImpl implements Logger {
         require('js-logging').dailyFile({
           level: this.logLevel,
           format,
+          dateformat,
           lineEnding,
           stackIndex,
           path: Globals.logFilePath,
@@ -141,6 +155,7 @@ export class LoggerImpl implements Logger {
         require('js-logging').colorConsole({
           level: this.logLevel,
           format,
+          dateformat,
           lineEnding,
           stackIndex
         })

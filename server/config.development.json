@@ -2,21 +2,23 @@
   "amino3Config": {
     "noListen": false,
     "noServices": false,
-    "logLevel": "debug",
+    "logLevel": "info",
     "suppressedServices": [
-      "Authentication",
+      "_Authentication",
       "FileUpload",
       "FolderMonitor",
-      "InitializeDatabase",
+      "_InitializeDatabase",
       "PluginManager",
-      "_RebuildClient",
+      "RebuildClient",
       "RemoteLogging",
       "StaticService",
       "ServerServicesManager",
       "WebSocketManager"
     ],
     "loggerCallerFilenamesToIgnore": [
-      "postal-socket-connection-impl"
+      "_postal-socket-connection-impl",
+      "_globals",
+      "_service-manager"
     ]
   }
 }

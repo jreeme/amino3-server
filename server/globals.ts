@@ -1,11 +1,14 @@
 import * as path from 'path';
 import * as _ from 'lodash';
 import * as boolifyString from 'boolify-string';
+import {Logger} from './util/logging/logger';
 
 process.env.LB_LAZYCONNECT_DATASOURCES = '1';
 
 export class Globals {
   static init(app: LoopBackApplication2) {
+    const log = (<Logger>(<any>global).logger);
+    log.info(`Initializing Globals static class`);
     const amino3Config = app.get('amino3Config');
     //Override Global properties with loopback config values
     Object.keys(Globals).forEach((key) => {
@@ -17,23 +20,53 @@ export class Globals {
       switch (typeof Globals[key]) {
         case('boolean'):
           //boolifyString also handles non-string values correctly enough
-          return Globals[key] = boolifyString(value);
+          Globals[key] = boolifyString(value);
+          break;
         case('number'):
-          return Globals[key] = _.toNumber(value);
+          Globals[key] = _.toNumber(value);
+          break;
         case('string'):
-          return Globals[key] = _.toString(value);
+          Globals[key] = _.toString(value);
+          break;
         default:
-          return Globals[key] = value;
+          Globals[key] = value;
+          break;
       }
+    });
+    //Order of class init makes this HACK necessary
+    log.setCallerFilenamesToIgnore(Globals.loggerCallerFilenamesToIgnore);
+    Object.keys(Globals).forEach((key) => {
+      const envVarName = `AMINO3_${_.toUpper(_.snakeCase(key))}`;
+      let valueSource = process.env[envVarName]
+        ? `[env]:${envVarName}`
+        : amino3Config[key]
+          ? '[amino3Config]'
+          : '[class: Globals]';
+      log.debug(`Global-->> '${key}' set from ${valueSource} to '${Globals[key]}'`);
     });
   }
 
   static suppressedServices: string[] = [];
   static loggerCallerFilenamesToIgnore: string[] = [];
   static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
+  //***--> Notice LogLevel Comment
   //I like to start the logLevel at 'debug' to get all the startup log messages before the loopback-boot
   //sequence gets the logLevel from configs (either from the database or loopback config files)
-  static logLevel = 'debug';// debug, info, notice, warning, error, critical, alert, emergency
+  private static _logLevel = 'debug';// debug, info, notice, warning, error, critical, alert, emergency
+
+  static set logLevel(newLogLevel: string) {
+    Globals._logLevel = newLogLevel;
+    const log = (<Logger>(<any>global).logger);
+    log.critical(`******************************** LogLevel changed to ${Globals.logLevel} ********************************`);
+  }
+
+  static get logLevel(): string {
+    return Globals._logLevel;
+  }
+
+  //***-->
+
   static noListen = false;
   static noServices = false;
   static noClientRebuild = false;

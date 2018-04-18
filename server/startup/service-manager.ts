@@ -71,7 +71,7 @@ export class ServiceManagerImpl implements ServiceManager {
 
   private loopbackBooted() {
     const me = this;
-    me.log.debug(`[RECV] 'Amino3Startup:loopback-booted': starting Amino3 services`);
+    me.log.info(`[RECV] 'Amino3Startup:loopback-booted': starting Amino3 services`);
     //Set application object in services. Even if a service is not enabled it is still loaded
     //and may need to do some things with the application object.
     me.services.forEach((service) => {
@@ -95,45 +95,34 @@ export class ServiceManagerImpl implements ServiceManager {
         },
         (cb) => {
           //Update ServerServices table
-          const SS = me.app.models.ServerService;
-          SS.destroyAll((err: Error/*,info:any*/) => {
-            me.log.logIfError(err);
-            const serverServices = me.services.map((service) => {
-              return {
-                name: service.serviceName,
-                enabled: service.enabled,
-                canBeDisabled: service.canBeDisabled
-              };
-            });
-            SS.create(serverServices, (err) => {
-              me.log.logIfError(err);
-              cb();
-            });
-          });
+          me.destroyAllAndCreate(
+            me.app.models.ServerService,
+            me.services.map((service) => ({
+              name: service.serviceName,
+              enabled: service.enabled,
+              canBeDisabled: service.canBeDisabled
+            })),
+            cb);
         },
         (cb) => {
           //Update LoopbackModels table
-          const LM = me.app.models.LoopbackModel;
-          LM.destroyAll((err: Error/*,info:any*/) => {
-            me.log.logIfError(err);
-            const modelNames = Object.keys(me.app.models);
-            const loopbackModels = modelNames.map((name) => {
-              return {
-                name
-              };
-            });
-            LM.create(loopbackModels, (err) => {
-              me.log.logIfError(err);
-              cb();
-            });
-          });
+          me.destroyAllAndCreate(
+            me.app.models.LoopbackModel,
+            Object.keys(me.app.models).map((name) => ({name})),
+            cb);
         }
       ], (err: any, results: any[]) => {
         me.log.logIfError(err);
         me.log.debug('Service start results:');
-        results.forEach((result) => {
-          me.log.debug(JSON.stringify(result, null, 2));
-        });
+        for (let i = 0; i < results.length; ++i) {
+          if (i === 0 || i === 1) {
+            me.log.notice(JSON.stringify(results[i], null, 2));
+          }
+          else if (i === 2 || i === 3) {
+            me.log.debug(JSON.stringify(results[i], null, 2));
+          }
+        }
+        me.log.info(`[SEND] 'Amino3Startup:services-started'`);
         me.postal
           .publish({
             channel: 'Amino3Startup',
@@ -143,13 +132,16 @@ export class ServiceManagerImpl implements ServiceManager {
     });
   }
 
-  private destroyAllAndCreate(loopbackModel,modelsToAdd:any[], cb: (err?: Error) => void) {
+  private destroyAllAndCreate(loopbackModel, modelsToAdd: any[], cb: (err: Error, callbackResult: any) => void) {
     const me = this;
-    loopbackModel.destroyAll((err: Error/*,info:any*/) => {
+    const callbackResult = {destroyAllResults: null, createResults: null};
+    loopbackModel.destroyAll((err: Error, destroyAllResults: any) => {
       me.log.logIfError(err);
-      loopbackModel.create(modelsToAdd, (err) => {
+      callbackResult.destroyAllResults = destroyAllResults;
+      loopbackModel.create(modelsToAdd, (err, createResults) => {
         me.log.logIfError(err);
-        cb();
+        callbackResult.createResults = createResults;
+        cb(null, callbackResult);
       });
     });
   }
@@ -160,7 +152,7 @@ export class ServiceManagerImpl implements ServiceManager {
     me.log.info(`Calling: ${service.serviceName}.${methodName}()`);
     (service[methodName])((err, result) => {
       const durationMS = moment.duration(moment().diff(startTime)).as('milliseconds');
-      me.log.debug(`${service.serviceName}.${methodName}(): called back. Took ${durationMS} milliseconds`);
+      me.log.info(`${service.serviceName}.${methodName}(): called back. Took ${durationMS} milliseconds`);
       //cb(err, result);
       cb(null, result);
     });
