@@ -40,19 +40,20 @@ export class BootManagerImpl implements BootManager {
       throw new Error(errorMsg);
     }
 
-    me.log.info(`Loopback boot process COMPLETED`);
+    //Loopback App booted so all configs are loaded (and available via app.get('config-name')
+    //so this is a good time to initialize our Globals object
+    Globals.init(me.app);
 
+    //Now that our Globals are initted we can "re-initialize" our logger
     me.log.initSubscriptions(me.app);
+
+    me.log.info(`Loopback boot process COMPLETED`);
 
     //Tell loopback to use AminoAccessToken for auth
     me.log.info(`Installing custom Loopback access token [model: AminoAccessToken]`);
     me.app.use(me.loopback.token({
       model: me.app.models.AminoAccessToken
     }));
-
-    //Loopback App booted so all configs are loaded (and available via app.get('config-name')
-    //so this is a good time to initialize our Globals object
-    Globals.init(me.app);
 
     //Sign up to hear back from ServiceManager when all the services (if any) are started
     me.log.debug('Subscribing to Postal[Amino3Startup:services-started]');

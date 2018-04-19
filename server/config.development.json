@@ -3,6 +3,8 @@
     "noListen": false,
     "noServices": false,
     "logLevel": "info",
+    "logToFile": true,
+    "logFileFolder": "/tmp/amino3-logs",
     "suppressedServices": [
       "_Authentication",
       "FileUpload",
@@ -16,7 +18,7 @@
       "WebSocketManager"
     ],
     "loggerCallerFilenamesToIgnore": [
-      "_postal-socket-connection-impl",
+      "postal-socket-connection-impl",
       "_globals",
       "_service-manager"
     ]

@@ -5,6 +5,7 @@ import {Util} from '../util';
 import {SafeJson} from 'firmament-yargs';
 import * as path from 'path';
 import * as moment from 'moment';
+import * as mkdirp from 'mkdirp';
 
 const lineEnding = '\n';
 const stackIndex = 4; //How far up to call stack to look to get file:# for logging call
@@ -41,9 +42,10 @@ export interface RemoteLoggingMessage {
 export class LoggerImpl implements Logger {
   private callerFilenamesToIgnore = new Set<string>();
   private readonly allFilenameCallers = new Set<string>();
+  private readonly _loggers: any[] = [];
   private _app: LoopBackApplication2;
   private logLevel = '';
-  private _loggers: any[] = [];
+  private logFolderValid = false;
 
   constructor(@inject('SafeJson') private safeJson: SafeJson) {
     this.critical('');
@@ -61,6 +63,16 @@ export class LoggerImpl implements Logger {
       return;
     }
     me._app = app;
+    try {
+      if (Globals.logToFile) {
+        mkdirp.sync(Globals.logFileFolder);
+        me.logFolderValid = true;
+        me.resetLoggers();
+        me.notice(`Log File Folder '${Globals.logFileFolder}' validity check`);
+      }
+    } catch (err) {
+      me.warning(`Unable to create Log File Folder '${Globals.logFileFolder}'`);
+    }
     me.app.get('/get-logger-called-from-files', (req, res) => {
       res.status(200).send(Array.from(me.allFilenameCallers));
     });
@@ -141,44 +153,56 @@ export class LoggerImpl implements Logger {
   }
 
   private get loggers(): any[] {
-    if (this.logLevel !== Globals.logLevel) {
-      this.logLevel = Globals.logLevel;
-      this._loggers = [
-        require('js-logging').dailyFile({
-          level: this.logLevel,
-          format,
-          dateformat,
-          lineEnding,
-          stackIndex,
-          path: Globals.logFilePath,
-        }),
-        require('js-logging').colorConsole({
-          level: this.logLevel,
-          format,
-          dateformat,
-          lineEnding,
-          stackIndex
-        })
-      ];
+    const me = this;
+    if (me.logLevel !== Globals.logLevel) {
+      me.logLevel = Globals.logLevel;
+      me._loggers.length = 0;
+      me.logFolderValid && me._loggers
+        .push(
+          require('js-logging').dailyFile({
+            level: me.logLevel,
+            format,
+            dateformat,
+            lineEnding,
+            stackIndex,
+            path: Globals.logFileFolder,
+          }));
+      me._loggers
+        .push(
+          require('js-logging').colorConsole({
+            level: me.logLevel,
+            format,
+            dateformat,
+            lineEnding,
+            stackIndex
+          }));
     }
-    return this._loggers;
+    return me._loggers;
   }
 
   private actualLog(message: string) {
-    const me = this;
-    const callingFile = path.basename(Util.getCallSite(3).fileName, '.js');
-    me.allFilenameCallers.add(callingFile);
-    if (me.callerFilenamesToIgnore.has(callingFile)) {
-      return;
-    }
-    //me.loggers[1]['error'](callingFile);
-
-    //--> LogIt
-    const logMethodName = Util.getCallingMethodName(2);
-    me.loggers.forEach((logger) => {
-      if (typeof logger[logMethodName] === 'function') {
-        logger[logMethodName](message);
+    try {
+      const me = this;
+      const callingFile = path.basename(Util.getCallSite(3).fileName, '.js');
+      me.allFilenameCallers.add(callingFile);
+      if (me.callerFilenamesToIgnore.has(callingFile)) {
+        return;
       }
-    });
+      //me.loggers[1]['error'](callingFile);
+
+      //--> LogIt
+      const logMethodName = Util.getCallingMethodName(2);
+      me.loggers.forEach((logger) => {
+        if (typeof logger[logMethodName] === 'function') {
+          logger[logMethodName](message);
+        }
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  private resetLoggers() {
+    Globals.logLevel = undefined;
   }
 }

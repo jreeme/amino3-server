@@ -26,6 +26,7 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('IPostal') private postal: IPostal) {
     super();
+    this.canBeDisabled = false;
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
@@ -156,44 +157,45 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
   }
 
   private destroyService(req, res) {
-    const me = this;
-    const serviceName = Util.camelToKebab(req.params.serviceName);
-    const serviceFolderToDelete = path.resolve(Globals.serverServicesFolder, serviceName);
-    async
-      .series([
-          (cb) => {
-            //Blast service directory
-            rimraf(serviceFolderToDelete, (err) => {
-              cb(err);
-            });
-          },
-          (cb) => {
-            //Remove service entry from Inversify config file
-            const lineDriver = require('line-driver');
-            lineDriver.write({
-              in: Globals.inversifyConfigFilePath,
-              line: (props, parser) => {
-                if (parser.line.indexOf(req.params.serviceName) === -1) {
-                  parser.write(parser.line);
-                }
+    /*    const me = this;
+        const serviceName = Util.camelToKebab(req.params.serviceName);
+        const serviceFolderToDelete = path.resolve(Globals.serverServicesFolder, serviceName);
+        async
+          .series([
+              (cb) => {
+                //Blast service directory
+                rimraf(serviceFolderToDelete, (err) => {
+                  cb(err);
+                });
               },
-              close: (/*props, parser*/) => {
-                cb();
+              (cb) => {
+                //Remove service entry from Inversify config file
+                const lineDriver = require('line-driver');
+                lineDriver.write({
+                  in: Globals.inversifyConfigFilePath,
+                  line: (props, parser) => {
+                    if (parser.line.indexOf(req.params.serviceName) === -1) {
+                      parser.write(parser.line);
+                    }
+                  },
+                  close: (/!*props, parser*!/) => {
+                    cb();
+                  }
+                });
+              },
+              (cb) => {
+                //Recompile server
+                process.chdir(Globals.serverFolder);
+                me.processCommandJson.processAbsoluteUrl(Globals.npmRebuildServerExecutionGraph, cb);
               }
-            });
-          },
-          (cb) => {
-            //Recompile server
-            process.chdir(Globals.serverFolder);
-            me.processCommandJson.processAbsoluteUrl(Globals.npmRebuildServerExecutionGraph, cb);
-          }
-        ],
-        (err) => {
-          if (err) {
-            return res.status(417).send(err);
-          }
-          res.status(200).send({status: 'OK'});
-        });
+            ],
+            (err) => {
+              if (err) {
+                return res.status(417).send(err);
+              }
+              res.status(200).send({status: 'OK'});
+            });*/
+    res.status(200).send({status: 'OK'});
   }
 
   private downloadServiceTar(req, res) {
