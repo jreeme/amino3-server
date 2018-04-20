@@ -11,16 +11,22 @@
       "FolderMonitor",
       "_InitializeDatabase",
       "PluginManager",
-      "RebuildClient",
+      "_RebuildClient",
       "RemoteLogging",
       "StaticService",
       "ServerServicesManager",
-      "WebSocketManager"
+      "_WebSocketManager"
+    ],
+    "postalPublishToClientTopicSuppressList": [
+      "ServerHeartbeat"
     ],
     "loggerCallerFilenamesToIgnore": [
-      "postal-socket-connection-impl",
-      "_globals",
-      "_service-manager"
+      "_postal-socket-connection-impl",
+      "globals",
+      "initialize-database",
+      "service-manager",
+      "logger",
+      "boot-manager"
     ]
   }
 }

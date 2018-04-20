@@ -48,6 +48,8 @@ export class Globals {
 
   static suppressedServices: string[] = [];
   static loggerCallerFilenamesToIgnore: string[] = [];
+  static postalPublishToClientTopicSuppressList: string[] = [];
+
   //static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
   static logToFile: boolean = true;

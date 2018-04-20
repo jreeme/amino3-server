@@ -1,10 +1,10 @@
 import {injectable, inject} from 'inversify';
 import {IPostal} from 'firmament-yargs';
-import * as _ from 'lodash';
-import * as Rx from 'rxjs';
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 import kernel from '../../inversify.config';
+import * as _ from 'lodash';
+import * as Rx from 'rxjs';
 import * as SocketIO from 'socket.io';
 
 @injectable()
@@ -20,6 +20,16 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
+    me.app.get('/util/get-websocket-info', (req, res) => {
+      try {
+        res.status(200).send({
+          serverUrl: `http://${req.connection.localAddress}:${req.connection.localPort}`,
+          clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
+        });
+      } catch (err) {
+        res.status(500).send(err);
+      }
+    });
     me.postal
       .subscribe({
         channel: 'ServiceBus',
@@ -65,22 +75,11 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
   }
 
   init(cb: (err: Error, result: any) => void) {
-    const me = this;
-    me.app.get('/util/get-websocket-info', (req, res) => {
-      try {
-        res.status(200).send({
-          serverUrl: `http://${req.connection.localAddress}:${req.connection.localPort}`,
-          clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
-        });
-      } catch (err) {
-        res.status(500).send(err);
-      }
-    });
-    me.startHeartbeat();
+    this.startHeartbeat();
     cb(null, {message: 'Initialized WebSocketManagerImpl'});
   }
 
-  removePostalSocketConnection(postalSocketConnection: PostalSocketConnection) {
+  private removePostalSocketConnection(postalSocketConnection: PostalSocketConnection) {
     const me = this;
     try {
       me.postalSocketConnections.delete(postalSocketConnection);
@@ -95,7 +94,7 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
     try {
       const postalSocketConnection = kernel.get<PostalSocketConnection>('PostalSocketConnection');
       postalSocketConnection.init(socket);
-      me.log.debug(`Created PostalSocketConnection '${postalSocketConnection.id}'`);
+      me.log.notice(`Created PostalSocketConnection '${postalSocketConnection.id}'`);
       me.postalSocketConnections.add(postalSocketConnection);
     } catch (err) {
       me.log.error(`ERROR creating/adding PostalSocketConnection`);
@@ -116,6 +115,6 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
             data: {serverTime: Date.now()}
           }
         });
-      });
+      })
   }
 }

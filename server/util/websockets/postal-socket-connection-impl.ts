@@ -2,19 +2,21 @@ import {injectable, inject} from 'inversify';
 import {IPostal, ISubscriptionDefinition} from 'firmament-yargs';
 import {SocketIoWrapper} from "./socketIoWrapper";
 import {Logger} from "../logging/logger";
+import {Globals} from "../../globals";
 
 const Rx = require('rxjs');
 
 @injectable()
 export class PostalSocketConnectionImpl implements PostalSocketConnection {
   private postalSubscriptions: Set<ISubscriptionDefinition<any>> = new Set();
+  private pptctsl:Set<string> = new Set<string>();
   private socketConnectionInfo: SocketConnectionInfo;
 
   get id(): string {
     const me = this;
     if (!me.socketIoWrapper) {
       me.log.error('Attempt to get id of non-existent socket');
-      return null;
+      return undefined;
     }
     return this.socketIoWrapper.id;
   }
@@ -31,9 +33,9 @@ export class PostalSocketConnectionImpl implements PostalSocketConnection {
   init(socket) {
     const me = this;
     me.log.notice(`Initializing PostalSocketConnection ${me.id}`);
+    me.pptctsl = new Set(Globals.postalPublishToClientTopicSuppressList);
     me.socketIoWrapper.init(socket, me);
     me.createPostalSubscriptions();
-    //Shake hands with client
     me.log.notice(`Shaking hands with client ${me.id}`);
     me.publishToClient({
       topic: 'socket.handshake',
@@ -45,7 +47,9 @@ export class PostalSocketConnectionImpl implements PostalSocketConnection {
 
   publishToClient(aminoMessage: AminoMessage) {
     const me = this;
-    me.log.debug(`Publishing to client '${me.id}', AminoMessage: '${JSON.stringify(aminoMessage)}'`);
+    if(!me.pptctsl.has(aminoMessage.topic)){
+      me.log.info(`Publishing to client '${me.id}', AminoMessage: '${JSON.stringify(aminoMessage)}'`);
+    }
     me.socketIoWrapper.publishToClient(aminoMessage);
   }
 

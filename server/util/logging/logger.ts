@@ -68,7 +68,7 @@ export class LoggerImpl implements Logger {
         mkdirp.sync(Globals.logFileFolder);
         me.logFolderValid = true;
         me.resetLoggers();
-        me.notice(`Log File Folder '${Globals.logFileFolder}' validity check`);
+        me.notice(`Log File Folder '${Globals.logFileFolder}' validity check PASSED`);
       }
     } catch (err) {
       me.warning(`Unable to create Log File Folder '${Globals.logFileFolder}'`);
