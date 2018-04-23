@@ -40,6 +40,10 @@
     "dataSource": "amino_admin_pg",
     "public": true
   },
+  "ElasticSearch": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
   "LoopbackModel": {
     "dataSource": "amino_admin_pg",
     "public": true

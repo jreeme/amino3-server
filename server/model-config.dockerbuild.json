@@ -40,6 +40,10 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
+  "ElasticSearch": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
   "LoopbackModel": {
     "dataSource": "amino_admin_mem",
     "public": true
