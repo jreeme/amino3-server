@@ -1,6 +1,6 @@
 {
-  "name": "ElasticSearch",
-  "plural": "ElasticSearches",
+  "name": "Elasticsearch",
+  "plural": "Elasticsearches",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {

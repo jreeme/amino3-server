@@ -1,6 +1,6 @@
 const request = require('request');
-module.exports = function (ElasticSearch) {
-  ElasticSearch.elasticsearchAction = function (verb, req, res) {
+module.exports = function (Elasticsearch) {
+  Elasticsearch.elasticsearchAction = function (verb, req, res) {
     const uri = `http://192.168.104.33:9200/${verb}?pretty`;
     const requestOptions = {
       uri,
@@ -15,7 +15,7 @@ module.exports = function (ElasticSearch) {
       arg: 'verb',
       type: 'string',
       required: true,
-      description: 'ElasticSearch action to perform (_search, _count, etc.)'
+      description: 'Elasticsearch action to perform (_search, _count, etc.)'
     },
     {
       arg: 'req',
@@ -34,7 +34,7 @@ module.exports = function (ElasticSearch) {
       arg: 'result',
       type: 'object',
       root: true,
-      description: 'Result of ElasticSearch query'
+      description: 'Result of Elasticsearch query'
     }
   ];
 
@@ -43,7 +43,7 @@ module.exports = function (ElasticSearch) {
     verb: 'all'
   };
 
-  ElasticSearch.remoteMethod('elasticsearchAction', {
+  Elasticsearch.remoteMethod('elasticsearchAction', {
     accepts,
     returns,
     http

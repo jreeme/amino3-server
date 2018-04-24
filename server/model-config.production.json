@@ -40,7 +40,7 @@
     "dataSource": "amino_admin_pg",
     "public": true
   },
-  "ElasticSearch": {
+  "Elasticsearch": {
     "dataSource": "amino_admin_pg",
     "public": true
   },
