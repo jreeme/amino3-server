@@ -1,6 +1,6 @@
 const request = require('request');
 module.exports = function (Elasticsearch) {
-  Elasticsearch.elasticsearchAction = function (verb, req, res) {
+  Elasticsearch.elasticsearchAction = function (verb, esQueryJson, req, res) {
     const uri = `http://192.168.104.33:9200/${verb}?pretty`;
     const requestOptions = {
       uri,
@@ -16,6 +16,11 @@ module.exports = function (Elasticsearch) {
       type: 'string',
       required: true,
       description: 'Elasticsearch action to perform (_search, _count, etc.)'
+    },
+    {
+      arg: 'esQueryJson',
+      type: 'object',
+      http: {source: 'body'}
     },
     {
       arg: 'req',
