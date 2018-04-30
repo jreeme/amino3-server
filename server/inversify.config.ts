@@ -12,6 +12,8 @@ import {PluginManagerImpl} from './services/plugin-manager/plugin-manager';
 import {RebuildClientImpl} from './services/rebuild-client/rebuild-client';
 import {PostgresHelperImpl} from './util/database-helpers/implementations/postgres-helper-impl';
 import {BaseDatabaseHelper} from './util/database-helpers/interfaces/base-database-helper';
+import {RemoteLoggingImpl} from './services/remote-logging/remote-logging';
+import {ElasticsearchImpl} from './services/elasticsearch/elasticsearch';
 import {MysqlHelperImpl} from './util/database-helpers/implementations/mysql-helper-impl';
 import {PostalSocketConnectionImpl} from './util/websockets/postal-socket-connection-impl';
 import {SocketIoWrapper, SocketIoWrapperImpl} from './util/websockets/socketIoWrapper';
@@ -28,9 +30,11 @@ kernel.bind<BaseService>('BaseService').to(FileUploadImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(FolderMonitorImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(InitializeDatabaseImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(PluginManagerImpl).inSingletonScope();
+kernel.bind<BaseService>('BaseService').to(ElasticsearchImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(RebuildClientImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(WebSocketManagerImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(ServerServicesManagerImpl).inSingletonScope();
+kernel.bind<BaseService>('BaseService').to(RemoteLoggingImpl).inSingletonScope();
 
 //Non-services
 kernel.bind<BootManager>('BootManager').to(BootManagerImpl).inSingletonScope();
@@ -43,5 +47,3 @@ kernel.bind<SocketIoWrapper>('SocketIoWrapper').to(SocketIoWrapperImpl).inTransi
 //noinspection JSUnusedGlobalSymbols
 export default kernel;
 
-import {RemoteLoggingImpl} from './services/remote-logging/remote-logging';
-kernel.bind<BaseService>('BaseService').to(RemoteLoggingImpl).inSingletonScope();
