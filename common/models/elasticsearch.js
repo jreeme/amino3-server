@@ -1,21 +1,10 @@
-const request = require('request');
 module.exports = function (Elasticsearch) {
-  Elasticsearch.elasticsearchAction = function (esOverrideUrl, esVerb, esQueryJson, req, res) {
-    const uri = `http://192.168.104.33:9200/${esVerb}?pretty`;
-    const requestOptions = {
-      uri,
-      method: req.method,
-      json: req.body
-    };
-    /*    request(requestOptions, (err, res, body) => {
-          let e = err;
-        });*/
-    //request(requestOptions).pipe(res);
+  Elasticsearch.elasticsearchAction = function (esVerb, esQueryJson, req, res) {
     global.postal.publish({
       channel: 'Elasticsearch',
       topic: 'Query',
+      //See: server/services/elasticsearch/elasticsearch.ts + ElasticsearchQuery interface
       data: {
-        esOverrideUrl,
         esVerb,
         esQueryJson,
         req,
@@ -25,12 +14,6 @@ module.exports = function (Elasticsearch) {
   };
 
   const accepts = [
-    {
-      arg: 'esOverrideUrl',
-      type: 'string',
-      required: true,
-      description: `Override server's idea of ES Url`
-    },
     {
       arg: 'esVerb',
       type: 'string',
@@ -64,7 +47,7 @@ module.exports = function (Elasticsearch) {
   ];
 
   const http = {
-    path: '/es/:esOverrideUrl/:esVerb',
+    path: '/es/:esVerb',
     verb: 'all'
   };
 

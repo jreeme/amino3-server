@@ -117,5 +117,6 @@ export class Globals {
     static uploadFilePostUrl = '/upload-files';*/
   static serverServiceUploadFileUrl = '/server-service-upload-files';
   static remoteLoggingUrl = '/log';
+  static elasticsearchUrl = 'http://elasticsearch:9200';
 }
 
