@@ -53,7 +53,7 @@ export class Globals {
   //static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
   static logToFile: boolean = true;
-  static logFileFolder: string = undefined;
+  static logFileFolder: string = '/tmp';
   //***--> Notice LogLevel Comment
   //I like to start the logLevel at 'debug' to get all the startup log messages before the loopback-boot
   //sequence gets the logLevel from configs (either from the database or loopback config files)
