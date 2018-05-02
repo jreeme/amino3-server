@@ -2,7 +2,7 @@
   "amino3Config": {
     "noListen": false,
     "noServices": false,
-    "logLevel": "info",
+    "logLevel": "debug",
     "logToFile": true,
     "logFileFolder": "/tmp/amino3-logs",
     "elasticsearchUrl": "http://192.168.104.33:9200",

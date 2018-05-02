@@ -7,6 +7,11 @@
     "validateUpsert": true
   },
   "properties": {
+    "datasetUID": {
+      "type": "string",
+      "description": "dataset unique identifier",
+      "required": true
+    },
     "primeAgency": {
       "type": "string",
       "description": "agency providing the data",

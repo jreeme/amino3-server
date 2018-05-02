@@ -44,6 +44,18 @@
     "dataSource": "amino_admin_pg",
     "public": true
   },
+  "SparkApplication": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
+  "SparkJob": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
+  "SparkPedigree": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
   "LoopbackModel": {
     "dataSource": "amino_admin_pg",
     "public": true

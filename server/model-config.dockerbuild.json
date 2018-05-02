@@ -44,6 +44,18 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
+  "SparkApplication": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
+  "SparkJob": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
+  "SparkPedigree": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
   "LoopbackModel": {
     "dataSource": "amino_admin_mem",
     "public": true
@@ -53,3 +65,4 @@
     "public": true
   }
 }
+

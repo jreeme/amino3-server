@@ -98,16 +98,16 @@
       "defaultFn": "initializeDataSetName",
       "required": false
     },
+    "datasetUID": {
+      "type": "string",
+      "description": "Dataset unique identifier",
+      "defaultFn": "guid",
+      "required": false
+    },
     "dateReceived": {
       "type": "date",
       "description": "Date data was received",
       "defaultFn": "now",
-      "required": false
-    },
-    "uid": {
-      "type": "string",
-      "description": "Unique instamce identifier",
-      "defaultFn": "guid",
       "required": false
     }
   },

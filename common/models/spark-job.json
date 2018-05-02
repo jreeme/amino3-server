@@ -1,0 +1,27 @@
+{
+  "name": "SparkJob",
+  "plural": "SparkJobs",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "applicationId": {
+      "type": "string",
+      "required": true
+    },
+    "jobId": {
+      "type": "string",
+      "required": true
+    },
+    "body": {
+      "type": "object",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
