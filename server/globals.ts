@@ -36,6 +36,9 @@ export class Globals {
     //Order of class init makes this HACK necessary
     log.setCallerFilenamesToIgnore(Globals.loggerCallerFilenamesToIgnore);
     Object.keys(Globals).forEach((key) => {
+      if (typeof Globals[key] === 'function') {
+        return;
+      }
       const envVarName = `AMINO3_${_.toUpper(_.snakeCase(key))}`;
       let valueSource = process.env[envVarName]
         ? `[env]:${envVarName}`
