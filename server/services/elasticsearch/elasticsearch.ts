@@ -18,6 +18,7 @@ interface ElasticsearchQuery {
   },
   res: {
     status: (returnCode: number) => {
+      send: (body: string) => void,
       end: (body: string) => void
     }
   }
@@ -63,7 +64,17 @@ export class ElasticsearchImpl extends BaseServiceImpl {
           };
           /*          request(requestOptions, (err, res, body) => {
                     });*/
-          request(requestOptions).pipe(eq.res);
+          //request(requestOptions).pipe(eq.res);
+          const requestStream = request(requestOptions);
+
+          function streamErrorHandler(err: Error) {
+            eq.res.status(400).end(err.message);
+          }
+
+          requestStream
+            .on('error', streamErrorHandler)
+            .pipe(eq.res)
+            .on('error', streamErrorHandler);
         }
       });
     cb(null, {message: 'Initialized Elasticsearch Subscriptions'});
