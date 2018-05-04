@@ -6,6 +6,7 @@ import kernel from '../../inversify.config';
 import * as _ from 'lodash';
 import * as Rx from 'rxjs';
 import * as SocketIO from 'socket.io';
+import {Globals} from "../../globals";
 
 @injectable()
 export class WebSocketManagerImpl extends BaseServiceImpl {
@@ -107,6 +108,9 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
       .Observable
       .interval(1000)
       .subscribe((/*ticks*/) => {
+        if (Globals.suppressServerHeartbeat) {
+          return;
+        }
         me.postal.publish({
           channel: 'ServiceBus',
           topic: 'BroadcastToClients',

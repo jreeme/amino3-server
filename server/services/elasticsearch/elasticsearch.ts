@@ -47,7 +47,6 @@ export class ElasticsearchImpl extends BaseServiceImpl {
                 const normalizedUrl = normalizeUrl(testUrl);
                 elasticsearchUrl = new URL(eq.esVerb, normalizedUrl);
               } catch (err) {
-                const e = err;
                 elasticsearchUrl = undefined;
                 return false;
               }

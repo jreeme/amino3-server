@@ -49,6 +49,7 @@ export class Globals {
     });
   }
 
+  static suppressServerHeartbeat: boolean = false;
   static suppressedServices: string[] = [];
   static loggerCallerFilenamesToIgnore: string[] = [];
   static postalPublishToClientTopicSuppressList: string[] = [];

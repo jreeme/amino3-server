@@ -5,7 +5,8 @@
     "logLevel": "debug",
     "logToFile": true,
     "logFileFolder": "/tmp/amino3-logs",
-    "elasticsearchUrl": "http://192.168.104.33:9200",
+    "elasticsearchUrl": "http://192.168.104.34:9200",
+    "suppressServerHeartbeat": true,
     "suppressedServices": [
       "_Authentication",
       "FileUpload",

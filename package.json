@@ -50,7 +50,7 @@
     "tmp": "^0.0.33"
   },
   "devDependencies": {
-    "@mean-expert/loopback-sdk-builder": "^2.2.5",
+    "@mean-expert/loopback-sdk-builder": "^2.2.7",
     "@types/async": "^2.0.48",
     "@types/chai": "^4.0.5",
     "@types/formidable": "^1.0.30",
