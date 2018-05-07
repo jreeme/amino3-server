@@ -1,0 +1,40 @@
+{
+  "description"               : "NB Build Client",
+  "options"                   : {
+    "displayExecutionGraphDescription": true
+  },
+  "asynchronousCommands"      : [
+  ],
+  "serialSynchronizedCommands": [
+    {
+      "description"                : "[lb-sdk] Build loopback client SDK",
+      "suppressOutput"             : false,
+      "showDiagnostics"            : false,
+      "showPreAndPostSpawnMessages": true,
+      "outputColor"                : "",
+      "useSudo"                    : false,
+      "workingDirectory"           : "..",
+      "command"                    : "/usr/bin/env",
+      "args"                       : [
+        "bash",
+        "-c",
+        "AMINO3_NO_LISTEN=TRUE AMINO3_NO_SERVICES=TRUE node_modules/.bin/lb-sdk server/server.js client/src/lb-sdk -i enabled -w enabled"
+      ]
+    },
+    {
+      "description"                : "ng build",
+      "suppressOutput"             : false,
+      "showDiagnostics"            : false,
+      "showPreAndPostSpawnMessages": true,
+      "outputColor"                : "",
+      "useSudo"                    : false,
+      "workingDirectory"           : ".",
+      "command"                    : "/usr/bin/env",
+      "args"                       : [
+        "bash",
+        "-c",
+        "node_modules/.bin/ng build --env=prod --output-path ../dist/client"
+      ]
+    }
+  ]
+}

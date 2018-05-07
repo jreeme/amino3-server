@@ -1,13 +1,18 @@
 {
   "amino_admin_pg": {
     "name": "amino_admin_pg",
-    "host": "merlin_postgres",
+    "host": "localhost",
+    "host2": "merlin_postgres",
     "port": 5432,
+    "connector": "postgresql",
     "database": "amino_admin",
+    "user": "amino_admin_user",
+    "min": 5,
+    "max": 200,
+    "idleTimeoutMillis": 60000,
     "password": "password",
     "admin_user": "postgres",
-    "admin_password": "password",
-    "user": "amino_admin_user",
-    "connector": "postgresql"
+    "admin_password": "password"
   }
 }
+

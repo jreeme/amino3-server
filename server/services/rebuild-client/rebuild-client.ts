@@ -86,7 +86,10 @@ export class RebuildClientImpl extends BaseServiceImpl {
 
   private ngBuildClient(cb: (err?: Error, result?: any) => void) {
     process.chdir(Globals.clientFolder);
-    this.processCommandJson.processAbsoluteUrl(Globals.ngBuildClientExecutionGraph, (err) => {
+    const executionGraph = (Globals.node_env === 'production')
+      ? Globals.ngBuildClientProductionExecutionGraph
+      : Globals.ngBuildClientExecutionGraph;
+    this.processCommandJson.processAbsoluteUrl(executionGraph, (err) => {
       cb(err, {message: err ? 'Error Rebuilding Client' : 'Client Rebuilt'});
     });
   }

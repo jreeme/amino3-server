@@ -54,7 +54,7 @@ export class Globals {
   static loggerCallerFilenamesToIgnore: string[] = [];
   static postalPublishToClientTopicSuppressList: string[] = [];
 
-  //static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+  static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
   static logToFile: boolean = true;
   static logFileFolder: string = '/tmp';
@@ -122,6 +122,7 @@ export class Globals {
   static gitCloneClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/git-clone-client.json');
   static npmInstallClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-install-client.json');
   static ngBuildClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client.json');
+  static ngBuildClientProductionExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client-production.json');
   static npmRebuildServerExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-rebuild-server.json');
   //URLs
   /*  static uploadFileUrl = '/uploaded-files/files';
