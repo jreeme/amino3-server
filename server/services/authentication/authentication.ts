@@ -73,95 +73,129 @@ export class AuthenticationImpl extends BaseServiceImpl {
     const U = me.app.models.AminoUser;
     const AAT = me.app.models.AminoAccessToken;
     const ACL = me.app.models.ACL;
-    const newRootUser = {
-      username: Globals.adminUserName,
-      firstname: Globals.adminUserName,
-      lastname: Globals.adminUserName,
-      email: Globals.adminUserEmail,
-      password: Globals.adminUserDefaultPassword
-    };
-    const newRootRole = {
-      name: Globals.adminRoleName
-    }
     //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
     AAT.settings.acls.length = 0;
     U.settings.acls.length = 0;
-    async.waterfall([
-      //AminoUser.findOrCreate() does not work. Something to do with base loopback user implementation
+    async.parallel([
       (cb) => {
-        U.findOrCreate({where: {email: Globals.adminUserEmail}}, <any>newRootUser, cb);
-      },
-      (user, created, cb) => {
-        R.findOrCreate({where: newRootRole},
-          <any>newRootRole,
-          (err, role/*, created*/) => {
-            cb(null, user, role);
-          });
-      },
-      (user, role, cb) => {
-        //Create roleMapping to put adminUser in adminRole
-        RM.findOrCreate({
-          where: {
-            principalType: RM.USER,
-            principalId: user.id,
-            aminoRoleId: role.id
+        const newRootUser = {
+          username: Globals.adminUserName,
+          firstname: Globals.adminUserName,
+          lastname: Globals.adminUserName,
+          email: Globals.adminUserEmail,
+          password: Globals.adminUserDefaultPassword
+        };
+        const newRootRole = {
+          name: Globals.adminRoleName
+        };
+        async.waterfall([
+          (cb) => {
+            U.findOrCreate(newRootUser, cb);
+          },
+          (user, created, cb) => {
+            R.findOrCreate(newRootRole,
+              <any>((err: Error, role: any/*, created: boolean*/) => {
+                cb(null, user, role);
+              }));
+          },
+          (user, role, cb) => {
+            //Create roleMapping to put adminUser in adminRole
+            RM.findOrCreate({
+              principalType: RM.USER,
+              principalId: user.id,
+              aminoRoleId: role.id
+            }, cb);
+          },
+          (principal, created, cb) => {
+            const adminAcls = [
+              /*          {
+                          model: 'AminoUser',
+                          accessType: '*',
+                          property: '*',
+                          principalType: 'ROLE',
+                          principalId: '$everyone',
+                          permission: 'DENY'
+                        }
+                        , {
+                          model: 'AminoUser',
+                          accessType: '*',
+                          property: '*',
+                          principalType: 'ROLE',
+                          principalId: 'superuser',
+                          permission: 'ALLOW'
+                        }
+                        ,{
+                          model: 'AminoUser',
+                          accessType: 'EXECUTE',
+                          property: 'createUser',
+                          principalType: 'ROLE',
+                          principalId: 'superuser',
+                          permission: 'ALLOW'
+                        }
+                        , {
+                          model: 'AminoUser',
+                          accessType: 'EXECUTE',
+                          property: 'aminoLogin',
+                          principalType: 'ROLE',
+                          principalId: '$everyone',
+                          permission: 'ALLOW'
+                        }*/
+            ];
+            async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
           }
-        }, <any>{
-          principalType: RM.USER,
-          principalId: user.id,
-          aminoRoleId: role.id
-        }, cb);
+        ], cb);
       },
-      (principal, created, cb) => {
-        const adminAcls = [
-          /*          {
-                      model: 'AminoUser',
-                      accessType: '*',
-                      property: '*',
-                      principalType: 'ROLE',
-                      principalId: '$everyone',
-                      permission: 'DENY'
-                    }
-                    , {
-                      model: 'AminoUser',
-                      accessType: '*',
-                      property: '*',
-                      principalType: 'ROLE',
-                      principalId: 'superuser',
-                      permission: 'ALLOW'
-                    }
-                    ,{
-                      model: 'AminoUser',
-                      accessType: 'EXECUTE',
-                      property: 'createUser',
-                      principalType: 'ROLE',
-                      principalId: 'superuser',
-                      permission: 'ALLOW'
-                    }
-                    , {
-                      model: 'AminoUser',
-                      accessType: 'EXECUTE',
-                      property: 'aminoLogin',
-                      principalType: 'ROLE',
-                      principalId: '$everyone',
-                      permission: 'ALLOW'
-                    }*/
-        ];
-        async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
+      (cb) => {
+        const newElasticsearchUser = {
+          username: Globals.elasticsearchUserName,
+          firstname: Globals.elasticsearchUserName,
+          lastname: Globals.elasticsearchUserName,
+          email: Globals.elasticsearchUserEmail,
+          password: Globals.elasticsearchUserDefaultPassword
+        };
+        const newElasticsearchRole = {
+          name: Globals.elasticsearchRoleName
+        };
+        async.waterfall([
+          (cb) => {
+            U.findOrCreate(newElasticsearchUser, cb);
+          },
+          (user, created, cb) => {
+            R.findOrCreate(newElasticsearchRole,
+              <any>((err: Error, role: any/*, created: boolean*/) => {
+                cb(null, user, role);
+              }));
+          },
+          (user, role, cb) => {
+            RM.findOrCreate({
+              principalType: RM.USER,
+              principalId: user.id,
+              aminoRoleId: role.id
+            }, cb);
+          },
+          (principal, created, cb) => {
+            const adminAcls = [
+              {
+                model: 'Elasticsearch',
+                accessType: '*',
+                property: '*',
+                principalType: 'ROLE',
+                principalId: '$everyone',
+                permission: 'DENY'
+              }
+              , {
+                model: 'Elasticsearch',
+                accessType: '*',
+                property: '*',
+                principalType: 'ROLE',
+                principalId: 'elasticsearch',
+                permission: 'ALLOW'
+              }
+            ];
+            async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
+          }
+        ], cb);
       }
-    ], (err: Error, obj) => {
-      /*      setInterval(() => {
-              RM.find((err, aats) => {
-                let a = aats;
-              });
-            }, 3000);*/
-      /*      const AAT = me.server.models.AminoAccessToken;
-            setInterval(() => {
-              AAT.find((err, aats) => {
-                let a = aats;
-              });
-            }, 3000);*/
-      cb(err, obj);
-    });
+    ], cb);
   }
 }

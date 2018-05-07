@@ -81,10 +81,17 @@ export class Globals {
   //static noClientRebuild = false;
 
   static serverChannel = 'server-channel';
+
   static adminUserName = 'root';
   static adminUserDefaultPassword = 'password';
   static adminUserEmail = 'root@amino3.com';
   static adminRoleName = 'superuser';
+
+  static elasticsearchUserName = 'elasticsearch';
+  static elasticsearchUserDefaultPassword = 'password';
+  static elasticsearchUserEmail = 'elasticsearch@amino3.com';
+  static elasticsearchRoleName = 'elasticsearch';
+
   static accessTokenTimeToLiveSeconds = 60 * 60;
 
   //Resolve some server side paths
