@@ -1,8 +1,8 @@
 {
   "amino_admin_pg": {
     "name": "amino_admin_pg",
-    "host": "localhost",
-    "host2": "merlin_postgres",
+    "host2": "localhost",
+    "host": "merlin_postgres",
     "port": 5432,
     "connector": "postgresql",
     "database": "amino_admin",
