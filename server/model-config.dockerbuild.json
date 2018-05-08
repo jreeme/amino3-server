@@ -1,6 +1,8 @@
 {
   "_meta": {
     "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
       "../common/models"
     ]
   },
@@ -12,7 +14,7 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
-  "AminoRole": {
+  "Role": {
     "dataSource": "amino_admin_mem",
     "public": true
   },
@@ -20,7 +22,7 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
-  "AminoRoleMapping": {
+  "RoleMapping": {
     "dataSource": "amino_admin_mem",
     "public": true
   },
@@ -65,4 +67,3 @@
     "public": true
   }
 }
-

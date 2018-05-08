@@ -68,14 +68,16 @@ export class AuthenticationImpl extends BaseServiceImpl {
 
   private createRootUserAndAdminRole(cb: (err: Error, principal?: any) => void) {
     const me = this;
-    const R = me.app.models.AminoRole;
-    const RM = me.app.models.AminoRoleMapping;
+    const R = me.app.models.Role;
+    const RM = me.app.models.RoleMapping;
     const U = me.app.models.AminoUser;
-    const AAT = me.app.models.AminoAccessToken;
     const ACL = me.app.models.ACL;
     //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
-    AAT.settings.acls.length = 0;
-    U.settings.acls.length = 0;
+    Object.keys(me.app.models).forEach((key) => {
+      if (me.app.models[key] && me.app.models[key].settings && me.app.models[key].settings.acls) {
+        return me.app.models[key].settings.acls.length = 0;
+      }
+    });
     async.parallel([
       (cb) => {
         const newRootUser = {
@@ -90,20 +92,19 @@ export class AuthenticationImpl extends BaseServiceImpl {
         };
         async.waterfall([
           (cb) => {
-            U.findOrCreate(newRootUser, cb);
+            U.findOrCreate({where: {username: newRootUser.username}}, <any>newRootUser, cb);
           },
           (user, created, cb) => {
-            R.findOrCreate(newRootRole,
+            R.findOrCreate({where: {name: newRootRole.name}}, <any>newRootRole,
               <any>((err: Error, role: any/*, created: boolean*/) => {
                 cb(null, user, role);
               }));
           },
           (user, role, cb) => {
-            //Create roleMapping to put adminUser in adminRole
             RM.findOrCreate({
               principalType: RM.USER,
               principalId: user.id,
-              aminoRoleId: role.id
+              roleId: role.id
             }, cb);
           },
           (principal, created, cb) => {
@@ -158,10 +159,10 @@ export class AuthenticationImpl extends BaseServiceImpl {
         };
         async.waterfall([
           (cb) => {
-            U.findOrCreate(newElasticsearchUser, cb);
+            U.findOrCreate({where: {username: newElasticsearchUser.username}}, <any>newElasticsearchUser, cb);
           },
           (user, created, cb) => {
-            R.findOrCreate(newElasticsearchRole,
+            R.findOrCreate({where: {name: newElasticsearchRole.name}}, <any>newElasticsearchRole,
               <any>((err: Error, role: any/*, created: boolean*/) => {
                 cb(null, user, role);
               }));
@@ -170,11 +171,11 @@ export class AuthenticationImpl extends BaseServiceImpl {
             RM.findOrCreate({
               principalType: RM.USER,
               principalId: user.id,
-              aminoRoleId: role.id
+              roleId: role.id
             }, cb);
           },
           (principal, created, cb) => {
-            const adminAcls = [
+            const elasticsearchAcls = [
               {
                 model: 'Elasticsearch',
                 accessType: '*',
@@ -192,7 +193,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
                 permission: 'ALLOW'
               }
             ];
-            async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
+            async.each(elasticsearchAcls, ACL.findOrCreate.bind(ACL), cb);
           }
         ], cb);
       }

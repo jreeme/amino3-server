@@ -11,9 +11,12 @@ module.exports = function (AminoAccessToken) {
       }
       aminoUser = aminoUser.toObject();
       delete aminoUser.password;
-      const webToken = createToken(aminoUser, ctx.instance.ttl);
-      aminoUser.accessTokenMD5 = (new MD5()).update(webToken).digest('hex');
-      ctx.instance.id = createToken(aminoUser, ctx.instance.ttl);
+      // noinspection JSUnresolvedVariable
+      const webToken = createToken(aminoUser, global.accessTokenTimeToLiveSeconds);
+      // noinspection JSUnresolvedFunction
+      aminoUser.accessTokenMD5 = (new MD5()).update(webToken).digest('hex').substring(6, 14);
+      // noinspection JSUnresolvedVariable
+      ctx.instance.id = createToken(aminoUser, global.accessTokenTimeToLiveSeconds);
       return cb();
     });
   });

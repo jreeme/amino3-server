@@ -2,7 +2,7 @@
   "name": "AminoAccessToken",
   "plural": "AminoAccessTokens",
   "base": "AccessToken",
-  "idInjection": true,
+  "idInjection": false,
   "options": {
     "validateUpsert": true
   },
