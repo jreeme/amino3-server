@@ -80,6 +80,9 @@ export class Globals {
   static noServices = false;
   //static noClientRebuild = false;
 
+  static memoryDataSourceName = 'amino_admin_mem';
+  static replaceBadDataSourceWithMemoryDataSource = true;
+
   static serverChannel = 'server-channel';
 
   static adminUserName = 'root';

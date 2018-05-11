@@ -17,7 +17,7 @@
       "RemoteLogging",
       "StaticService",
       "ServerServicesManager",
-      "_WebSocketManager"
+      "WebSocketManager"
     ],
     "postalPublishToClientTopicSuppressList": [
       "ServerHeartbeat"
@@ -25,7 +25,7 @@
     "loggerCallerFilenamesToIgnore": [
       "_postal-socket-connection-impl",
       "globals",
-      "initialize-database",
+      "_initialize-database",
       "service-manager",
       "logger",
       "boot-manager"
