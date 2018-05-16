@@ -69,8 +69,8 @@
       "required": false
     },
     "filePedigree": {
-      "type": "number",
-      "description": "pedigree of the data file; stored as id of ancester file instance",
+      "type": "string",
+      "description": "pedigree of the data file; stored as id of ancestor file instance",
       "default": null,
       "required": false
     },
