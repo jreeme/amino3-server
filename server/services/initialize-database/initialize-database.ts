@@ -18,6 +18,10 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
+    //This is all now done in boot-manager. Keep this code around for awhile just in case
+    if (me) {
+      return cb(null, null);
+    }
     async.waterfall([
       (cb) => {
         const AminoUser = me.app.models.AminoUser;

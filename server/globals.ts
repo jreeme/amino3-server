@@ -11,12 +11,23 @@ export class Globals {
     log.info(`Initializing Globals static class`);
     const amino3Config = app.get('amino3Config');
     //Override Global properties with loopback config values
+    const sourceOfGlobalValueMessage: string[] = [];
     Object.keys(Globals).forEach((key) => {
       if (typeof Globals[key] === 'function') {
         return;
       }
       const envVarName = `AMINO3_${_.toUpper(_.snakeCase(key))}`;
-      const value: any = process.env[envVarName] || amino3Config[key] || Globals[key];
+      let value: any = Globals[key];
+      let valueSource = '[class: Globals]';
+      if (amino3Config[key] !== undefined) {
+        value = amino3Config[key];
+        valueSource = '[amino3Config]';
+      }
+      if (process.env[envVarName] !== undefined) {
+        value = process.env[envVarName];
+        valueSource = `[env]:${envVarName}`;
+      }
+
       switch (typeof Globals[key]) {
         case('boolean'):
           //boolifyString also handles non-string values correctly enough
@@ -32,20 +43,15 @@ export class Globals {
           Globals[key] = value;
           break;
       }
+
+      const logMessageValue = _.toString(Globals[key]);
+      sourceOfGlobalValueMessage.push(`Global-->> '${key}' set from ${valueSource} to '${logMessageValue}'`);
     });
     //Order of class init makes this HACK necessary
     log.setCallerFilenamesToIgnore(Globals.loggerCallerFilenamesToIgnore);
-    Object.keys(Globals).forEach((key) => {
-      if (typeof Globals[key] === 'function') {
-        return;
-      }
-      const envVarName = `AMINO3_${_.toUpper(_.snakeCase(key))}`;
-      let valueSource = process.env[envVarName]
-        ? `[env]:${envVarName}`
-        : amino3Config[key]
-          ? '[amino3Config]'
-          : '[class: Globals]';
-      log.debug(`Global-->> '${key}' set from ${valueSource} to '${Globals[key]}'`);
+    //Now that log callers are set let's log the Global's sources
+    sourceOfGlobalValueMessage.forEach((message) => {
+      log.debug(message);
     });
   }
 

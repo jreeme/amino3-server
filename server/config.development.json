@@ -7,6 +7,7 @@
     "logFileFolder": "/tmp/amino3-logs",
     "elasticsearchUrl": "http://192.168.104.34:9200",
     "suppressServerHeartbeat": true,
+    "replaceBadDataSourceWithMemoryDataSource": true,
     "suppressedServices": [
       "_Authentication",
       "FileUpload",
@@ -24,11 +25,11 @@
     ],
     "loggerCallerFilenamesToIgnore": [
       "_postal-socket-connection-impl",
-      "globals",
+      "_globals",
       "_initialize-database",
       "service-manager",
       "logger",
-      "boot-manager"
+      "_boot-manager"
     ]
   }
 }

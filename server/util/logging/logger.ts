@@ -63,11 +63,11 @@ export class LoggerImpl implements Logger {
       return;
     }
     me._app = app;
+    me.logLevel = undefined;//This will re-init the loggers in the 'loggers' getter
     try {
       if (Globals.logToFile) {
         mkdirp.sync(Globals.logFileFolder);
         me.logFolderValid = true;
-        me.resetLoggers();
         me.notice(`Log File Folder '${Globals.logFileFolder}' validity check PASSED`);
       }
     } catch (err) {
@@ -200,9 +200,5 @@ export class LoggerImpl implements Logger {
     } catch (err) {
       console.error(err);
     }
-  }
-
-  private resetLoggers() {
-    Globals.logLevel = undefined;
   }
 }

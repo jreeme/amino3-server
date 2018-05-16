@@ -16,6 +16,7 @@ export class BootManagerImpl implements BootManager {
   private loopback: any;
   private app: LoopBackApplication2;
   private startListening: boolean;
+  private dataSourcesToAutoMigrate: any = [];
 
   constructor(@inject('Logger') private log: Logger,
               @inject('ServiceManager') private serviceManager: ServiceManager,
@@ -39,7 +40,6 @@ export class BootManagerImpl implements BootManager {
   private bootLoopbackApp(app, options, callback) {
     const me = this;
     const execute = require('./executor');
-    //const execute = require('loopback-boot').execute;
     const compile = require('loopback-boot').compile;
     const instructions = compile(options);
     execute(app, instructions, callback, me.verifyDataSources.bind(me));
@@ -47,19 +47,23 @@ export class BootManagerImpl implements BootManager {
 
   private verifyDataSources(instructions: any, cb: () => void) {
     const me = this;
+
+    //Enough of LoopBack is booted (configs applied, etc. See './executor.js') that we can init Globals here
+    Globals.init(me.app);
+
+    //Now that our Globals are initted we can "re-initialize" our logger
+    me.log.initSubscriptions(me.app);
+
     const dataSourceNames = Object.keys(instructions.dataSources);
-    const memoryDataSource = me.app.dataSources[Globals.memoryDataSourceName]
-      || me.app.dataSource(Globals.memoryDataSourceName,
-        {
-          connector: 'memory'
-        });
     async.each(dataSourceNames,
       (dataSourceName, cb) => {
         const ds = me.app.dataSources[dataSourceName];
         async.waterfall([
           (cb) => {
+            me.log.debug(`PINGING DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
             ds.ping((err: Error) => {
               if (!err) {
+                me.log.debug(`DataSource '${dataSourceName}' PING SUCCESS`);
                 return cb(null, null);
               }
               const fdbh = me.databaseHelpers.filter((dbh) => ds.settings.connector === dbh.connectorName);
@@ -68,18 +72,22 @@ export class BootManagerImpl implements BootManager {
                 me.log.warning(message);
                 return cb(null, new Error(message));
               }
+              me.log.debug(`Running helper for DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
               fdbh[0].configure(ds, (err: Error) => {
                 if (!err) {
+                  me.log.debug(`[Connector: '${ds.settings.connector}'] CONFIG SUCCESS`);
                   return ds.ping((err) => {
                     if (!err) {
+                      me.log.debug(`DataSource '${dataSourceName}' (after config) PING SUCCESS`);
+                      me.dataSourcesToAutoMigrate.push(ds);
                       return cb(null, null);
                     }
-                    const message = `InitializeDatabase FAILED: Post-config PING failed`;
+                    const message = `DataSource '${dataSourceName}' (after config) PING FAIL`;
                     me.log.warning(message);
                     return cb(null, new Error(message));
                   });
                 }
-                const message = `InitializeDatabase FAILED: ${err.message}`;
+                const message = `[Connector: '${ds.settings.connector}'] CONFIG FAIL: '${err.message}'`;
                 me.log.warning(message);
                 return cb(null, new Error(message));
               });
@@ -89,48 +97,23 @@ export class BootManagerImpl implements BootManager {
             if (!dataSourceIsBad) {
               return cb();
             }
-            instructions.models.forEach((model) => {
-              if (!model.config) {
-                return;
-              }
-              if (model.config.dataSource === ds.name) {
-                model.config.dataSource = Globals.memoryDataSourceName;
-              }
+            const modelsUsingThisBadDataSource = instructions.models.filter((model) => {
+              return (model.config && model.config.dataSource === ds.name);
+            });
+            const modelNames = modelsUsingThisBadDataSource.map((model) => model.name);
+            if (!Globals.replaceBadDataSourceWithMemoryDataSource) {
+              let message = `Bad DataSource '${ds.name}'. Restart with 'Globals.replaceBadDataSourceWithMemoryDataSource = true' to run anyway`;
+              message += ` (Models: '${modelNames}')`;
+              throw new Error(message);
+            }
+            me.log.warning(`Replacing bad DataSource '${ds.name}' with '${Globals.memoryDataSourceName}' on models '${modelNames}'`);
+            modelsUsingThisBadDataSource.forEach((model) => {
+              model.config.dataSource = Globals.memoryDataSourceName;
             });
             return cb();
           }
-        ], (err, results) => {
-          cb();
-        });
-      },
-      () => {
-        cb();
-      });
-    /*    let memoryDataSource = me.app.dataSources[Globals.memoryDataSourceName];
-        async.each(models,
-          (model, cb: (err?: Error) => void) => {
-            model.dataSource.ping((err) => {
-              try {
-                if (!err) {
-                  return;
-                }
-                me.log.critical(`Model '${model.modelName}' attempted connection to '${model.dataSource.name}' and FAILED`);
-                if (!Globals.replaceBadDataSourceWithMemoryDataSource) {
-                  return;
-                }
-                memoryDataSource = memoryDataSource || me.app.dataSource(Globals.memoryDataSourceName,
-                  {
-                    connector: 'memory'
-                  });
-                model.attachTo(memoryDataSource);
-              } finally {
-                cb();
-              }
-            });
-          },
-          (err: Error) => {
-            cb();
-          });*/
+        ], cb);
+      }, cb);
   }
 
   private bootCallback(err: Error) {
@@ -141,63 +124,69 @@ export class BootManagerImpl implements BootManager {
       throw new Error(errorMsg);
     }
 
-    //Loopback App booted so all configs are loaded (and available via app.get('config-name')
-    //so this is a good time to initialize our Globals object
-    Globals.init(me.app);
+    async.series([
+      (cb) => {
+        //AutoMigrate any dataSources (models, really) that require it
+        async.each(me.dataSourcesToAutoMigrate, (dataSource: any, cb) => {
+          dataSource.automigrate(cb);
+        }, (err: Error) => {
+          cb();
+        });
+      },
+      (cb) => {
+        //Tell loopback to use AminoAccessToken for auth
+        me.log.info(`Installing custom Loopback access token [model: AminoAccessToken]`);
+        me.app.use(me.loopback.token({
+          model: me.app.models.AminoAccessToken
+        }));
 
-    //Now that our Globals are initted we can "re-initialize" our logger
-    me.log.initSubscriptions(me.app);
+        //Sign up to hear back from ServiceManager when all the services (if any) are started
+        me.log.debug('Subscribing to Postal[Amino3Startup:services-started]');
+        me.postal
+          .subscribe({
+            channel: 'Amino3Startup',
+            topic: 'services-started',
+            callback: () => {
+              me.log.info(`[RECV] 'Amino3Startup:services-started'`);
+              //Sometimes, for building the client, etc., you just don't want to sit and listen
+              if (!me.startListening || Globals.noListen) {
+                Globals.noListen && me.log.warning(`Amino3 halting (in 3 seconds) due to AMINO3_NO_LISTEN environment variable or 'noListen' config`);
+                //Wait 3s to bail so log file has opportunity to flush
+                return setTimeout(() => {
+                  process.exit(0);
+                }, 2511);//<== Goofy number of MS so searches for 3000, etc. won't find it
+              }
+              me.log.info(`Starting Amino3 by 'node server.js'`);
+              me.log.info(`Starting Socket.IO server`);
+              me.postal
+                .publish({
+                  channel: 'ServiceBus',
+                  topic: 'SetSocketIO',
+                  data: {io: require('socket.io')(me.listen())}
+                });
+              me.app.emit('started');
+            }
+          });
 
-    me.log.info(`Loopback boot process COMPLETED`);
-
-    //Tell loopback to use AminoAccessToken for auth
-    me.log.info(`Installing custom Loopback access token [model: AminoAccessToken]`);
-    me.app.use(me.loopback.token({
-      model: me.app.models.AminoAccessToken
-    }));
-
-    //Sign up to hear back from ServiceManager when all the services (if any) are started
-    me.log.debug('Subscribing to Postal[Amino3Startup:services-started]');
-    me.postal
-      .subscribe({
-        channel: 'Amino3Startup',
-        topic: 'services-started',
-        callback: () => {
-          me.log.info(`[RECV] 'Amino3Startup:services-started'`);
-          //Sometimes, for building the client, etc., you just don't want to sit and listen
-          if (!me.startListening || Globals.noListen) {
-            Globals.noListen && me.log.warning(`Amino3 halting (in 3 seconds) due to AMINO3_NO_LISTEN environment variable or 'noListen' config`);
-            //Wait 3s to bail so log file has opportunity to flush
-            return setTimeout(() => {
-              process.exit(0);
-            }, 2511);//<== Goofy number of MS so searches for 3000, etc. won't find it
+        //Bring ServiceManager to life
+        me.log.debug('Initializing ServiceManager subscriptions');
+        me.serviceManager.initSubscriptions(me.app, (err: Error) => {
+          if (err) {
+            const errorMsg = `Failed to initialize 'ServiceManager': ${err.message}`;
+            me.log.error(errorMsg);
+            throw new Error(errorMsg);
           }
-          me.log.info(`Starting Amino3 by 'node server.js'`);
-          me.log.info(`Starting Socket.IO server`);
+          me.log.info(`[SEND] 'Amino3Startup:loopback-booted'`);
           me.postal
             .publish({
-              channel: 'ServiceBus',
-              topic: 'SetSocketIO',
-              data: {io: require('socket.io')(me.listen())}
+              channel: 'Amino3Startup',
+              topic: 'loopback-booted'
             });
-          me.app.emit('started');
-        }
-      });
-
-    //Bring ServiceManager to life
-    me.log.debug('Initializing ServiceManager subscriptions');
-    me.serviceManager.initSubscriptions(me.app, (err: Error) => {
-      if (err) {
-        const errorMsg = `Failed to initialize 'ServiceManager': ${err.message}`;
-        me.log.error(errorMsg);
-        throw new Error(errorMsg);
-      }
-      me.log.info(`[SEND] 'Amino3Startup:loopback-booted'`);
-      me.postal
-        .publish({
-          channel: 'Amino3Startup',
-          topic: 'loopback-booted'
+          cb();
         });
+      }
+    ], (err, result) => {
+      me.log.info(`Loopback boot process COMPLETED`);
     });
   }
 

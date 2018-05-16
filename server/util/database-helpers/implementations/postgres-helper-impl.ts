@@ -61,16 +61,6 @@ export class PostgresHelperImpl implements PostgresHelper {
             client.end(cb);
           }
         ], cb);
-      },
-      (cb) => {
-        async.series([
-          (cb) => {
-            dataSource.connect(cb);
-          },
-          (cb) => {
-            dataSource.automigrate(cb);
-          }
-        ], cb);
       }
     ], (err: Error, results) => {
       cb(err);
