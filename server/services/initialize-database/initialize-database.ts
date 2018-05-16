@@ -15,56 +15,10 @@ export class InitializeDatabaseImpl extends BaseServiceImpl {
     super();
   }
 
-  /*
-    private verifyDataSources(cb: (err?: Error) => void) {
-      const me = this;
-      const dataSourcesHash = me.app.dataSources;
-      if (!dataSourcesHash || typeof dataSourcesHash !== 'object') {
-        return cb();
-      }
-      const dataSources = Object.keys(dataSourcesHash).map((key) => dataSourcesHash[key]);
-      const uniqueDataSources = new Set(dataSources);
-      const uniqueDataSourceArray = Array.from(uniqueDataSources);
-      async.reject(uniqueDataSourceArray,
-        (dataSource, cb) => {
-          if (dataSource.connected) {
-            return cb(null, true);
-          }
-
-          function test(err: Error) {
-            this.removeListener('error', test);
-            this.removeListener('connected', test);
-            this.error = err;
-            cb(null, !err);
-          }
-
-          dataSource.once('connected', test);
-          dataSource.once('error', test);
-        }, (err, dataSourcesBadConnection: any[]) => {
-          me.filterUnusedDataSources(dataSourcesBadConnection, (/!*err, usedDataSources*!/) => {
-            cb();
-          });
-        });
-    }
-
-    private filterUnusedDataSources(dataSourcesBadConnection: any[], cb: (err: Error, usedDataSources: any[]) => void) {
-      const me = this;
-      const models = Object.keys(me.app.models).map((key) => me.app.models[key]);
-      const usedDataSources = dataSourcesBadConnection.filter((dataSourceBadConnection) => {
-        const modelsUsingThisDataSource = models.filter((model) => model.dataSource === dataSourceBadConnection);
-        return modelsUsingThisDataSource.length;
-      });
-      cb(null, usedDataSources);
-    }
-  */
-
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
     async.waterfall([
-      /*      (cb) => {
-              me.verifyDataSources(cb);
-            },*/
       (cb) => {
         const AminoUser = me.app.models.AminoUser;
         const ds = AminoUser.dataSource;
