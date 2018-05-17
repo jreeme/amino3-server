@@ -81,7 +81,7 @@ export class BootManagerImpl implements BootManager {
             me.log.debug(`Running helper for DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
             fdbh[0].configure(ds, (err: Error) => {
               me.log.debug(`DataSource helper config for '${dataSourceName}' ` + (!err ? 'SUCCESS' : 'FAIL'));
-              cb(null, !err);
+              cb(null, false);
             });
           },
           (databaseHelperSucceeded: boolean, cb) => {
@@ -91,7 +91,7 @@ export class BootManagerImpl implements BootManager {
             ds.ping((err) => {
               me.log.debug(`DataSource '${dataSourceName}' (after config) PING ` + (!err ? 'SUCCESS' : 'FAIL'));
               !err && me.dataSourcesToAutoMigrate.push(ds);
-              !err && me.log.warning(err.message);
+              err && me.log.warning(err.message);
               cb(null, !err);
             });
           },
@@ -133,7 +133,7 @@ export class BootManagerImpl implements BootManager {
       (cb) => {
         //AutoMigrate any dataSources (models, really) that require it
         async.each(me.dataSourcesToAutoMigrate, (dataSource: any, cb) => {
-          me.log.debug(`Automigrating models attached to DataSource: '${dataSource.name}'`);
+          me.log.notice(`Automigrating models attached to DataSource: '${dataSource.name}'`);
           dataSource.automigrate(cb);
         }, cb);
       },
