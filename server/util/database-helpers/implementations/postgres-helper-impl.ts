@@ -62,8 +62,6 @@ export class PostgresHelperImpl implements PostgresHelper {
           }
         ], cb);
       }
-    ], (err: Error, results) => {
-      cb(err);
-    });
+    ], cb);
   }
 }

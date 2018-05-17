@@ -32,6 +32,7 @@ export class ServiceManagerImpl implements ServiceManager {
       //return cb();
     }
     //Sign up for 'loopback-booted' event so we can start up services
+    me.log.debug('Subscribing to Postal[Amino3Startup:loopback-booted]');
     me.postal
       .subscribe({
         channel: 'Amino3Startup',
@@ -111,17 +112,17 @@ export class ServiceManagerImpl implements ServiceManager {
             Object.keys(me.app.models).map((name) => ({name})),
             cb);
         }
-      ], (err: any, results: any[]) => {
+      ], (err: Error/*, results: any[]*/) => {
         me.log.logIfError(err);
         me.log.debug('Service start results:');
-        for (let i = 0; i < results.length; ++i) {
-          if (i === 0 || i === 1) {
-            me.log.notice(JSON.stringify(results[i], null, 2));
-          }
-          else if (i === 2 || i === 3) {
-            me.log.debug(JSON.stringify(results[i], null, 2));
-          }
-        }
+        /*        for (let i = 0; i < results.length; ++i) {
+                  if (i === 0 || i === 1) {
+                    me.log.notice(JSON.stringify(results[i], null, 2));
+                  }
+                  else if (i === 2 || i === 3) {
+                    me.log.debug(JSON.stringify(results[i], null, 2));
+                  }
+                }*/
         me.log.info(`[SEND] 'Amino3Startup:services-started'`);
         me.postal
           .publish({

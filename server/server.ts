@@ -26,6 +26,7 @@ try {
   const loopback = require('loopback');
   const loopbackApplication = loopback();
   module.exports = loopbackApplication;
+  logger.notice('Starting LoopBack bootManager >>>');
   bootManager.start(
     loopback,
     loopbackApplication,
@@ -40,6 +41,6 @@ try {
 } finally {
   const finallyMessage = '** Pre-Loopback Server Startup Complete **';
   logger
-    ? logger.debug(finallyMessage)
+    ? logger.notice(finallyMessage)
     : console.log(finallyMessage);
 }

@@ -12,6 +12,7 @@ var format = require('util').format;
 var g = require('strong-globalize')();
 var requireNodeOrEsModule = require('../../node_modules/loopback-boot/lib/require');
 
+const log = global.logger;
 /**
  * Execute bootstrap instructions gathered by `boot.compile`.
  *
@@ -26,6 +27,7 @@ module.exports = function execute(app, instructions, callback, cbAfterSetupDataS
   callback = callback || function () {
   };
 
+  log.notice('**** Entering custom LoopBack Executor');
   app.booting = true;
 
   patchAppLoopback(app);
@@ -74,6 +76,7 @@ function afterSetupDataSources(app, instructions, callback) {
 
     app.emit('booted');
 
+    log.notice('**** Calling back from custom LoopBack Executor');
     callback();
   });
 }

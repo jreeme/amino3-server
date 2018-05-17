@@ -3,6 +3,7 @@
     "noListen": false,
     "noServices": false,
     "logLevel": "debug",
+    "replaceBadDataSourceWithMemoryDataSource": false,
     "suppressedServices": [
       "_Authentication",
       "FileUpload",

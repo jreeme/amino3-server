@@ -7,7 +7,6 @@ import {StaticServiceImpl} from './services/static-service/static-service';
 import {AuthenticationImpl} from './services/authentication/authentication';
 import {FileUploadImpl} from './services/file-upload/file-upload';
 import {FolderMonitorImpl} from './services/folder-monitor/folder-monitor';
-import {InitializeDatabaseImpl} from './services/initialize-database/initialize-database';
 import {PluginManagerImpl} from './services/plugin-manager/plugin-manager';
 import {RebuildClientImpl} from './services/rebuild-client/rebuild-client';
 import {PostgresHelperImpl} from './util/database-helpers/implementations/postgres-helper-impl';
@@ -28,7 +27,6 @@ kernel.bind<BaseService>('BaseService').to(StaticServiceImpl).inSingletonScope()
 kernel.bind<BaseService>('BaseService').to(AuthenticationImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(FileUploadImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(FolderMonitorImpl).inSingletonScope();
-kernel.bind<BaseService>('BaseService').to(InitializeDatabaseImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(PluginManagerImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(ElasticsearchImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(RebuildClientImpl).inSingletonScope();

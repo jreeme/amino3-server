@@ -48,6 +48,8 @@ export class BootManagerImpl implements BootManager {
   private verifyDataSources(instructions: any, cb: () => void) {
     const me = this;
 
+    me.log.notice('>>>> Entering verifyDataSources');
+
     //Enough of LoopBack is booted (configs applied, etc. See './executor.js') that we can init Globals here
     Globals.init(me.app);
 
@@ -60,41 +62,41 @@ export class BootManagerImpl implements BootManager {
         const ds = me.app.dataSources[dataSourceName];
         async.waterfall([
           (cb) => {
-            me.log.debug(`PINGING DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
+            me.log.notice(`PINGING DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
             ds.ping((err: Error) => {
-              if (!err) {
-                me.log.debug(`DataSource '${dataSourceName}' PING SUCCESS`);
-                return cb(null, null);
-              }
-              const fdbh = me.databaseHelpers.filter((dbh) => ds.settings.connector === dbh.connectorName);
-              if (fdbh.length !== 1) {
-                const message = `InitializeDatabase FAILED: No helper for '${ds.settings.connector}'`;
-                me.log.warning(message);
-                return cb(null, new Error(message));
-              }
-              me.log.debug(`Running helper for DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
-              fdbh[0].configure(ds, (err: Error) => {
-                if (!err) {
-                  me.log.debug(`[Connector: '${ds.settings.connector}'] CONFIG SUCCESS`);
-                  return ds.ping((err) => {
-                    if (!err) {
-                      me.log.debug(`DataSource '${dataSourceName}' (after config) PING SUCCESS`);
-                      me.dataSourcesToAutoMigrate.push(ds);
-                      return cb(null, null);
-                    }
-                    const message = `DataSource '${dataSourceName}' (after config) PING FAIL`;
-                    me.log.warning(message);
-                    return cb(null, new Error(message));
-                  });
-                }
-                const message = `[Connector: '${ds.settings.connector}'] CONFIG FAIL: '${err.message}'`;
-                me.log.warning(message);
-                return cb(null, new Error(message));
-              });
+              me.log.debug(`DataSource '${dataSourceName}' PING ` + (!err ? 'SUCCESS' : 'FAIL'));
+              cb(null, !err);
             });
           },
-          (dataSourceIsBad, cb) => {
-            if (!dataSourceIsBad) {
+          (pingDataSourceSucceeded: boolean, cb) => {
+            if (pingDataSourceSucceeded) {
+              return cb(null, true);
+            }
+            const fdbh = me.databaseHelpers.filter((dbh) => ds.settings.connector === dbh.connectorName);
+            if (fdbh.length !== 1) {
+              const message = `InitializeDatabase FAILED: No helper for '${ds.settings.connector}'`;
+              me.log.warning(message);
+              return cb(null, false);
+            }
+            me.log.debug(`Running helper for DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
+            fdbh[0].configure(ds, (err: Error) => {
+              me.log.debug(`DataSource helper config for '${dataSourceName}' ` + (!err ? 'SUCCESS' : 'FAIL'));
+              cb(null, !err);
+            });
+          },
+          (databaseHelperSucceeded: boolean, cb) => {
+            if (databaseHelperSucceeded) {
+              return cb(null, true);
+            }
+            ds.ping((err) => {
+              me.log.debug(`DataSource '${dataSourceName}' (after config) PING ` + (!err ? 'SUCCESS' : 'FAIL'));
+              !err && me.dataSourcesToAutoMigrate.push(ds);
+              !err && me.log.warning(err.message);
+              cb(null, !err);
+            });
+          },
+          (dataSourceIsGood: boolean, cb) => {
+            if (dataSourceIsGood) {
               return cb();
             }
             const modelsUsingThisBadDataSource = instructions.models.filter((model) => {
@@ -113,7 +115,10 @@ export class BootManagerImpl implements BootManager {
             return cb();
           }
         ], cb);
-      }, cb);
+      }, (err) => {
+        me.log.notice('<<<< Exiting verifyDataSources');
+        cb();
+      });
   }
 
   private bootCallback(err: Error) {
@@ -128,10 +133,9 @@ export class BootManagerImpl implements BootManager {
       (cb) => {
         //AutoMigrate any dataSources (models, really) that require it
         async.each(me.dataSourcesToAutoMigrate, (dataSource: any, cb) => {
+          me.log.debug(`Automigrating models attached to DataSource: '${dataSource.name}'`);
           dataSource.automigrate(cb);
-        }, (err: Error) => {
-          cb();
-        });
+        }, cb);
       },
       (cb) => {
         //Tell loopback to use AminoAccessToken for auth
