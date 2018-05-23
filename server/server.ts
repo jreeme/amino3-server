@@ -7,7 +7,7 @@ import {Logger} from './util/logging/logger';
 let logger: Logger;
 
 //Install UncaughtException handler
-process.on('uncaughtException', err => {
+process.on('uncaughtException', (err: Error) => {
   const uncaughtExceptionMessage = `UncaughtException [HALT]: ${err}`;
   logger
     ? logger.critical(uncaughtExceptionMessage)
