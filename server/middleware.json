@@ -42,6 +42,7 @@
   },
   "files": {
     "loopback#static": {
+      "paths": "/amino3",
       "params": "$!../dist/client"
     }
   },
