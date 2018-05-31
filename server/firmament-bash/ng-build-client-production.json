@@ -33,7 +33,7 @@
       "args"                       : [
         "bash",
         "-c",
-        "node_modules/.bin/ng build --env=prod --output-path ../dist/client"
+        "node_modules/.bin/ng build --base-href /amino3/ --env=prod --output-path ../dist/client"
       ]
     }
   ]
