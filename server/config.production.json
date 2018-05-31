@@ -1,4 +1,5 @@
 {
+  "restApiRoot"   : "/amino3/amino-api",
   "amino3Config": {
     "noListen": false,
     "noServices": false,
