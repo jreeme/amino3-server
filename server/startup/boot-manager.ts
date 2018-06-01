@@ -5,7 +5,7 @@ import {Globals} from '../globals';
 import {ServiceManager} from './service-manager';
 
 import * as async from 'async';
-import {BaseDatabaseHelper} from "../util/database-helpers/interfaces/base-database-helper";
+import {BaseDatabaseHelper} from '../util/database-helpers/interfaces/base-database-helper';
 
 export interface BootManager {
   start(loopback: any, loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
@@ -170,13 +170,15 @@ export class BootManagerImpl implements BootManager {
                   process.exit(0);
                 }, 2511);//<== Goofy number of MS so searches for 3000, etc. won't find it
               }
-              me.log.info(`Starting Amino3 by 'node server.js'`);
               me.log.info(`Starting Socket.IO server`);
+              const httpServer = me.listen();
+              const socketIoServer = require('socket.io');
+              const io = new socketIoServer(httpServer, {path: Globals.serverWebSocketPath});
               me.postal
                 .publish({
                   channel: 'ServiceBus',
                   topic: 'SetSocketIO',
-                  data: {io: require('socket.io')(me.listen())}
+                  data: {io}
                 });
               me.app.emit('started');
             }

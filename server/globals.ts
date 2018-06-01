@@ -102,6 +102,7 @@ export class Globals {
   static elasticsearchRoleName = 'elasticsearch';
 
   static accessTokenTimeToLiveSeconds = 60 * 60;
+  static serverWebSocketPath = '/amino3/socket.io';
 
   //Resolve some server side paths
   static projectRootPath = path.resolve(__dirname, '..');

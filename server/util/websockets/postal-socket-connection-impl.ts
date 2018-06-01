@@ -1,8 +1,8 @@
 import {injectable, inject} from 'inversify';
 import {IPostal, ISubscriptionDefinition} from 'firmament-yargs';
-import {SocketIoWrapper} from "./socketIoWrapper";
-import {Logger} from "../logging/logger";
-import {Globals} from "../../globals";
+import {SocketIoWrapper} from './socketIoWrapper';
+import {Logger} from '../logging/logger';
+import {Globals} from '../../globals';
 
 const Rx = require('rxjs');
 

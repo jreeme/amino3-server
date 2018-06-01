@@ -47,10 +47,12 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
         callback: (data) => {
           const {res, req} = data;
           try {
-            res.status(200).send({
-              serverUrl: `http://${req.connection.localAddress}:${req.connection.localPort}`,
-              clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
-            });
+            const s =
+              {
+                serverWebSocketPath: Globals.serverWebSocketPath,
+                clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
+              };
+            res.status(200).send(s);
           } catch (err) {
             res.status(500).send(err);
           }

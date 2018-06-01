@@ -4,15 +4,13 @@ import {Observer} from 'rxjs/Observer';
 import {Globals} from '../../globals';
 import {IPostal} from 'firmament-yargs';
 import {Logger} from '../logging/logger';
-import * as SocketIO from "socket.io";
+import * as SocketIO from 'socket.io';
 
 const Rx = require('rxjs');
 
 export interface SocketIoWrapper {
   id: string;
-
   init(socket: SocketIO.Socket, postalSocketConnection: PostalSocketConnection);
-
   publishToClient(aminoMessage: AminoMessage);
 }
 
