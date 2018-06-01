@@ -2,7 +2,7 @@ import {inject, injectable} from 'inversify';
 import {Globals} from '../../globals';
 import {Logger} from './logger';
 import {Util} from '../util';
-import {SafeJson} from 'firmament-yargs';
+import {IPostal, SafeJson} from 'firmament-yargs';
 import * as path from 'path';
 import * as moment from 'moment';
 import * as mkdirp from 'mkdirp';
@@ -47,7 +47,8 @@ export class LoggerImpl implements Logger {
   private logLevel = '';
   private logFolderValid = false;
 
-  constructor(@inject('SafeJson') private safeJson: SafeJson) {
+  constructor(@inject('SafeJson') private safeJson: SafeJson,
+              @inject('IPostal') private postal: IPostal) {
     this.critical('');
     this.critical(`******************************** Logger Initialized @ ${moment().toISOString()} (Log Level: ${Globals.logLevel}) ********************************`);
     this.critical('');
@@ -73,18 +74,30 @@ export class LoggerImpl implements Logger {
     } catch (err) {
       me.warning(`Unable to create Log File Folder '${Globals.logFileFolder}'`);
     }
-    me.app.get('/get-logger-called-from-files', (req, res) => {
-      res.status(200).send(Array.from(me.allFilenameCallers));
+    me.postal
+      .subscribe({
+      channel: 'Logger',
+      topic: 'setLoggerCallingFilesToIgnore',
+      callback: (data) => {
+        const {req, res} = data;
+        const json = `{"files-to-ignore": ${req.query['files-to-ignore']}}`;
+        me.safeJson.safeParse(json, (err, obj) => {
+          if (err) {
+            return res.status(417).send({status: err.message});
+          }
+          me.callerFilenamesToIgnore = new Set<string>(obj['files-to-ignore']);
+          res.status(200).send(obj);
+        });
+      }
     });
-    me.app.get('/set-logger-calling-files-to-ignore', (req, res) => {
-      const json = `{"files-to-ignore": ${req.query['files-to-ignore']}}`;
-      me.safeJson.safeParse(json, (err, obj) => {
-        if (err) {
-          return res.status(417).send({status: err.message});
-        }
-        me.callerFilenamesToIgnore = new Set<string>(obj['files-to-ignore']);
-        res.status(200).send({status: 'OK'});
-      });
+    me.postal
+      .subscribe({
+      channel: 'Logger',
+      topic: 'getLoggerCalledFromFiles',
+      callback: (data) => {
+        const {res} = data;
+        res.status(200).send(Array.from(me.allFilenameCallers));
+      }
     });
   }
 

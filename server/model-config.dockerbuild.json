@@ -34,6 +34,14 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
+  "WebSocket": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
+  "LogEntry": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
   "DataSet": {
     "dataSource": "amino_admin_mem",
     "public": true

@@ -1,6 +1,8 @@
 {
   "_meta": {
     "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
       "../common/models"
     ]
   },
@@ -12,7 +14,7 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
-  "AminoRole": {
+  "Role": {
     "dataSource": "amino_admin_mem",
     "public": true
   },
@@ -20,7 +22,7 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
-  "AminoRoleMapping": {
+  "RoleMapping": {
     "dataSource": "amino_admin_mem",
     "public": true
   },
@@ -32,6 +34,14 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
+  "WebSocket": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
+  "LogEntry": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
   "DataSet": {
     "dataSource": "amino_admin_mem",
     "public": true
@@ -40,7 +50,19 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
-  "ElasticSearch": {
+  "Elasticsearch": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
+  "SparkApplication": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
+  "SparkJob": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
+  "SparkPedigree": {
     "dataSource": "amino_admin_mem",
     "public": true
   },

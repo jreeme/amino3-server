@@ -18,22 +18,11 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
     super();
   }
 
-  initSubscriptions(cb: (err: Error, result: any) => void) {
-    super.initSubscriptions();
+  private subscribeToPing(channel: string) {
     const me = this;
-    me.app.get('/util/get-websocket-info', (req, res) => {
-      try {
-        res.status(200).send({
-          serverUrl: `http://${req.connection.localAddress}:${req.connection.localPort}`,
-          clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
-        });
-      } catch (err) {
-        res.status(500).send(err);
-      }
-    });
     me.postal
       .subscribe({
-        channel: 'ServiceBus',
+        channel,
         topic: 'Ping',
         callback: (data) => {
           me.log.debug('Received PING');
@@ -42,6 +31,29 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
             topic: 'Pong',
             data: {}
           });
+        }
+      });
+  }
+
+  initSubscriptions(cb: (err: Error, result: any) => void) {
+    super.initSubscriptions();
+    const me = this;
+    me.subscribeToPing('ServiceBus');
+    me.subscribeToPing('WebSocketManager');
+    me.postal
+      .subscribe({
+        channel: 'WebSocketManager',
+        topic: 'getWebSocketInfo',
+        callback: (data) => {
+          const {res, req} = data;
+          try {
+            res.status(200).send({
+              serverUrl: `http://${req.connection.localAddress}:${req.connection.localPort}`,
+              clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
+            });
+          } catch (err) {
+            res.status(500).send(err);
+          }
         }
       });
     me.postal

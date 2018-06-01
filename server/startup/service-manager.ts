@@ -26,8 +26,6 @@ export class ServiceManagerImpl implements ServiceManager {
     const me = this;
     me.app = app;
     if (Globals.noServices) {
-      //Add default route to avoid error in browser if someone hits us when we're not running services
-      //me.app.get('/', me.app.loopback.status());
       me.log.warning(`Amino3 services suppressed by AMINO3_NO_SERVICES environment variable or 'noServices' config`);
       //return cb();
     }

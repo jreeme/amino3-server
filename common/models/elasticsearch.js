@@ -1,7 +1,7 @@
 module.exports = function (Elasticsearch) {
   Elasticsearch.elasticsearchAction = function (esVerb, esQueryJson, req, res) {
     //Due to loopback-sdk-builder implementation "feature" we have to do route variable
-    //substitution ourselves. Fortunately loopback-sdk-builder sends the substituions
+    //substitution ourselves. Fortunately loopback-sdk-builder sends the substitutions
     //in the query string
     esVerb = (esVerb === ':esVerb') ? req.query.esVerb : esVerb;
     global.postal.publish({
