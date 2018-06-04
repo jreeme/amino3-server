@@ -14,7 +14,7 @@
       "RemoteLogging",
       "StaticService",
       "_ServerServicesManager",
-      "WebSocketManager"
+      "_WebSocketManager"
     ],
     "loggerCallerFilenamesToIgnore": [
       "postal-socket-connection-impl"
