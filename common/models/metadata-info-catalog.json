@@ -43,8 +43,8 @@
       "required": false
     },
     "fileContent": {
-      "type": "string",
-      "description": "file content; e.g. if category is 'xls', content is bank statement data",
+      "type": ["string"],
+      "description": "array of file content values; e.g. if file contains currency text then content contains 'currency'",
       "required": false
     },
     "fileMimeType": {
