@@ -44,7 +44,7 @@
     },
     "fileContent": {
       "type": ["string"],
-      "description": "array of file content values; e.g. if file contains currency text then content contains 'currency'",
+      "description": "file content; e.g. if file contains currency text then content contains 'currency'",
       "required": false
     },
     "fileMimeType": {
@@ -69,7 +69,7 @@
       "required": false
     },
     "filePedigree": {
-      "type": "string",
+      "type": ["string"],
       "description": "pedigree of the data file; stored as id of ancestor file instance",
       "default": null,
       "required": false
@@ -87,19 +87,19 @@
       "required": false
     },
     "jobDefinition": {
-      "type": "string",
-      "description": "ETL job definition(s) used to process the file (separated by ',')",
+      "type": ["string"],
+      "description": "job definition(s) processed to ETL the file",
       "required": false
     },
     "lastProcessed": {
       "type": "date",
-      "description": "date (GMT timestamp) file was last ETL'd",
+      "description": "date and time file was last ETL'd; stored as timestamp in GMT",
       "default": null,
       "required": false
     },
     "dateCreated": {
       "type": "date",
-      "description": "date (timestamp) instance was created in data source",
+      "description": "date instance was created in data source; stored as timestamp in GMT",
       "defaultFn": "now",
       "required": false
     }
