@@ -14,7 +14,7 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
-  "Role": {
+  "AminoRole": {
     "dataSource": "amino_admin_mem",
     "public": true
   },
@@ -22,7 +22,7 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
-  "RoleMapping": {
+  "AminoRoleMapping": {
     "dataSource": "amino_admin_mem",
     "public": true
   },
