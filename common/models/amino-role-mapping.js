@@ -1,5 +1,5 @@
 'use strict';
 
-module.exports = function(Aminorolemapping) {
+module.exports = function(AminoRoleMapping) {
 
 };

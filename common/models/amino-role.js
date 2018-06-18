@@ -1,5 +1,5 @@
 'use strict';
 
-module.exports = function(Aminorole) {
+module.exports = function(AminoRole) {
 
 };
