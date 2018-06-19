@@ -68,8 +68,8 @@ export class AuthenticationImpl extends BaseServiceImpl {
 
   private createRootUserAndAdminRole(cb: (err: Error, principal?: any) => void) {
     const me = this;
-    const R = me.app.models.Role;
-    const RM = me.app.models.RoleMapping;
+    const R = me.app.models.AminoRole;
+    const RM = me.app.models.AminoRoleMapping;
     const U = me.app.models.AminoUser;
     const ACL = me.app.models.ACL;
     //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
