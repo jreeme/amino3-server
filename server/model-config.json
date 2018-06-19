@@ -1,10 +1,2 @@
 {
-  "AminoRole": {
-    "dataSource": "amino_admin_mem",
-    "public": true
-  },
-  "AminoRoleMapping": {
-    "dataSource": "amino_admin_mem",
-    "public": true
-  }
 }
