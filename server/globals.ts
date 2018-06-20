@@ -54,7 +54,7 @@ export class Globals {
       log.debug(message);
     });
   }
-
+  static jwtSecret = 'irJ8EZnmUtliF9dFjL5g';
   static suppressServerHeartbeat: boolean = false;
   static suppressedServices: string[] = [];
   static loggerCallerFilenamesToIgnore: string[] = [];

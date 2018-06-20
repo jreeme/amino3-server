@@ -35,6 +35,13 @@
       "options": {
         "disableInclude": true
       }
+    },
+    "roles": {
+      "type": "hasMany",
+      "model": "AminoRole",
+      "foreignKey": "principalId",
+      "keyThrough": "roleId",
+      "through": "AminoRoleMapping"
     }
   },
   "acls": [],
