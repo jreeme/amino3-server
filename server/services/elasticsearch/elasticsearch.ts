@@ -51,50 +51,64 @@ export class ElasticsearchImpl extends BaseServiceImpl {
           let decoded:any = jwt.verify(accessToken, Globals.jwtSecret);
 
           async.waterfall([
+            //find User from access token including AminoRoles
             (cb)=>{
               me.app.models.AminoUser.findById(decoded.id,{include:"roles"},cb)
             },
-            (model, cb)=>{
-              let datasets = model.toJSON().roles.map((role)=>{ return role.datasets;}).reduce((x,y)=>x.concat(y), []);
-              cb(null,datasets);
-            },
-            (datasets, cb)=>{
-              me.app.models.DataSet.find({"where":{"datasetUID":{"inq":datasets}}},cb)
-            },
-            (datasets, cb)=>{
-              let path = datasets.map((dataset)=>{return dataset.datasetName;}).join(',').toLowerCase();
-              if(!path) {
-                cb(null, null);
+            //Convert AminoRoles to a list of DataSet Ids
+            (user, cb)=>{
+              let roles = user.toJSON().roles;
+              if(!roles){
+                cb({"message":"ERROR: User has no authentication roles."},null);
                 return;
               }
-              cb(null, '/' + path)
+              let datasetIds = roles.map((role)=>{ return role.datasets;}).reduce((x,y)=>x.concat(y), []);
+              cb(null,datasetIds);
+            },
+            //Find all DataSets with UIDs contained within our data set id list
+            (dataSetIds, cb)=>{
+              me.app.models.DataSet.find({"where":{"datasetUID":{"inq":dataSetIds}}},cb)
+            },
+            //Convert the resulting DataSet list into a unique list of data set names
+            (dataSets, cb)=>{
+              let path = Array.from(new Set(dataSets.map((dataSet)=>{return dataSet.datasetName;}))).join(',').toLowerCase();
+              if(!path) {
+                cb({"message":"ERROR: Access to data sets not granted in users roles."}, null);
+                return;
+              }
+              cb(null, path)
+            },
+            //Create the ES url using approved DataSet names and verb
+            (dataSets, cb)=>{
+              [Globals.elasticsearchUrl]
+                .some((testUrl) => {
+                  try {
+                    const normalizedUrl = normalizeUrl(testUrl);
+                    elasticsearchUrl = new URL(`/${dataSets}/` + eq.esVerb, normalizedUrl);
+                  } catch (err) {
+                    elasticsearchUrl = undefined;
+                    return false;
+                  }
+                  return true;
+                });
+              if (!elasticsearchUrl) {
+                cb({"status":"ERROR: Bad elasticsearch Url"},null);
+                return;
+              }
+              const uri = elasticsearchUrl.toString();
+              cb(null,uri);
             }
-          ], (err,datasets)=>{
-            if (!datasets) {
-              return eq.res.status(400).end('{"status":"ERROR: Access to datasets not granted in user roles."}');
+          ], (err:Error,uri)=>{
+            if(err){
+              return eq.res.status(400).end(err.message);
             }
-            [Globals.elasticsearchUrl]
-              .some((testUrl) => {
-                try {
-                  const normalizedUrl = normalizeUrl(testUrl);
-                  elasticsearchUrl = new URL(datasets + '/' + eq.esVerb, normalizedUrl);
-                } catch (err) {
-                  elasticsearchUrl = undefined;
-                  return false;
-                }
-                return true;
-              });
-            if (!elasticsearchUrl) {
-              return eq.res.status(400).end('{"status":"ERROR: Bad elasticsearch Url"}');
-            }
-            const uri = elasticsearchUrl.toString();
+
             const requestOptions = {
               uri,
               method: eq.req.method,
               json: eq.req.body
             };
 
-            //request(requestOptions).pipe(eq.res);
             const requestStream = request(requestOptions);
 
             function streamErrorHandler(err: Error) {
