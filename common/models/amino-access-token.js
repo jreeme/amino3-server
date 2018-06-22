@@ -24,7 +24,7 @@ module.exports = function (AminoAccessToken) {
 
 function createToken(aminoUser, ttl) {
   try {
-    return jwt.sign(aminoUser, 'irJ8EZnmUtliF9dFjL5g', {expiresIn: ttl});
+    return jwt.sign(aminoUser, global.jwtSecret, {expiresIn: ttl});
   } catch (err) {
     return 'could not generate JSON web token';
   }

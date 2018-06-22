@@ -20,6 +20,7 @@ try {
   // Attach some things to <global> so loopback javascripts can have access to them
   logger = (<any>global).logger = kernel.get<Logger>('Logger');
   (<any>global).postal = kernel.get<IPostal>('IPostal');
+  (<any>global).jwtSecret = Globals.jwtSecret;
   (<any>global).accessTokenTimeToLiveSeconds = Globals.accessTokenTimeToLiveSeconds;
 
   const bootManager: BootManager = kernel.get<BootManager>('BootManager');

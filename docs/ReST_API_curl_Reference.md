@@ -76,15 +76,18 @@ Response:
 }
 ```
 ### Adding a role
+
+To allow an AminoRole to have access to data sets you should fill out the datasets array with the DataSet.datasetUID
+of the datasets you wish to provide access to.  The data set UID field can be found by querying the Datasets endpoint.
 ```bash
-curl -X POST
---header 'Content-Type: application/json'
---header 'Accept: application/json'
--d '{
-   "name": "reports",
-   "description": "Allowed to generate reports"
-}'
-'http://<fqdn>:<port>/amino-api/Roles?access_token=<token-string>'
+curl -X POST 
+--header 'Content-Type: application/json' 
+--header 'Accept: application/json' -d '{  
+   "datasets": ["datasetUID","datasetUID"],  
+   "name": "reports",  
+   "description": "Allowed to generate reports" 
+ }'
+'http://<fqdn>:<port>/amino-api/AminoRoles?access_token=<token-string>'
 
 Response:
 
@@ -102,7 +105,7 @@ Response:
 
 curl -X GET
 --header 'Accept: application/json'
-'http://<fqdn>:<port>/amino-api/Roles?access_token=<token-string>?filter={"where":{"name":"elasticsearch"}}'
+'http://<fqdn>:<port>/amino-api/AminoRoles?access_token=<token-string>?filter={"where":{"name":"elasticsearch"}}'
 
 Response:
 
@@ -126,7 +129,7 @@ curl -X POST
   "principalId": "esuser",
   "roleId": 2
 }'
-'http://<fqdn>:<port>/amino-api/RoleMappings?access_token=<token-string>'
+'http://<fqdn>:<port>/amino-api/AminoRoleMappings?access_token=<token-string>'
 
 Response:
 
