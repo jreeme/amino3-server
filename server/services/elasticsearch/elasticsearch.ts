@@ -5,6 +5,7 @@ import {Logger} from '../../util/logging/logger';
 import * as jwt from 'jsonwebtoken';
 import {IncomingMessage} from 'http';
 import * as request from 'request';
+import * as _ from 'lodash';
 import * as normalizeUrl from 'normalize-url';
 import {Globals} from "../../globals";
 import async = require('async');
@@ -47,8 +48,8 @@ export class ElasticsearchImpl extends BaseServiceImpl {
         topic: 'Query',
         callback: (eq: ElasticsearchQuery) => {
           let elasticsearchUrl = '';
-          let accessToken = eq.req.query.access_token;
-          let decoded:any = jwt.verify(accessToken, Globals.jwtSecret);
+          const accessToken = eq.req.query.access_token;
+          const decoded:any = jwt.verify(accessToken, Globals.jwtSecret);
 
           async.waterfall([
             //find User from access token including AminoRoles
@@ -57,12 +58,12 @@ export class ElasticsearchImpl extends BaseServiceImpl {
             },
             //Convert AminoRoles to a list of DataSet Ids
             (user, cb)=>{
-              let roles = user.toJSON().roles;
+              const roles = user.toJSON().roles;
               if(!roles){
-                cb({"message":"ERROR: User has no authentication roles."},null);
-                return;
+                return cb(new Error("ERROR: User has no authentication roles."),null);
               }
-              let datasetIds = roles.map((role)=>{ return role.datasets;}).reduce((x,y)=>x.concat(y), []);
+              //use lodash flatmap here
+              const datasetIds = _.flatMap(roles,((role)=>{ return role.datasets;}));
               cb(null,datasetIds);
             },
             //Find all DataSets with UIDs contained within our data set id list
@@ -71,10 +72,10 @@ export class ElasticsearchImpl extends BaseServiceImpl {
             },
             //Convert the resulting DataSet list into a unique list of data set names
             (dataSets, cb)=>{
-              let path = Array.from(new Set(dataSets.map((dataSet)=>{return dataSet.datasetName;}))).join(',').toLowerCase();
+              //use lodash uniq here
+              const path = _.uniq(dataSets.map((dataSet)=>dataSet.datasetName)).join(',').toLowerCase();
               if(!path) {
-                cb({"message":"ERROR: Access to data sets not granted in users roles."}, null);
-                return;
+                return cb(new Error("ERROR: Access to data sets not granted in users roles."), null);
               }
               cb(null, path)
             },
@@ -84,7 +85,7 @@ export class ElasticsearchImpl extends BaseServiceImpl {
                 .some((testUrl) => {
                   try {
                     const normalizedUrl = normalizeUrl(testUrl);
-                    elasticsearchUrl = new URL(`/${dataSets}/` + eq.esVerb, normalizedUrl);
+                    elasticsearchUrl = new URL(`/${dataSets}/${eq.esVerb}`, normalizedUrl);
                   } catch (err) {
                     elasticsearchUrl = undefined;
                     return false;
@@ -92,8 +93,7 @@ export class ElasticsearchImpl extends BaseServiceImpl {
                   return true;
                 });
               if (!elasticsearchUrl) {
-                cb({"status":"ERROR: Bad elasticsearch Url"},null);
-                return;
+                return cb(new Error("ERROR: Bad elasticsearch Url"),null);
               }
               const uri = elasticsearchUrl.toString();
               cb(null,uri);
