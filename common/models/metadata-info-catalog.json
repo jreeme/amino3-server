@@ -43,11 +43,9 @@
       "description": "file category; usually the file extension"
     },
     "fileContent": {
-      "type": [
-        "string"
-      ],
-      "required": false,
-      "description": "file content; e.g. if file contains currency text then content contains 'currency'"
+      "type": ["string"],
+      "description": "array of file content values; e.g. if file contains currency text then content contains 'currency'",
+      "required": false
     },
     "fileMimeType": {
       "type": "string",
