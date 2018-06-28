@@ -63,7 +63,10 @@
       "type": "number",
       "required": false,
       "description": "file size (in bytes)",
-      "default": 0
+      "default": 0,
+      "postgresql":{
+        "dataType":"bigint"
+      }
     },
     "fileHash": {
       "type": "string",
