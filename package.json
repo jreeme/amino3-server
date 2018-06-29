@@ -29,6 +29,7 @@
     "lodash": "^4.17.4",
     "loopback": "^3.0.0",
     "loopback-boot": "^2.6.5",
+    "loopback-datasource-juggler": "3.20.2",
     "loopback-component-explorer": "^5.0.0",
     "loopback-connector-mongodb": "^3.4.3",
     "loopback-connector-mysql": "^5.2.0",
@@ -51,7 +52,7 @@
     "typescript": "^2.9.2"
   },
   "devDependencies": {
-    "@mean-expert/loopback-sdk-builder": "^2.2.7",
+    "@mean-expert/loopback-sdk-builder": "2.2.7",
     "@types/async": "^2.0.48",
     "@types/chai": "^4.0.5",
     "@types/formidable": "^1.0.30",
