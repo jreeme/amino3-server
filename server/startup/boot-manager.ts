@@ -139,12 +139,12 @@ export class BootManagerImpl implements BootManager {
       },
       (cb) => {
         //Redirect root to amino3, magic string here (rather than on Globals) because it exists in middleware & HTML too
-        me.app.all('/explorer', (req, res) => {
+/*        me.app.all('/explorer', (req, res) => {
           res.redirect('/amino3/explorer');
         });
         me.app.all('/', (req, res) => {
           res.redirect('/amino3');
-        });
+        });*/
         cb();
       },
       (cb) => {
