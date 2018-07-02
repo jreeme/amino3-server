@@ -56,34 +56,27 @@ module.exports = function (DataSet) {
     }
   );
   //createDataSet
-  DataSet.createDataSet = function (name, cb) {
-    DataSet.create({
-      name
-    }, (err, newDataSet) => {
-      cb(err, {name: newDataSet.name, created: !err});
+  DataSet.createDataSet = function (dataSetToCreate, cb) {
+    DataSet.create(dataSetToCreate, (err, newDataSet) => {
+      cb(err, newDataSet);
     });
   };
   DataSet.remoteMethod('createDataSet', {
       accepts: [
         {
-          arg: 'name',
-          type: 'string',
+          arg: 'dataSetToCreate',
+          type: 'DataSet',
           required: true,
-          description: 'DataSet name'
+          description: 'JSON object containing new data set info',
+          http: {source: 'body'}
         }
       ],
       returns: [
         {
-          arg: 'name',
-          type: 'string',
+          arg: 'createdDataSet',
+          type: 'DataSet',
           root: true,
-          description: 'DataSet name'
-        },
-        {
-          arg: 'created',
-          type: 'boolean',
-          root: true,
-          description: 'DataSet created'
+          description: 'Created DataSet'
         }
       ],
       http: {path: '/create-dataset', verb: 'post'}
@@ -91,7 +84,7 @@ module.exports = function (DataSet) {
   );
 
   DataSet.observe('before save', function initializeDataSetName(ctx, next) {
-    ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
+    ctx.instance.datasetName = ctx.instance.contactAgency + '-' + ctx.instance.caseName;
     next();
   });
 };
