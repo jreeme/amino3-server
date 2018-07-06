@@ -3,16 +3,16 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-var assert = require('assert');
-var semver = require('semver');
-var debug = require('debug')('loopback:boot:executor');
-var async = require('async');
-var path = require('path');
-var format = require('util').format;
-var g = require('strong-globalize')();
-var requireNodeOrEsModule = require('../../node_modules/loopback-boot/lib/require');
+const assert = require('assert');
+const semver = require('semver');
+const debug = require('debug')('loopback:boot:executor');
+const async = require('async');
+import * as path from 'path';
+const format = require('util').format;
+const g = require('strong-globalize')();
+const requireNodeOrEsModule = require('../../node_modules/loopback-boot/lib/require');
 
-const log = global.logger;
+const log = (<any>global).logger;
 /**
  * Execute bootstrap instructions gathered by `boot.compile`.
  *
@@ -332,7 +332,7 @@ function runScripts(app, list, callback) {
       var result = f.func(app, cb);
       if (result && typeof result.then === 'function') {
         result.then(function () {
-          cb();
+          cb(null);
         }, cb);
       } else if (f.func.length < 2) {
         debug('Sync function finished %s', f.path);
