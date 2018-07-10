@@ -115,7 +115,8 @@
     "status": {
       "type": "string",
       "required": false,
-      "description": "ETL Status"
+      "description": "ETL Status",
+      "default": "submitted"
     }
   },
   "validations": [],
