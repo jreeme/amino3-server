@@ -11,6 +11,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "pretty": true,
     "sourceMap": true,
+    "outDir": "../server-dist",
     "lib": [
       "es6",
       "dom"
