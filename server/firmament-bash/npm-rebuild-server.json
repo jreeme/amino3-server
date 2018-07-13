@@ -7,7 +7,7 @@
   ],
   "serialSynchronizedCommands": [
     {
-      "description"                : "npm run build_no_yarn",
+      "description"                : "npm run build_no_npm_install",
       "suppressOutput"             : false,
       "showDiagnostics"            : false,
       "showPreAndPostSpawnMessages": true,
@@ -18,7 +18,7 @@
       "args"                       : [
         "bash",
         "-c",
-        "npm run build_no_yarn"
+        "npm run build_no_npm_install"
       ]
     }
   ]
