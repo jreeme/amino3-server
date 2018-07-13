@@ -22,7 +22,7 @@
       "required": false,
       "description": "Contact Title"
     },
-    "contactAgency": {
+    "primeAgency": {
       "type": "string",
       "required": false,
       "description": "Agency"

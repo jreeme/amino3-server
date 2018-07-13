@@ -84,7 +84,7 @@ module.exports = function (DataSet) {
   );
 
   DataSet.observe('before save', function initializeDataSetName(ctx, next) {
-    ctx.instance.datasetName = ctx.instance.contactAgency + '-' + ctx.instance.caseName;
+    ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
     next();
   });
 };
