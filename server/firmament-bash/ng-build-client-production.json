@@ -18,7 +18,7 @@
       "args"                       : [
         "bash",
         "-c",
-        "AMINO3_NO_LISTEN=TRUE AMINO3_NO_SERVICES=TRUE node_modules/.bin/lb-sdk server/server.js client/src/lb-sdk -i enabled -w enabled"
+        "AMINO3_NO_LISTEN=TRUE AMINO3_NO_SERVICES=TRUE node_modules/.bin/lb-sdk server-dist/server.js client/src/lb-sdk -i enabled -w enabled"
       ]
     },
     {
