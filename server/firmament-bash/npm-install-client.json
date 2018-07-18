@@ -16,9 +16,8 @@
       "workingDirectory"           : "client",
       "command"                    : "/usr/bin/env",
       "args"                       : [
-        "bash",
-        "-c",
-        "yarn"
+        "npm",
+        "install"
       ]
     }
   ]

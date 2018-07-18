@@ -12,7 +12,7 @@
       "required": true,
       "description": "dataset unique identifier"
     },
-    "contactAgency": {
+    "primeAgency": {
       "type": "string",
       "required": true,
       "description": "agency providing the data"
@@ -76,7 +76,7 @@
         "string"
       ],
       "required": false,
-      "description": "pedigree of the data file; stored as id of ancestor file instance",
+      "description": "data file pedigree(s); each stored as the ancester file hash",
       "default": null
     },
     "encrypted": {
@@ -91,12 +91,24 @@
       "description": "boolean indicating whether the file is quarantined (containing malware, virus, ...)",
       "default": "false"
     },
+    "isContainer": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file is a container (zip, pst, mbox, eml)",
+      "default": "false"
+    },
+    "isAttachment": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file is an email attachment",
+      "default": "false"
+    },
     "jobDefinition": {
       "type": [
         "string"
       ],
       "required": false,
-      "description": "job definition(s) processed to ETL the file"
+      "description": "job definition(s) processed to ETL the file; each stored as the job definition title"
     },
     "lastProcessed": {
       "type": "date",
