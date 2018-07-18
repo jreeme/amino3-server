@@ -117,6 +117,13 @@
       "required": false,
       "description": "ETL Status",
       "default": "submitted"
+    },
+    "indices": {
+      "type": [
+        "string"
+      ],
+      "required": false,
+      "description": "Array of indices in Elasticsearch created from this data set"
     }
   },
   "validations": [],

@@ -38,6 +38,57 @@ export class ElasticsearchImpl extends BaseServiceImpl {
     super();
   }
 
+  findUserFromAccessToken(eq, cb){
+    const accessToken = eq.req.query.access_token;
+    const decoded:any = jwt.verify(accessToken, Globals.jwtSecret);
+    this.app.models.AminoUser.findById(decoded.id,{include:"roles"},(err,result)=>{cb(err,eq,result)})
+  }
+
+  static convertRolesToDatasetIds(eq:ElasticsearchQuery, user:any, cb) {
+    const roles = user.toJSON().roles;
+    if (!roles) {
+      return cb(new Error("ERROR: User has no authentication roles."), null);
+    }
+    const datasetIds = _.flatMap(roles, ((role) => {
+      return role.datasets;
+    }));
+
+    cb(null,eq, datasetIds);
+  }
+
+  getDatasetsFromIds(eq:ElasticsearchQuery, dataSetIds:string[], cb) {
+    this.app.models.DataSet.find({"where": {"datasetUID": {"inq": dataSetIds}}}, (err,result)=>{cb(err,eq,result)})
+  }
+
+  static convertDatasetToUniqueNames(eq, dataSets, cb) {
+    //use lodash uniq here
+    const path = _.uniq(_.flatten(dataSets.map((dataSet) => dataSet.indices))).join(',').toLowerCase();
+    if (!path) {
+      return cb(new Error("ERROR: Access to data sets not granted in users roles."), null);
+    }
+    cb(null, eq, path)
+  }
+
+  createESUrl(eq, dataSets, cb) {
+    let elasticsearchUrl = '';
+    [Globals.elasticsearchUrl]
+      .some((testUrl) => {
+        try {
+          const normalizedUrl = normalizeUrl(testUrl);
+          elasticsearchUrl = new URL(`/${dataSets}/${eq.esVerb}`, normalizedUrl);
+        } catch (err) {
+          elasticsearchUrl = undefined;
+          return false;
+        }
+        return true;
+      });
+    if (!elasticsearchUrl) {
+      return cb(new Error("ERROR: Bad elasticsearch Url"), null);
+    }
+    const uri = elasticsearchUrl.toString();
+    cb(null, uri);
+  }
+
   initSubscriptions(cb: (err: Error, result: any) => void): void {
     super.initSubscriptions();
     const me = this;
@@ -47,57 +98,17 @@ export class ElasticsearchImpl extends BaseServiceImpl {
         channel: 'Elasticsearch',
         topic: 'Query',
         callback: (eq: ElasticsearchQuery) => {
-          let elasticsearchUrl = '';
-          const accessToken = eq.req.query.access_token;
-          const decoded:any = jwt.verify(accessToken, Globals.jwtSecret);
-
           async.waterfall([
             //find User from access token including AminoRoles
-            (cb)=>{
-              me.app.models.AminoUser.findById(decoded.id,{include:"roles"},cb)
-            },
+            (cb)=>{me.findUserFromAccessToken.bind(me)(eq,cb);},
             //Convert AminoRoles to a list of DataSet Ids
-            (user, cb)=>{
-              const roles = user.toJSON().roles;
-              if(!roles){
-                return cb(new Error("ERROR: User has no authentication roles."),null);
-              }
-              //use lodash flatmap here
-              const datasetIds = _.flatMap(roles,((role)=>{ return role.datasets;}));
-              cb(null,datasetIds);
-            },
+            ElasticsearchImpl.convertRolesToDatasetIds,
             //Find all DataSets with UIDs contained within our data set id list
-            (dataSetIds, cb)=>{
-              me.app.models.DataSet.find({"where":{"datasetUID":{"inq":dataSetIds}}},cb)
-            },
+            me.getDatasetsFromIds.bind(me),
             //Convert the resulting DataSet list into a unique list of data set names
-            (dataSets, cb)=>{
-              //use lodash uniq here
-              const path = _.uniq(dataSets.map((dataSet)=>dataSet.datasetName)).join(',').toLowerCase();
-              if(!path) {
-                return cb(new Error("ERROR: Access to data sets not granted in users roles."), null);
-              }
-              cb(null, path)
-            },
+            ElasticsearchImpl.convertDatasetToUniqueNames,
             //Create the ES url using approved DataSet names and verb
-            (dataSets, cb)=>{
-              [Globals.elasticsearchUrl]
-                .some((testUrl) => {
-                  try {
-                    const normalizedUrl = normalizeUrl(testUrl);
-                    elasticsearchUrl = new URL(`/${dataSets}/${eq.esVerb}`, normalizedUrl);
-                  } catch (err) {
-                    elasticsearchUrl = undefined;
-                    return false;
-                  }
-                  return true;
-                });
-              if (!elasticsearchUrl) {
-                return cb(new Error("ERROR: Bad elasticsearch Url"),null);
-              }
-              const uri = elasticsearchUrl.toString();
-              cb(null,uri);
-            }
+            me.createESUrl
           ], (err:Error,uri)=>{
             if(err){
               return eq.res.status(400).end(err.message);
