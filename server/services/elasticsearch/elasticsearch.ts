@@ -62,11 +62,11 @@ export class ElasticsearchImpl extends BaseServiceImpl {
 
   static convertDatasetToUniqueNames(eq, dataSets, cb) {
     //use lodash uniq here
-    const path = _.uniq(dataSets.map((dataSet) => dataSet.datasetName)).join(',').toLowerCase();
+    const path = _.uniq(_.flatten(dataSets.map((dataSet) => dataSet.indices))).join(',').toLowerCase();
     if (!path) {
       return cb(new Error("ERROR: Access to data sets not granted in users roles."), null);
     }
-    cb(null, path)
+    cb(null, eq, path)
   }
 
   createESUrl(eq, dataSets, cb) {
