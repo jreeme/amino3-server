@@ -19,6 +19,7 @@ import {SocketIoWrapper, SocketIoWrapperImpl} from './util/websockets/socketIoWr
 import {WebSocketManagerImpl} from './services/web-socket-manager/web-socket-manager';
 import {ServiceManager, ServiceManagerImpl} from './startup/service-manager';
 import {ServerServicesManagerImpl} from './services/server-services-manager/server-services-manager';
+import {BackdoorImpl} from "./services/backdoor/backdoor";
 
 //Singletons
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -26,6 +27,7 @@ kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingleton
 kernel.bind<BaseService>('BaseService').to(StaticServiceImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(AuthenticationImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(FileUploadImpl).inSingletonScope();
+kernel.bind<BaseService>('BaseService').to(BackdoorImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(FolderMonitorImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(PluginManagerImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(ElasticsearchImpl).inSingletonScope();

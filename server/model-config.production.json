@@ -30,6 +30,10 @@
     "dataSource": "amino_admin_pg",
     "public": true
   },
+  "Backdoor": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
   "UploadedFile": {
     "dataSource": "amino_admin_pg",
     "public": true
