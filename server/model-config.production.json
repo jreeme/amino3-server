@@ -50,6 +50,10 @@
     "dataSource": "amino_admin_pg",
     "public": true
   },
+  "AminoFile": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
   "MetadataInfoCatalog": {
     "dataSource": "amino_admin_pg",
     "public": true

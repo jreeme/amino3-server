@@ -50,6 +50,10 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
+  "File": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
   "MetadataInfoCatalog": {
     "dataSource": "amino_admin_mem",
     "public": true
