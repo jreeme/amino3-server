@@ -97,8 +97,7 @@
     "datasetName": {
       "type": "string",
       "required": false,
-      "description": "Dataset name",
-      "defaultFn": "initializeDataSetName"
+      "description": "Dataset name"
     },
     "datasetUID": {
       "type": "string",
