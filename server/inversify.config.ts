@@ -20,6 +20,7 @@ import {WebSocketManagerImpl} from './services/web-socket-manager/web-socket-man
 import {ServiceManager, ServiceManagerImpl} from './startup/service-manager';
 import {ServerServicesManagerImpl} from './services/server-services-manager/server-services-manager';
 import {BackdoorImpl} from "./services/backdoor/backdoor";
+import {DataSetUploadManagerImpl} from "./services/data-set-upload-manager/data-set-upload-manager";
 
 //Singletons
 kernel.bind<ServiceManager>('ServiceManager').to(ServiceManagerImpl).inSingletonScope();
@@ -35,6 +36,7 @@ kernel.bind<BaseService>('BaseService').to(RebuildClientImpl).inSingletonScope()
 kernel.bind<BaseService>('BaseService').to(WebSocketManagerImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(ServerServicesManagerImpl).inSingletonScope();
 kernel.bind<BaseService>('BaseService').to(RemoteLoggingImpl).inSingletonScope();
+kernel.bind<BaseService>('BaseService').to(DataSetUploadManagerImpl).inSingletonScope();
 
 //Non-services
 kernel.bind<BootManager>('BootManager').to(BootManagerImpl).inSingletonScope();

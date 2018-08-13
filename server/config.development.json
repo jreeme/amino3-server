@@ -10,7 +10,7 @@
     "replaceBadDataSourceWithMemoryDataSource": true,
     "suppressedServices": [
       "_Authentication",
-      "FileUpload",
+      "_FileUpload",
       "FolderMonitor",
       "_InitializeDatabase",
       "PluginManager",
