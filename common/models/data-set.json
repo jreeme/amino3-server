@@ -126,7 +126,14 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "files": {
+      "type": "hasMany",
+      "model": "AminoFile",
+      "foreignKey": "fileId",
+      "primaryKey": "id"
+    }
+  },
   "acls": [],
   "methods": {}
 }
