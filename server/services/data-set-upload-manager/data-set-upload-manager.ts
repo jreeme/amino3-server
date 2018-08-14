@@ -3,6 +3,13 @@ import {IPostal} from 'firmament-yargs';
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 
+interface AminoFile {
+  name: string,
+  path: string,
+  size: number,
+  type: string
+}
+
 @injectable()
 export class DataSetUploadManagerImpl extends BaseServiceImpl {
   constructor(@inject('Logger') private log: Logger,
@@ -22,8 +29,20 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
       topic: 'AddFileUploadEndpoint',
       data: {
         uploadRoute: '/upload-files',
-        cb: (files: any[], cb: (err?: Error) => void) => {
-          cb();
+        cb: (fields: { dataSetId: number }, files: AminoFile[], cb: (err?: Error) => void) => {
+          const aminoFiles: AminoFile[] = files.map((file) => {
+            return {
+              name: file.name,
+              path: file.path,
+              size: file.size,
+              type: file.type
+            }
+          });
+          me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
+            dataSet.files.create(aminoFiles, (err: Error, result: any) => {
+              cb(err);
+            });
+          });
         }
       }
     });

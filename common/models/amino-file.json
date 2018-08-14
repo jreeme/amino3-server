@@ -6,7 +6,19 @@
     "validateUpsert": true
   },
   "properties": {
-    "filePath": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "path": {
+      "type": "string",
+      "required": true
+    },
+    "size": {
+      "type": "number",
+      "required": true
+    },
+    "type": {
       "type": "string",
       "required": true
     }
