@@ -6,7 +6,7 @@ import {Util} from '../../util/util';
 import {Globals} from '../../globals';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as rimraf from 'rimraf';
+//import * as rimraf from 'rimraf';
 import * as async from 'async';
 import * as tmp from 'tmp';
 import * as mkdirp from 'mkdirp';
@@ -26,7 +26,6 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
               @inject('IPostal') private postal: IPostal) {
     super();
-    this.canBeDisabled = false;
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
@@ -69,7 +68,7 @@ export class ServerServicesManagerImpl extends BaseServiceImpl {
         (tmpDir, cb) => {
           ServerServicesManagerImpl.copyServerServiceFilesToTmpDir(req.body.serverServices, tmpDir, tarManifest, cb);
         }
-      ], (err, result) => {
+      ], (/*err, result*/) => {
         res.status(500).send({status: 'OK'});
       });
   }

@@ -25,7 +25,6 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
         cb: (files: any[], cb: (err?: Error) => void) => {
           cb();
         }
-        //cb: me.turnTarFilesIntoServerServices.bind(me)
       }
     });
 

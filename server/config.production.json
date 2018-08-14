@@ -13,7 +13,7 @@
       "RebuildClient",
       "RemoteLogging",
       "StaticService",
-      "_ServerServicesManager",
+      "ServerServicesManager",
       "_WebSocketManager"
     ],
     "loggerCallerFilenamesToIgnore": [
