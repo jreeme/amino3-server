@@ -114,6 +114,7 @@ export class Globals {
   static clientFolder = path.resolve(Globals.projectRootPath, 'client');
   static inversifyConfigFilePath = path.resolve(Globals.serverFolder, 'inversify.config.ts');
   //File uploader, etc.
+  static dataSetFileUploadPath = '/mnt/data';
   /*  static clientDistFolder = path.resolve(Globals.projectRootPath, 'dist/client');
     static uploadedFilesBaseFolder = path.resolve(Globals.serverFolder, 'uploaded-files');
     static fileUploaderPath = path.resolve(Globals.serverFolder, 'util/blueimp-file-upload-expressjs/fileupload');

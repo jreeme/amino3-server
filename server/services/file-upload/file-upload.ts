@@ -25,7 +25,7 @@ export class FileUploadImpl extends BaseServiceImpl {
       callback: (data: AddFileUploadEndpointPostalData) => {
         me.app.post(data.uploadRoute, (req, res) => {
           const form = new formidable.IncomingForm();
-          (<any>form).maxFileSize = 25 * 1024 * 1024;
+          (<any>form).maxFileSize = 300 * 1024 * 1024;
           const files = [];
           const fields = {};
           form.on('field', (field, value) => {

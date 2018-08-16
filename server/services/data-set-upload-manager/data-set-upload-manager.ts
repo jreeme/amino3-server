@@ -2,6 +2,10 @@ import {injectable, inject,} from 'inversify';
 import {IPostal} from 'firmament-yargs';
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
+import {Globals} from '../../globals';
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import * as async from 'async';
 
 interface AminoFile {
   name: string,
@@ -38,15 +42,23 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
               type: file.type
             }
           });
-          me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
-            dataSet.files.create(aminoFiles, (err: Error, result: any) => {
-              cb(err);
+          async.each(aminoFiles, (file, cb) => {
+              const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(file.path));
+              fs.copy(file.path, targetPath, (err) => {
+                file.path = targetPath;
+                cb(err);
+              });
+            },
+            (err) => {
+              me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
+                dataSet.files.create(aminoFiles, (err: Error, result: any) => {
+                  cb(err);
+                });
+              });
             });
-          });
         }
       }
     });
-
     cb(null, {message: 'Initialized DataSetUploadManager'});
   }
 }
