@@ -14,8 +14,8 @@
       "FolderMonitor",
       "_InitializeDatabase",
       "PluginManager",
-      "_RebuildClient",
-      "RemoteLogging",
+      "RebuildClient",
+      "_RemoteLogging",
       "StaticService",
       "ServerServicesManager",
       "_WebSocketManager"

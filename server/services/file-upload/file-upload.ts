@@ -19,34 +19,20 @@ export class FileUploadImpl extends BaseServiceImpl {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
-    me.postal.subscribe({
+/*    me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'AddFileUploadEndpoint',
       callback: (data: AddFileUploadEndpointPostalData) => {
         me.app.post(data.uploadRoute, (req, res) => {
-          const form = new formidable.IncomingForm();
-          (<any>form).maxFileSize = 300 * 1024 * 1024;
-          const files = [];
-          const fields = {};
-          form.on('field', (field, value) => {
-            fields[field] = value;
-          });
-          form.on('file', (field, file) => {
-            files.push(file);
-          });
-          form.on('error', (error) => {
-            return res.status(500).send({status: 'error', error});
-          });
-          form.on('end', () => {
-            data.cb(fields, files, (err: Error) => {
-              if (err) {
-                return res.status(417).send({status: err.message});
-              }
-              res.status(200).send({status: 'OK'});
-            });
-          });
-          form.parse(req);
+          me.handleUploadRequest(data, req, res);
         });
+      }
+    });*/
+    me.postal.subscribe({
+      channel: 'FileUploadManager',
+      topic: 'Upload',
+      callback: (data: { req: any, res: any }) => {
+
       }
     });
     cb(null, {message: 'Initialized FileUpload Subscriptions'});
@@ -54,6 +40,31 @@ export class FileUploadImpl extends BaseServiceImpl {
 
   init(cb: (err: Error, result: any) => void) {
     cb(null, {message: 'Initialized FileUpload'});
+  }
+
+  private handleUploadRequest(data: AddFileUploadEndpointPostalData, req, res) {
+    const form = new formidable.IncomingForm();
+    (<any>form).maxFileSize = 300 * 1024 * 1024;
+    const files = [];
+    const fields = {};
+    form.on('field', (field, value) => {
+      fields[field] = value;
+    });
+    form.on('file', (field, file) => {
+      files.push(file);
+    });
+    form.on('error', (error) => {
+      return res.status(500).send({status: 'error', error});
+    });
+    form.on('end', () => {
+      data.cb(fields, files, (err: Error) => {
+        if (err) {
+          return res.status(417).send({status: err.message});
+        }
+        res.status(200).send({status: 'OK'});
+      });
+    });
+    form.parse(req);
   }
 }
 

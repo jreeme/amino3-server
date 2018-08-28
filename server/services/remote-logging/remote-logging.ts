@@ -13,15 +13,19 @@ export class RemoteLoggingImpl extends BaseServiceImpl {
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
+    const me = this;
+    me.postal
+      .subscribe({
+        channel: 'RemoteLogging',
+        topic: 'IncomingMessage',
+        callback: (data) => {
+          me.log.logFromRemoteClient(data);
+        }
+      });
     cb(null, {message: 'Initialized RemoteLogging Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
-    const me = this;
-    me.app.post(Globals.remoteLoggingUrl, (req, res) => {
-      me.log.logFromRemoteClient(req.body);
-      res.status(200).json({status: 'OK'});
-    });
     cb(null, {message: 'Initialized RemoteLogging'});
   }
 }

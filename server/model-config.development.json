@@ -38,6 +38,10 @@
     "dataSource": "amino_admin_pg",
     "public": true
   },
+  "RemoteLog": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
   "WebSocket": {
     "dataSource": "amino_admin_pg",
     "public": true
