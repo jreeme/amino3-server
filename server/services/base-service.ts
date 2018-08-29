@@ -24,7 +24,7 @@ export abstract class BaseServiceImpl implements BaseService {
     this._enabled = false;
     this._canBeDisabled = true;
     this._serviceName = this.constructor.name.replace('Impl', '');
-    this._servicePostalChannel = `PostalChannel-${this.constructor.name}`;
+    this._servicePostalChannel = `PostalChannel-${this._serviceName}`;
   }
 
   set canBeDisabled(newValue: boolean) {

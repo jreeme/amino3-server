@@ -4,11 +4,6 @@ import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 import * as formidable from 'formidable';
 
-interface AddFileUploadEndpointPostalData {
-  uploadRoute: string,
-  cb: any
-}
-
 @injectable()
 export class FileUploadImpl extends BaseServiceImpl {
   constructor(@inject('Logger') private log: Logger,
@@ -17,23 +12,12 @@ export class FileUploadImpl extends BaseServiceImpl {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
-    super.initSubscriptions();
     const me = this;
-/*    me.postal.subscribe({
-      channel: me.servicePostalChannel,
-      topic: 'AddFileUploadEndpoint',
-      callback: (data: AddFileUploadEndpointPostalData) => {
-        me.app.post(data.uploadRoute, (req, res) => {
-          me.handleUploadRequest(data, req, res);
-        });
-      }
-    });*/
+    super.initSubscriptions();
     me.postal.subscribe({
-      channel: 'FileUploadManager',
+      channel: me.servicePostalChannel,
       topic: 'Upload',
-      callback: (data: { req: any, res: any }) => {
-
-      }
+      callback: me.handleUploadRequest.bind(me)
     });
     cb(null, {message: 'Initialized FileUpload Subscriptions'});
   }
@@ -42,9 +26,12 @@ export class FileUploadImpl extends BaseServiceImpl {
     cb(null, {message: 'Initialized FileUpload'});
   }
 
-  private handleUploadRequest(data: AddFileUploadEndpointPostalData, req, res) {
+  // noinspection JSUnusedLocalSymbols
+  private handleUploadRequest(data, env) {
+    const {req, res, cb} = data;
     const form = new formidable.IncomingForm();
-    (<any>form).maxFileSize = 300 * 1024 * 1024;
+
+    (<any>form).maxFileSize = parseInt(req.query.maxSingleFileUploadSizeBytes || 16 * 1024 * 1024);
     const files = [];
     const fields = {};
     form.on('field', (field, value) => {
@@ -54,15 +41,20 @@ export class FileUploadImpl extends BaseServiceImpl {
       files.push(file);
     });
     form.on('error', (error) => {
-      return res.status(500).send({status: 'error', error});
+      return res.status(417).send({status: 'error', error});
     });
     form.on('end', () => {
-      data.cb(fields, files, (err: Error) => {
-        if (err) {
-          return res.status(417).send({status: err.message});
-        }
-        res.status(200).send({status: 'OK'});
-      });
+      try {
+        cb(fields, files, (err: Error) => {
+          if (err) {
+            return res.status(417).send({status: err.message});
+          }
+          res.status(200).send({status: 'OK'});
+        });
+      }
+      catch (err) {
+        return res.status(500).send({status: 'Unknown Server Error'});
+      }
     });
     form.parse(req);
   }

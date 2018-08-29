@@ -94,6 +94,18 @@
       "required": false,
       "description": "Array of the received file names (paths)"
     },
+    "maxSingleFileUploadSizeBytes": {
+      "type": "number",
+      "default": "67108864",
+      "required": false,
+      "description": "Max size of each uploaded file in bytes (default: 67108864)"
+    },
+    "uploadUrl": {
+      "type": "string",
+      "default": "/amino-api/DataSets/upload?maxSingleFileUploadSizeBytes=67108864",
+      "required": false,
+      "description": "Server URL to use to upload files to this dataset"
+    },
     "datasetName": {
       "type": "string",
       "required": false,

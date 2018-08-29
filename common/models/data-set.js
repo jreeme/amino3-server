@@ -1,6 +1,50 @@
 'use strict';
 
 module.exports = function (DataSet) {
+  {
+    //>>>upload
+    DataSet.upload = function (req, res) {
+      global.postal.publish({
+        channel: 'PostalChannel-DataSetUploadManager',
+        topic: 'Upload',
+        data: {req, res}
+      });
+    };
+
+    const accepts = [
+      {
+        arg: 'req',
+        type: 'object',
+        http: {source: 'req'}
+      },
+      {
+        arg: 'res',
+        type: 'object',
+        http: {source: 'res'}
+      }
+    ];
+
+    const returns = [
+      {
+        arg: 'result',
+        type: 'object',
+        root: true,
+        description: 'Result of file upload'
+      }
+    ];
+
+    const http = {
+      path: '/upload',
+      verb: 'post'
+    };
+
+    DataSet.remoteMethod('upload', {
+      accepts,
+      returns,
+      http
+    });
+    //<<<upload
+  }
   //destroyAll
   DataSet.aminoDestroyAll = function (cb) {
     DataSet.destroyAll((err, info) => {

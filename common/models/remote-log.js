@@ -43,48 +43,4 @@ module.exports = function (RemoteLog) {
     });
     //<<<log
   }
-  {
-    //>>>upload
-    RemoteLog.upload = function (req, res) {
-      global.postal.publish({
-        channel: 'FileUploadManager',
-        topic: 'Upload',
-        data: {req, res}
-      });
-    };
-
-    const accepts = [
-      {
-        arg: 'req',
-        type: 'object',
-        http: {source: 'req'}
-      },
-      {
-        arg: 'res',
-        type: 'object',
-        http: {source: 'res'}
-      }
-    ];
-
-    const returns = [
-      {
-        arg: 'result',
-        type: 'object',
-        root: true,
-        description: 'Result file upload'
-      }
-    ];
-
-    const http = {
-      path: '/test-upload',
-      verb: 'post'
-    };
-
-    RemoteLog.remoteMethod('getRemoteLogInfo', {
-      accepts,
-      returns,
-      http
-    });
-    //<<<upload
-  }
 };

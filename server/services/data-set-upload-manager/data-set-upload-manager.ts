@@ -22,44 +22,55 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
   }
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
+    const me = this;
     super.initSubscriptions();
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'Upload',
+      callback: me.handleUploadRequest.bind(me)
+    });
     cb(null, {message: 'Initialized DataSetUploadManager Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
-    const me = this;
-    me.postal.publish({
-      channel: 'PostalChannel-FileUploadImpl',
-      topic: 'AddFileUploadEndpoint',
-      data: {
-        uploadRoute: '/upload-files',
-        cb: (fields: { dataSetId: number }, files: AminoFile[], cb: (err?: Error) => void) => {
-          const aminoFiles: AminoFile[] = files.map((file) => {
-            return {
-              name: file.name,
-              path: file.path,
-              size: file.size,
-              type: file.type
-            }
-          });
-          async.each(aminoFiles, (file, cb) => {
-              const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(file.path));
-              fs.copy(file.path, targetPath, (err) => {
-                file.path = targetPath;
-                cb(err);
-              });
-            },
-            (err) => {
-              me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
-                dataSet.files.create(aminoFiles, (err: Error, result: any) => {
-                  cb(err);
-                });
-              });
-            });
-        }
-      }
-    });
     cb(null, {message: 'Initialized DataSetUploadManager'});
+  }
+
+  // noinspection JSUnusedLocalSymbols
+  private handleUploadRequest(data, env) {
+    const me = this;
+    data.cb = (fields: { dataSetId: number }, files: AminoFile[], cb: (err?: Error) => void) => {
+      const aminoFiles: AminoFile[] = files.map((file) => {
+        return {
+          name: file.name,
+          path: file.path,
+          size: file.size,
+          type: file.type
+        }
+      });
+      async.each(aminoFiles, (file, cb) => {
+          const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(file.path));
+          fs.copy(file.path, targetPath, (err) => {
+            file.path = targetPath;
+            cb(err);
+          });
+        },
+        (err: Error) => {
+          if (err) {
+            return cb(err);
+          }
+          me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
+            dataSet.files.create(aminoFiles, (err: Error, result: any) => {
+              cb(err);
+            });
+          });
+        });
+    };
+    me.postal.publish({
+      channel: 'PostalChannel-FileUpload',
+      topic: 'Upload',
+      data
+    });
   }
 }
 
