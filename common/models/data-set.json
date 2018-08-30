@@ -129,6 +129,21 @@
       "description": "ETL Status",
       "default": "submitted"
     },
+    "etlControlButtonIcon": {
+      "type": "string",
+      "required": false,
+      "description": "Icon of 'Process ETL' button on data set"
+    },
+    "etlControlButtonLabel": {
+      "type": "string",
+      "required": false,
+      "description": "Label of 'Process ETL' button on data set"
+    },
+    "etlControlButtonClass": {
+      "type": "string",
+      "required": false,
+      "description": "CSS classes to apply to 'Process ETL' button on data set"
+    },
     "indices": {
       "type": [
         "string"

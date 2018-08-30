@@ -129,6 +129,18 @@ module.exports = function (DataSet) {
 
   DataSet.observe('before save', function initializeDataSetName(ctx, next) {
     ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
+    switch(ctx.instance.status){
+      case('submitted'):
+        ctx.instance.etlControlButtonIcon = 'fa fa-play';
+        ctx.instance.etlControlButtonLabel = 'Process Dataset';
+        ctx.instance.etlControlButtonClass = 'ui-button';
+        break;
+      case('queued'):
+        ctx.instance.etlControlButtonIcon = 'fa fa-stop';
+        ctx.instance.etlControlButtonLabel = 'Stop Processing';
+        ctx.instance.etlControlButtonClass = 'ui-button-danger';
+        break;
+    }
     next();
   });
 };
