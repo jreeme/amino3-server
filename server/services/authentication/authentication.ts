@@ -6,13 +6,40 @@ import {Logger} from '../../util/logging/logger';
 import {Globals} from '../../globals';
 
 @injectable()
-export class AuthenticationImpl extends BaseServiceImpl {
+export class AuthenticationImpl extends BaseServiceImpl{
+  static GlobalAdminUsers = [
+    {
+      user: {
+        username: Globals.adminUserName,
+        firstname: Globals.adminUserName,
+        lastname: Globals.adminUserName,
+        email: Globals.adminUserEmail,
+        password: Globals.adminUserDefaultPassword
+      },
+      primaryRole: {
+        name: Globals.adminRoleName
+      }
+    },
+    {
+      user: {
+        username: Globals.elasticsearchUserName,
+        firstname: Globals.elasticsearchUserName,
+        lastname: Globals.elasticsearchUserName,
+        email: Globals.elasticsearchUserEmail,
+        password: Globals.elasticsearchUserDefaultPassword
+      },
+      primaryRole: {
+        name: Globals.elasticsearchRoleName
+      }
+    }
+  ];
+
   constructor(@inject('Logger') private log: Logger,
-              @inject('IPostal') private postal: IPostal) {
+              @inject('IPostal') private postal: IPostal){
     super();
   }
 
-  initSubscriptions(cb: (err: Error, result?: any) => void) {
+  initSubscriptions(cb: (err: Error, result?: any)=>void){
     super.initSubscriptions();
     const me = this;
     //Required to enable LoopBack authentication
@@ -20,8 +47,8 @@ export class AuthenticationImpl extends BaseServiceImpl {
     me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'CreateRootUserAndAdminRole',
-      callback: (data) => {
-        me.createRootUserAndAdminRole((err) => {
+      callback: (data)=>{
+        me.createRootUserAndAdminRole((err)=>{
           me.log.logIfError(err);
           data.cb(err);
         })
@@ -30,14 +57,14 @@ export class AuthenticationImpl extends BaseServiceImpl {
     cb(null, {message: 'Initialized Authentication Subscriptions'});
   }
 
-  init(cb: (err: Error, result: any) => void) {
+  init(cb: (err: Error, result: any)=>void){
     const me = this;
     //me.dropAllLoopbackSystemTables((err) => {
     me.postal.publish({
       channel: me.servicePostalChannel,
       topic: 'CreateRootUserAndAdminRole',
       data: {
-        cb: (err) => {
+        cb: (err)=>{
           cb(err, {message: 'Initialized Authentication'});
         }
       }
@@ -65,137 +92,116 @@ export class AuthenticationImpl extends BaseServiceImpl {
         cb(err);
       });
     }*/
+  private appendAcls(acls: any[], cb: (err: Error)=>void){
+    const me = this;
+    const ACL = me.app.models.ACL;
+    async.each(acls, ACL.findOrCreate.bind(ACL), cb);
+  }
 
-  private createRootUserAndAdminRole(cb: (err: Error, principal?: any) => void) {
+  private findOrCreateRole(role: {name: string}, cb: (err: Error, role: any, created: boolean)=>void){
     const me = this;
     const R = me.app.models.AminoRole;
-    const RM = me.app.models.AminoRoleMapping;
+    R.findOrCreate({where: {name: role.name}}, <any>role,
+      ((err: Error, role: any, created: boolean)=>{
+        cb(err, role, created);
+      }));
+  }
+
+  private findOrCreateUser(user: {username: string}, cb: (err: Error, user: any, created: boolean)=>void){
+    const me = this;
     const U = me.app.models.AminoUser;
-    const ACL = me.app.models.ACL;
-    //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
-    Object.keys(me.app.models).forEach((key) => {
-      if (me.app.models[key] && me.app.models[key].settings && me.app.models[key].settings.acls) {
-        return me.app.models[key].settings.acls.length = 0;
-      }
+    U.findOrCreate({where: {username: user.username}}, <any>user, (error: Error, user: any, created: boolean)=>{
+      cb(error, user, created);
     });
-    async.parallel([
-      (cb) => {
-        const newRootUser = {
-          username: Globals.adminUserName,
-          firstname: Globals.adminUserName,
-          lastname: Globals.adminUserName,
-          email: Globals.adminUserEmail,
-          password: Globals.adminUserDefaultPassword
-        };
-        const newRootRole = {
-          name: Globals.adminRoleName
-        };
-        async.waterfall([
-          (cb) => {
-            U.findOrCreate({where: {username: newRootUser.username}}, <any>newRootUser, cb);
-          },
-          (user, created, cb) => {
-            R.findOrCreate({where: {name: newRootRole.name}}, <any>newRootRole,
-              <any>((err: Error, role: any/*, created: boolean*/) => {
-                cb(null, user, role);
-              }));
-          },
-          (user, role, cb) => {
-            RM.findOrCreate({
-              principalType: RM.USER,
-              principalId: user.id,
-              roleId: role.id
-            }, cb);
-          },
-          (principal, created, cb) => {
-            const adminAcls = [
-              /*          {
-                          model: 'AminoUser',
-                          accessType: '*',
-                          property: '*',
-                          principalType: 'ROLE',
-                          principalId: '$everyone',
-                          permission: 'DENY'
-                        }
-                        , {
-                          model: 'AminoUser',
-                          accessType: '*',
-                          property: '*',
-                          principalType: 'ROLE',
-                          principalId: 'superuser',
-                          permission: 'ALLOW'
-                        }
-                        ,{
-                          model: 'AminoUser',
-                          accessType: 'EXECUTE',
-                          property: 'createUser',
-                          principalType: 'ROLE',
-                          principalId: 'superuser',
-                          permission: 'ALLOW'
-                        }
-                        , {
-                          model: 'AminoUser',
-                          accessType: 'EXECUTE',
-                          property: 'aminoLogin',
-                          principalType: 'ROLE',
-                          principalId: '$everyone',
-                          permission: 'ALLOW'
-                        }*/
-            ];
-            async.each(adminAcls, ACL.findOrCreate.bind(ACL), cb);
-          }
-        ], cb);
+  }
+
+  private associateUserWithRole(user: any, role: any, cb: (err: Error)=>void){
+    const me = this;
+    const RM = me.app.models.AminoRoleMapping;
+    RM.findOrCreate({
+      principalType: RM.USER,
+      principalId: user.id,
+      roleId: role.id
+    }, cb);
+  }
+
+  private createUserWithRole(user: {username: string}, role: {name: string}, cb: (err: Error)=>void){
+    const me = this;
+    async.waterfall([
+      (cb)=>{
+        me.findOrCreateUser(user, cb);
       },
-      (cb) => {
-        const newElasticsearchUser = {
-          username: Globals.elasticsearchUserName,
-          firstname: Globals.elasticsearchUserName,
-          lastname: Globals.elasticsearchUserName,
-          email: Globals.elasticsearchUserEmail,
-          password: Globals.elasticsearchUserDefaultPassword
-        };
-        const newElasticsearchRole = {
-          name: Globals.elasticsearchRoleName
-        };
-        async.waterfall([
-          (cb) => {
-            U.findOrCreate({where: {username: newElasticsearchUser.username}}, <any>newElasticsearchUser, cb);
-          },
-          (user, created, cb) => {
-            R.findOrCreate({where: {name: newElasticsearchRole.name}}, <any>newElasticsearchRole,
-              <any>((err: Error, role: any/*, created: boolean*/) => {
-                cb(null, user, role);
-              }));
-          },
-          (user, role, cb) => {
-            RM.findOrCreate({
-              principalType: RM.USER,
-              principalId: user.id,
-              roleId: role.id
-            }, cb);
-          },
-          (principal, created, cb) => {
-            const elasticsearchAcls = [
-              {
-                model: 'Elasticsearch',
-                accessType: '*',
-                property: '*',
-                principalType: 'ROLE',
-                principalId: '$everyone',
-                permission: 'DENY'
-              }
-              , {
-                model: 'Elasticsearch',
-                accessType: '*',
-                property: '*',
-                principalType: 'ROLE',
-                principalId: 'elasticsearch',
-                permission: 'ALLOW'
-              }
-            ];
-            async.each(elasticsearchAcls, ACL.findOrCreate.bind(ACL), cb);
+      (user, created, cb)=>{
+        me.findOrCreateRole(role, (err: Error, role: any/*, created: boolean*/)=>{
+          cb(err, user, role);
+        });
+      },
+      (user, role, cb)=>{
+        me.associateUserWithRole(user, role, (err: Error)=>{
+          cb(err);
+        });
+      }
+    ], cb);
+  }
+
+  private createRootUserAndAdminRole(cb: (err: Error, principal?: any)=>void){
+    const me = this;
+    async.series([
+      (cb)=>{
+        //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
+        Object.keys(me.app.models).forEach((key)=>{
+          const model = me.app.models[key];
+          if(model && model.settings && model.settings.acls){
+            return model.settings.acls.length = 0;
           }
-        ], cb);
+        });
+        cb();
+      },
+      (cb)=>{
+        //Add 'permanent' users + primaryRole
+        async.each(AuthenticationImpl.GlobalAdminUsers, (globalAdminUser, cb)=>{
+          me.createUserWithRole(globalAdminUser.user, globalAdminUser.primaryRole, cb);
+        }, cb);
+      },
+      (cb)=>{
+        //Now deny everyone everything
+        const modelsToExclude = ['ACL'];
+        const acls = [];
+        Object.keys(me.app.models).forEach((model)=>{
+          if(modelsToExclude.indexOf(model) === -1){
+            acls.push({
+              model,
+              accessType: '*',
+              property: '*',
+              principalType: 'ROLE',
+              principalId: '$everyone',
+              permission: 'DENY'
+            });
+          }
+        });
+        me.appendAcls(acls, cb);
+      },
+      (cb)=>{
+        //Now open up a few routes, carefully
+        const acls = [
+          {
+            model: 'Elasticsearch',
+            accessType: '*',
+            property: '*',
+            principalType: 'ROLE',
+            principalId: '$everyone',
+            permission: 'DENY'
+          }
+          , {
+            model: 'Elasticsearch',
+            accessType: '*',
+            property: '*',
+            principalType: 'ROLE',
+            principalId: 'elasticsearch',
+            permission: 'ALLOW'
+          }
+        ];
+        me.appendAcls(acls, cb);
       }
     ], cb);
   }

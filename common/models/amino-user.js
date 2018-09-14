@@ -113,29 +113,32 @@ module.exports = function (AminoUser) {
   );
 
   //login
-  AminoUser.aminoLogin = function (loginInfo, cb) {
+  const baseAminoUserLogin = AminoUser.login.bind(AminoUser);
+  AminoUser.login = function (loginInfo, include, cb) {
     loginInfo.ttl = global.accessTokenTimeToLiveSeconds;
-    AminoUser.login(loginInfo, cb);
+    baseAminoUserLogin(loginInfo, include, (err, token) => {
+      cb(err, token);
+    });
   };
 
-  AminoUser.remoteMethod('aminoLogin', {
-      accepts: [
-        {
-          arg: 'loginInfo',
-          type: 'object',
-          required: true,
-          description: 'JSON object containing username & password',
-          http: {source: 'body'}
-        }
-      ],
-      returns: {
-        arg: 'jwt',
-        type: 'string',
-        root: true,
-        description: 'JSON web token'
-      },
-      http: {path: '/login', verb: 'post'}
-    }
-  );
+  /*  AminoUser.remoteMethod('aminoLogin', {
+        accepts: [
+          {
+            arg: 'loginInfo',
+            type: 'object',
+            required: true,
+            description: 'JSON object containing username & password',
+            http: {source: 'body'}
+          }
+        ],
+        returns: {
+          arg: 'jwt',
+          type: 'string',
+          root: true,
+          description: 'JSON web token'
+        },
+        http: {path: '/login', verb: 'post'}
+      }
+    );*/
 };
 
