@@ -165,6 +165,7 @@ export class AuthenticationImpl extends BaseServiceImpl{
       },
       (cb)=>{
         //Now deny everyone everything
+        return cb();
         const modelsToExclude = ['ACL'];
         const acls = [];
         Object.keys(me.app.models).forEach((model)=>{
