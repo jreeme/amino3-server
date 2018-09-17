@@ -121,24 +121,28 @@ module.exports = function (AminoUser) {
     });
   };
 
-  /*  AminoUser.remoteMethod('aminoLogin', {
-        accepts: [
-          {
-            arg: 'loginInfo',
-            type: 'object',
-            required: true,
-            description: 'JSON object containing username & password',
-            http: {source: 'body'}
-          }
-        ],
-        returns: {
-          arg: 'jwt',
-          type: 'string',
-          root: true,
-          description: 'JSON web token'
-        },
-        http: {path: '/login', verb: 'post'}
-      }
-    );*/
+  AminoUser.aminoLogin = function (loginInfo, cb) {
+    AminoUser.login(loginInfo, cb);
+  };
+
+  AminoUser.remoteMethod('aminoLogin', {
+      accepts: [
+        {
+          arg: 'loginInfo',
+          type: 'object',
+          required: true,
+          description: 'JSON object containing username & password',
+          http: {source: 'body'}
+        }
+      ],
+      returns: {
+        arg: 'jwt',
+        type: 'string',
+        root: true,
+        description: 'JSON web token'
+      },
+      http: {path: '/login', verb: 'post'}
+    }
+  );
 };
 
