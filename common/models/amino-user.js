@@ -141,7 +141,7 @@ module.exports = function (AminoUser) {
         root: true,
         description: 'JSON web token'
       },
-      http: {path: '/login', verb: 'post'}
+      http: {path: '/aminoLogin', verb: 'post'}
     }
   );
 };
