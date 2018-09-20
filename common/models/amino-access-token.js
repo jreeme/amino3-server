@@ -12,6 +12,7 @@ module.exports = function (AminoAccessToken) {
       aminoUser = aminoUser.toObject();
       delete aminoUser.password;
       // noinspection JSUnresolvedVariable
+      aminoUser.random = Math.random();
       const webToken = createToken(aminoUser, global.accessTokenTimeToLiveSeconds);
       // noinspection JSUnresolvedFunction
       aminoUser.accessTokenMD5 = (new MD5()).update(webToken).digest('hex').substring(6, 14);
