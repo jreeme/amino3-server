@@ -20,5 +20,8 @@
     "handleErrors": false
   },
   "legacyExplorer": false,
-  "amino3Config": {}
+  "amino3Config": {
+    "_publishedAminoPort": 3000,
+    "_proxyToAminoUrl": "192.168.104.106:3000"
+  }
 }

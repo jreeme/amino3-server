@@ -6,29 +6,29 @@ import {Logger} from './util/logging/logger';
 process.env.LB_LAZYCONNECT_DATASOURCES = '1';
 
 export class Globals {
-  static init(app: LoopBackApplication2) {
+  static init(app:LoopBackApplication2) {
     const log = (<Logger>(<any>global).logger);
     log.info(`Initializing Globals static class`);
     const amino3Config = app.get('amino3Config');
     //Override Global properties with loopback config values
-    const sourceOfGlobalValueMessage: string[] = [];
-    Object.keys(Globals).forEach((key) => {
-      if (typeof Globals[key] === 'function') {
+    const sourceOfGlobalValueMessage:string[] = [];
+    Object.keys(Globals).forEach((key)=>{
+      if(typeof Globals[key] === 'function') {
         return;
       }
       const envVarName = `AMINO3_${_.toUpper(_.snakeCase(key))}`;
-      let value: any = Globals[key];
+      let value:any = Globals[key];
       let valueSource = '[class: Globals]';
-      if (amino3Config[key] !== undefined) {
+      if(amino3Config[key] !== undefined) {
         value = amino3Config[key];
         valueSource = '[amino3Config]';
       }
-      if (process.env[envVarName] !== undefined) {
+      if(process.env[envVarName] !== undefined) {
         value = process.env[envVarName];
         valueSource = `[env]:${envVarName}`;
       }
 
-      switch (typeof Globals[key]) {
+      switch(typeof Globals[key]) {
         case('boolean'):
           //boolifyString also handles non-string values correctly enough
           Globals[key] = boolifyString(value);
@@ -50,37 +50,39 @@ export class Globals {
     //Order of class init makes this HACK necessary
     log.setCallerFilenamesToIgnore(Globals.loggerCallerFilenamesToIgnore);
     //Now that log callers are set let's log the Global's sources
-    sourceOfGlobalValueMessage.forEach((message) => {
+    sourceOfGlobalValueMessage.forEach((message)=>{
       log.debug(message);
     });
   }
   static jwtSecret = 'irJ8EZnmUtliF9dFjL5g';
-  static suppressServerHeartbeat: boolean = false;
-  static suppressedServices: string[] = [];
-  static loggerCallerFilenamesToIgnore: string[] = [];
-  static postalPublishToClientTopicSuppressList: string[] = [];
+  static suppressServerHeartbeat:boolean = false;
+  static suppressedServices:string[] = [];
+  static loggerCallerFilenamesToIgnore:string[] = [];
+  static postalPublishToClientTopicSuppressList:string[] = [];
 
   static node_env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-  static logToFile: boolean = true;
-  static logFileFolder: string = '/tmp';
+  static logToFile:boolean = true;
+  static logFileFolder:string = '/tmp';
   //***--> Notice LogLevel Comment
   //I like to start the logLevel at 'debug' to get all the startup log messages before the loopback-boot
   //sequence gets the logLevel from configs (either from the database or loopback config files)
   private static _logLevel = 'debug';// debug, info, notice, warning, error, critical, alert, emergency
 
   // noinspection JSUnusedGlobalSymbols
-  static set logLevel(newLogLevel: string) {
+  static set logLevel(newLogLevel:string) {
     Globals._logLevel = newLogLevel;
     const log = (<Logger>(<any>global).logger);
     log.critical(`******************************** LogLevel changed to ${Globals.logLevel} ********************************`);
   }
 
-  static get logLevel(): string {
+  static get logLevel():string {
     return Globals._logLevel;
   }
 
   //***-->
+  static publishedAminoPort = undefined;
+  static proxyToAminoUrl = undefined;
 
   static noListen = false;
   static noServices = false;
