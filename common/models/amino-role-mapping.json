@@ -1,4 +1,11 @@
 {
   "name": "AminoRoleMapping",
-  "base": "RoleMapping"
+  "base": "RoleMapping",
+  "relations": {
+    "role": {
+      "type": "belongsTo",
+      "model": "AminoRole",
+      "foreignKey": "roleId"
+    }
+  }
 }
