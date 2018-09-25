@@ -6,7 +6,7 @@ import {Logger} from '../../util/logging/logger';
 import {Globals} from '../../globals';
 
 @injectable()
-export class AuthenticationImpl extends BaseServiceImpl{
+export class AuthenticationImpl extends BaseServiceImpl {
   static GlobalAdminUsers = [
     {
       user: {
@@ -34,16 +34,57 @@ export class AuthenticationImpl extends BaseServiceImpl{
     }
   ];
 
-  constructor(@inject('Logger') private log: Logger,
-              @inject('IPostal') private postal: IPostal){
+  constructor(@inject('Logger') private log:Logger,
+              @inject('IPostal') private postal:IPostal) {
     super();
   }
 
-  initSubscriptions(cb: (err: Error, result?: any)=>void){
+  initSubscriptions(cb:(err:Error, result?:any)=>void) {
     super.initSubscriptions();
     const me = this;
     //Required to enable LoopBack authentication
     me.app.enableAuth();
+
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'SyncRolesAndPotentialRoles',
+      callback: (data)=>{
+        const {ctx, next} = data;
+        const ctxRoleMapping:{principalId:string} = ctx.instance.toObject();
+        const R = me.app.models.AminoRole;
+        const RM = me.app.models.AminoRoleMapping;
+        async.waterfall([
+          (cb)=>{
+            R.find((err, roles)=>{
+              cb(err, roles.map((role)=>role.toObject()));
+            });
+          },
+          (roles, cb)=>{
+            RM.find({where: {principalId: ctxRoleMapping.principalId}}, (err, roleMappings)=>{
+              cb(err, roles, roleMappings.map((roleMapping)=>roleMapping.toObject()));
+            });
+          },
+          (roles:any[], roleMappings:any[], cb)=>{
+            roles.forEach((role)=>{
+              const real = roleMappings.filter((roleMapping)=>{
+                return role.id === roleMapping.roleId;
+              });
+              const potential = roleMappings.filter((roleMapping)=>{
+                return role.id === roleMapping.potentialRoleId;
+              });
+              const ll = potential;
+            });
+            cb();
+          }
+
+          /*          ,(user, role, cb)=>{
+                      me.associateUserWithRole(user, role, (err:Error)=>{
+                        cb(err);
+                      });
+                    }*/
+        ], next);
+      }
+    });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'CreateRootUserAndAdminRole',
@@ -57,7 +98,7 @@ export class AuthenticationImpl extends BaseServiceImpl{
     cb(null, {message: 'Initialized Authentication Subscriptions'});
   }
 
-  init(cb: (err: Error, result: any)=>void){
+  init(cb:(err:Error, result:any)=>void) {
     const me = this;
     //me.dropAllLoopbackSystemTables((err) => {
     me.postal.publish({
@@ -92,30 +133,31 @@ export class AuthenticationImpl extends BaseServiceImpl{
         cb(err);
       });
     }*/
-  private appendAcls(acls: any[], cb: (err: Error)=>void){
+
+  private appendAcls(acls:any[], cb:(err:Error)=>void) {
     const me = this;
     const ACL = me.app.models.ACL;
     async.each(acls, ACL.findOrCreate.bind(ACL), cb);
   }
 
-  private findOrCreateRole(role: {name: string}, cb: (err: Error, role: any, created: boolean)=>void){
+  private findOrCreateRole(role:{name:string}, cb:(err:Error, role:any, created:boolean)=>void) {
     const me = this;
     const R = me.app.models.AminoRole;
     R.findOrCreate({where: {name: role.name}}, <any>role,
-      ((err: Error, role: any, created: boolean)=>{
+      ((err:Error, role:any, created:boolean)=>{
         cb(err, role, created);
       }));
   }
 
-  private findOrCreateUser(user: {username: string}, cb: (err: Error, user: any, created: boolean)=>void){
+  private findOrCreateUser(user:{username:string}, cb:(err:Error, user:any, created:boolean)=>void) {
     const me = this;
     const U = me.app.models.AminoUser;
-    U.findOrCreate({where: {username: user.username}}, <any>user, (error: Error, user: any, created: boolean)=>{
+    U.findOrCreate({where: {username: user.username}}, <any>user, (error:Error, user:any, created:boolean)=>{
       cb(error, user, created);
     });
   }
 
-  private associateUserWithRole(user: any, role: any, cb: (err: Error)=>void){
+  private associateUserWithRole(user:{id:any}, role:{id:any}, cb:(err:Error)=>void) {
     const me = this;
     const RM = me.app.models.AminoRoleMapping;
     RM.findOrCreate({
@@ -125,33 +167,54 @@ export class AuthenticationImpl extends BaseServiceImpl{
     }, cb);
   }
 
-  private createUserWithRole(user: {username: string}, role: {name: string}, cb: (err: Error)=>void){
+  private associateUserWithPotentialRole(user:{id:any}, potentialRole:{id:any}, cb:(err:Error)=>void) {
+    const me = this;
+    const RM = me.app.models.AminoRoleMapping;
+    RM.findOrCreate({
+      principalType: RM.USER,
+      principalId: user.id,
+      potentialRoleId: potentialRole.id
+    }, cb);
+  }
+
+  private createUserWithRole(user:{username:string}, role:{name:string}, cb:(err:Error)=>void) {
     const me = this;
     async.waterfall([
       (cb)=>{
         me.findOrCreateUser(user, cb);
       },
       (user, created, cb)=>{
-        me.findOrCreateRole(role, (err: Error, role: any/*, created: boolean*/)=>{
+        me.findOrCreateRole(role, (err:Error, role:any/*, created: boolean*/)=>{
           cb(err, user, role);
         });
       },
       (user, role, cb)=>{
-        me.associateUserWithRole(user, role, (err: Error)=>{
+        me.associateUserWithRole(user, role, (err:Error)=>{
           cb(err);
         });
       }
     ], cb);
   }
 
-  private createRootUserAndAdminRole(cb: (err: Error, principal?: any)=>void){
+  private createRootUserAndAdminRole(cb:(err:Error, principal?:any)=>void) {
     const me = this;
     async.series([
+      (cb)=>{
+        async.each(['boneHeads', 'niceGuys', 'wimps', 'gradStudents'], (name, cb)=>{
+          me.findOrCreateRole({name}, (err:Error, role:any/*, created: boolean*/)=>{
+            cb();
+          });
+        }, (err:Error)=>{
+          me.associateUserWithPotentialRole({id: 2}, {id: 4}, (err:Error)=>{
+            cb(err);
+          });
+        });
+      },
       (cb)=>{
         //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
         Object.keys(me.app.models).forEach((key)=>{
           const model = me.app.models[key];
-          if(model && model.settings && model.settings.acls){
+          if(model && model.settings && model.settings.acls) {
             return model.settings.acls.length = 0;
           }
         });
@@ -169,7 +232,7 @@ export class AuthenticationImpl extends BaseServiceImpl{
         const modelsToExclude = ['ACL'];
         const acls = [];
         Object.keys(me.app.models).forEach((model)=>{
-          if(modelsToExclude.indexOf(model) === -1){
+          if(modelsToExclude.indexOf(model) === -1) {
             acls.push({
               model,
               accessType: '*',

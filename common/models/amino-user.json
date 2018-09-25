@@ -36,6 +36,13 @@
         "disableInclude": true
       }
     },
+    "potentialRoles": {
+      "type": "hasMany",
+      "model": "AminoRole",
+      "foreignKey": "principalId",
+      "keyThrough": "potentialRoleId",
+      "through": "AminoRoleMapping"
+    },
     "roles": {
       "type": "hasMany",
       "model": "AminoRole",

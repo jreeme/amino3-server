@@ -1,11 +1,22 @@
 {
   "name": "AminoRoleMapping",
   "base": "RoleMapping",
+  "properties": {
+    "ignoreDbTriggers": {
+      "type": "boolean",
+      "default": false
+    }
+  },
   "relations": {
     "role": {
       "type": "belongsTo",
       "model": "AminoRole",
       "foreignKey": "roleId"
+    },
+    "potentialRole": {
+      "type": "belongsTo",
+      "model": "AminoRole",
+      "foreignKey": "potentialRoleId"
     }
   }
 }

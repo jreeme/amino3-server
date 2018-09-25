@@ -13,6 +13,11 @@
       "type": "hasMany",
       "model": "AminoRoleMapping",
       "foreignKey": "roleId"
+    },
+    "potentialPrincipals": {
+      "type": "hasMany",
+      "model": "AminoRoleMapping",
+      "foreignKey": "potentialRoleId"
     }
   }
 }

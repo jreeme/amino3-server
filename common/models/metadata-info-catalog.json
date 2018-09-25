@@ -83,25 +83,25 @@
       "type": "boolean",
       "required": false,
       "description": "boolean indicating whether the file is encrypted",
-      "default": "false"
+      "default": false
     },
     "quarantined": {
       "type": "boolean",
       "required": false,
       "description": "boolean indicating whether the file is quarantined (containing malware, virus, ...)",
-      "default": "false"
+      "default": false
     },
     "isContainer": {
       "type": "boolean",
       "required": false,
       "description": "boolean indicating whether the file is a container (zip, pst, mbox, eml)",
-      "default": "false"
+      "default": false
     },
     "isAttachment": {
       "type": "boolean",
       "required": false,
       "description": "boolean indicating whether the file is an email attachment",
-      "default": "false"
+      "default": false
     },
     "jobDefinition": {
       "type": [
