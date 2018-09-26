@@ -1,18 +1,25 @@
 'use strict';
 
-module.exports = function (AminoRoleMapping) {
-  AminoRoleMapping.observe('after save', function initializeDataSetName(ctx, next) {
-    if(ctx.instance.ignoreDbTriggers){
-      return next();
+function afterRoleMappingAddRemoveToDatabase(ctx, next, ignoreDbTriggers) {
+  if (ignoreDbTriggers) {
+    return next();
+  }
+  global.postal.publish({
+    channel: 'PostalChannel-Authentication',
+    topic: 'AfterRoleMappingAddRemoveToDatabase',
+    data: {
+      ctx,
+      next
     }
-    global.postal.publish({
-      channel: 'PostalChannel-Authentication',
-      topic: 'SyncRolesAndPotentialRoles',
-      data: {
-        ctx,
-        next
-      }
-    });
   });
+}
 
+module.exports = function (AminoRoleMapping) {
+  AminoRoleMapping.observe('after save', (ctx, next) => {
+    afterRoleMappingAddRemoveToDatabase(ctx, next, ctx.instance.ignoreDbTriggers);
+  });
+  AminoRoleMapping.observe('after delete', (ctx, next) => {
+    next();
+    //afterRoleMappingAddRemoveToDatabase(ctx, next);
+  });
 };

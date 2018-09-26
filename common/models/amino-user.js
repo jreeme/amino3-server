@@ -1,4 +1,37 @@
 module.exports = function (AminoUser) {
+  //updateUser
+  AminoUser.updateUser = function (updatedUserInfo, cb) {
+    global.postal.publish({
+      channel: 'PostalChannel-Authentication',
+      topic: 'UpdateAminoUser',
+      data: {
+        updatedUserInfo,
+        cb
+      }
+    });
+  };
+
+  AminoUser.remoteMethod('updateUser', {
+      accepts: [
+        {
+          arg: 'updatedUserInfo',
+          type: 'object',
+          required: true,
+          description: 'JSON object containing updated user info',
+          http: {source: 'body'}
+        }
+      ],
+      returns: [
+        {
+          arg: 'updatedUserInfo',
+          type: 'AminoUser',
+          root: true,
+          description: 'Updated Amino user info'
+        }
+      ],
+      http: {path: '/update-user', verb: 'post'}
+    }
+  );
   //destroyAll
   AminoUser.aminoDestroyAll = function (cb) {
     AminoUser.destroyAll((err, info) => {
