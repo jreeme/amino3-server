@@ -5,6 +5,24 @@ import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 import {Globals} from '../../globals';
 
+interface AminoRole {
+  id?:any,
+  name?:string,
+  datasets?:string[]
+}
+
+interface AminoUser {
+  id?:any,
+  username?:string,
+  password?:string,
+  email?:string,
+  firstname?:string,
+  lastname?:string,
+  phone?:string,
+  roles?:AminoRole[],
+  potentialRoles?:AminoRole[]
+}
+
 @injectable()
 export class AuthenticationImpl extends BaseServiceImpl {
   static GlobalAdminUsers = [
@@ -42,6 +60,8 @@ export class AuthenticationImpl extends BaseServiceImpl {
   initSubscriptions(cb:(err:Error, result?:any) => void) {
     super.initSubscriptions();
     const me = this;
+    const U = me.app.models.AminoUser;
+    const RM = me.app.models.AminoRoleMapping;
 
     //Required to enable LoopBack authentication
     me.app.enableAuth();
@@ -49,8 +69,22 @@ export class AuthenticationImpl extends BaseServiceImpl {
     me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'UpdateAminoUser',
-      callback: (data:{cb:(err:Error, results:any) => void}) => {
-        data.cb(null, null);
+      callback: (data:{updatedUserInfo:AminoUser, cb:(err:Error, user:AminoUser) => void}) => {
+        const {updatedUserInfo, cb} = data;
+        U.findById(updatedUserInfo.id,{include:'roles'},(err,user)=>{
+          const e = err;
+        });
+/*        async.each(updatedUserInfo.roles, (role, cb) => {
+          RM.destroyById(role.id, cb);
+        }, (err) => {
+          RM.findOrCreate({
+            principalType: RM.USER,
+            principalId: updatedUserInfo.id,
+            roleId: updatedUserInfo.roles[0].id
+          }, (err, newUser) => {
+            cb(err, newUser);
+          });
+        });*/
       }
     });
     me.postal.subscribe({
@@ -61,19 +95,13 @@ export class AuthenticationImpl extends BaseServiceImpl {
     me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'CreateRootUserAndAdminRole',
-      callback: (data) => {
-        me.createRootUserAndAdminRole((err) => {
-          me.log.logIfError(err);
-          data.cb(err);
-        })
-      }
+      callback: me.createRootUserAndAdminRole.bind(me)
     });
     cb(null, {message: 'Initialized Authentication Subscriptions'});
   }
 
   init(cb:(err:Error, result:any) => void) {
     const me = this;
-    //me.dropAllLoopbackSystemTables((err) => {
     me.postal.publish({
       channel: me.servicePostalChannel,
       topic: 'CreateRootUserAndAdminRole',
@@ -83,30 +111,85 @@ export class AuthenticationImpl extends BaseServiceImpl {
         }
       }
     });
-    //});
   }
 
-  /*  private dropAllLoopbackSystemTables(cb: (err, result?) => void) {
-      const me = this;
-      const loopbackSystemTables = [
-        'ACL',
-        'AminoAccessToken',
-        'AminoUser',
-        'AminoRole',
-        'AminoRoleMapping',
-        'DataSet'
-      ];
-      async.each(loopbackSystemTables, (loopbackSystemTable, cb) => {
-        const model = me.server.models[loopbackSystemTable];
-        model.settings.acls = [];
-        model.destroyAll((err, results) => {
-          cb(err);
+  private createRootUserAndAdminRole(data:{cb:() => void}) {
+    const me = this;
+    const {cb} = data;
+    async.series([
+      (cb) => {
+        //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
+        Object.keys(me.app.models).forEach((key) => {
+          const model = me.app.models[key];
+          if(model && model.settings && model.settings.acls) {
+            return model.settings.acls.length = 0;
+          }
         });
-      }, (err) => {
-        cb(err);
-      });
-    }*/
-  private afterRoleMappingAddRemoveToDatabase(data:any) {
+        cb();
+      },
+      (cb) => {
+        async.each(['boneHeads', 'niceGuys', 'wimps', 'gradStudents'], (name, cb) => {
+          me.findOrCreateRole({name}, cb);
+        }, cb);
+      },
+      (cb) => {
+        //Add 'permanent' users + primaryRole
+        async.each(AuthenticationImpl.GlobalAdminUsers, (globalAdminUser, cb) => {
+          me.createUserWithRole(globalAdminUser.user, globalAdminUser.primaryRole, cb);
+        }, cb);
+      },
+      (cb) => {
+        me.associateUserWithPotentialRole({id: 2}, {id: 4}, false, (err:Error) => {
+          me.associateUserWithRole({id: 2}, {id: 2}, false, (err:Error) => {
+            cb(err);
+          });
+        });
+      },
+      (cb) => {
+        //Now deny everyone everything
+        return cb();
+        const modelsToExclude = ['ACL'];
+        const acls = [];
+        Object.keys(me.app.models).forEach((model) => {
+          if(modelsToExclude.indexOf(model) === -1) {
+            acls.push({
+              model,
+              accessType: '*',
+              property: '*',
+              principalType: 'ROLE',
+              principalId: '$everyone',
+              permission: 'DENY'
+            });
+          }
+        });
+        me.appendAcls(acls, cb);
+      },
+      (cb) => {
+        //Now open up a few routes, carefully
+        const acls = [
+          {
+            model: 'Elasticsearch',
+            accessType: '*',
+            property: '*',
+            principalType: 'ROLE',
+            principalId: '$everyone',
+            permission: 'DENY'
+          }
+          , {
+            model: 'Elasticsearch',
+            accessType: '*',
+            property: '*',
+            principalType: 'ROLE',
+            principalId: 'elasticsearch',
+            permission: 'ALLOW'
+          }
+        ];
+        me.appendAcls(acls, cb);
+      }
+    ], cb);
+  }
+
+  private afterRoleMappingAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
     const me = this;
     const {ctx, next} = data;
     const ctxRoleMapping:{principalId:string} = ctx.instance.toObject();
@@ -132,6 +215,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
             //Blast all potentialRoles for this user
             RM.destroyAll({where: {principalId: ctxRoleMapping.principalId}}, cb);
           }, (cb) => {
+            return cb();
             async.each(potentialRoles, (potentialRole, cb) => {
               RM.findOrCreate({
                 principalType: RM.USER,
@@ -206,83 +290,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
         me.associateUserWithRole(user, role, false, (err:Error) => {
           cb(err);
         });
-      }
-    ], cb);
-  }
-
-  private createRootUserAndAdminRole(cb:(err:Error, principal?:any) => void) {
-    const me = this;
-    async.series([
-      (cb) => {
-        //Blast default user acls, they're too restrictive for our needs. We'll add some better ones below
-        Object.keys(me.app.models).forEach((key) => {
-          const model = me.app.models[key];
-          if(model && model.settings && model.settings.acls) {
-            return model.settings.acls.length = 0;
-          }
-        });
-        cb();
-      },
-      (cb) => {
-        async.each(['boneHeads', 'niceGuys', 'wimps', 'gradStudents'], (name, cb) => {
-          me.findOrCreateRole({name}, (err:Error, role:any/*, created: boolean*/) => {
-            cb();
-          });
-        }, cb);
-      },
-      (cb) => {
-        //Add 'permanent' users + primaryRole
-        async.each(AuthenticationImpl.GlobalAdminUsers, (globalAdminUser, cb) => {
-          me.createUserWithRole(globalAdminUser.user, globalAdminUser.primaryRole, cb);
-        }, cb);
-      },
-      (cb) => {
-        me.associateUserWithPotentialRole({id: 2}, {id: 4}, false, (err:Error) => {
-          me.associateUserWithRole({id: 2}, {id: 2}, false, (err:Error) => {
-            cb(err);
-          });
-        });
-      },
-      (cb) => {
-        //Now deny everyone everything
-        return cb();
-        const modelsToExclude = ['ACL'];
-        const acls = [];
-        Object.keys(me.app.models).forEach((model) => {
-          if(modelsToExclude.indexOf(model) === -1) {
-            acls.push({
-              model,
-              accessType: '*',
-              property: '*',
-              principalType: 'ROLE',
-              principalId: '$everyone',
-              permission: 'DENY'
-            });
-          }
-        });
-        me.appendAcls(acls, cb);
-      },
-      (cb) => {
-        //Now open up a few routes, carefully
-        const acls = [
-          {
-            model: 'Elasticsearch',
-            accessType: '*',
-            property: '*',
-            principalType: 'ROLE',
-            principalId: '$everyone',
-            permission: 'DENY'
-          }
-          , {
-            model: 'Elasticsearch',
-            accessType: '*',
-            property: '*',
-            principalType: 'ROLE',
-            principalId: 'elasticsearch',
-            permission: 'ALLOW'
-          }
-        ];
-        me.appendAcls(acls, cb);
       }
     ], cb);
   }
