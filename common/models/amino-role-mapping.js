@@ -1,9 +1,6 @@
 'use strict';
 
-function afterRoleMappingAddRemoveToDatabase(ctx, next, ignoreDbTriggers) {
-  if (ignoreDbTriggers) {
-    return next();
-  }
+function afterRoleMappingAddRemoveToDatabase(ctx, next) {
   global.postal.publish({
     channel: 'PostalChannel-Authentication',
     topic: 'AfterRoleMappingAddRemoveToDatabase',
@@ -15,11 +12,11 @@ function afterRoleMappingAddRemoveToDatabase(ctx, next, ignoreDbTriggers) {
 }
 
 module.exports = function (AminoRoleMapping) {
-  AminoRoleMapping.observe('after save', (ctx, next) => {
-    afterRoleMappingAddRemoveToDatabase(ctx, next, ctx.instance.ignoreDbTriggers);
-  });
-  AminoRoleMapping.observe('after delete', (ctx, next) => {
-    next();
-    //afterRoleMappingAddRemoveToDatabase(ctx, next);
-  });
+  //Observe DB events
+  /*  AminoRoleMapping.observe('after save', (ctx, next) => {
+      afterRoleMappingAddRemoveToDatabase(ctx, next);
+    });
+    AminoRoleMapping.observe('after delete', (ctx, next) => {
+      afterRoleMappingAddRemoveToDatabase(ctx, next);
+    });*/
 };

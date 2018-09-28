@@ -4,6 +4,16 @@ import async = require('async');
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 import {Globals} from '../../globals';
+import * as _ from 'lodash';
+import {RoleMapping} from "loopback";
+
+interface AminoRoleMapping {
+  id?:any,
+  principalType?:string,
+  principalId?:string,
+  roleId?:number,
+  potentialRoleId?:number
+}
 
 interface AminoRole {
   id?:any,
@@ -60,32 +70,19 @@ export class AuthenticationImpl extends BaseServiceImpl {
   initSubscriptions(cb:(err:Error, result?:any) => void) {
     super.initSubscriptions();
     const me = this;
-    const U = me.app.models.AminoUser;
-    const RM = me.app.models.AminoRoleMapping;
 
     //Required to enable LoopBack authentication
     me.app.enableAuth();
 
     me.postal.subscribe({
       channel: me.servicePostalChannel,
+      topic: 'AfterUserAddRemoveToDatabase',
+      callback: me.afterUserAddRemoveToDatabase.bind(me)
+    });
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
       topic: 'UpdateAminoUser',
-      callback: (data:{updatedUserInfo:AminoUser, cb:(err:Error, user:AminoUser) => void}) => {
-        const {updatedUserInfo, cb} = data;
-        U.findById(updatedUserInfo.id,{include:'roles'},(err,user)=>{
-          const e = err;
-        });
-/*        async.each(updatedUserInfo.roles, (role, cb) => {
-          RM.destroyById(role.id, cb);
-        }, (err) => {
-          RM.findOrCreate({
-            principalType: RM.USER,
-            principalId: updatedUserInfo.id,
-            roleId: updatedUserInfo.roles[0].id
-          }, (err, newUser) => {
-            cb(err, newUser);
-          });
-        });*/
-      }
+      callback: me.updateAminoUser.bind(me)
     });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
@@ -127,7 +124,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
         });
         cb();
       },
-      (cb) => {
+      (cb) => {//Add bogus roles for test
         async.each(['boneHeads', 'niceGuys', 'wimps', 'gradStudents'], (name, cb) => {
           me.findOrCreateRole({name}, cb);
         }, cb);
@@ -137,13 +134,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
         async.each(AuthenticationImpl.GlobalAdminUsers, (globalAdminUser, cb) => {
           me.createUserWithRole(globalAdminUser.user, globalAdminUser.primaryRole, cb);
         }, cb);
-      },
-      (cb) => {
-        me.associateUserWithPotentialRole({id: 2}, {id: 4}, false, (err:Error) => {
-          me.associateUserWithRole({id: 2}, {id: 2}, false, (err:Error) => {
-            cb(err);
-          });
-        });
       },
       (cb) => {
         //Now deny everyone everything
@@ -189,7 +179,48 @@ export class AuthenticationImpl extends BaseServiceImpl {
     ], cb);
   }
 
+  private updateAminoUser(data:{updatedUserInfo:AminoUser, cb:(err:Error) => void}) {
+    const me = this;
+    const R = me.app.models.AminoRole;
+    const RM = me.app.models.AminoRoleMapping;
+    const {updatedUserInfo, cb} = data;
+    //Assume the roles in updatedUserInfo are "ground truth" and adjust DB to reflect that
+    async.waterfall([
+      (cb) => {
+        //Start with a clean RoleMapping slate
+        RM.destroyAll({principalId: updatedUserInfo.id, principalType: RM.USER}, cb);
+      },
+      (result:{count:number}, cb) => {
+        R.find((err, roles) => {
+          cb(err, roles.map((role) => role.toObject()));
+        });
+      },
+      (roles:AminoRole[], cb) => {
+        const newRoles = updatedUserInfo.roles || [];
+        const newPotentialRoles = _.differenceWith(roles, newRoles, (a, b) => a.id === b.id);
+
+        const potentialRoleMappings:AminoRoleMapping[] = newPotentialRoles.map((role) => ({potentialRoleId: role.id}));
+        const roleMappings:AminoRoleMapping[] = newRoles.map((role) => ({roleId: role.id}));
+
+        const allRoleMappings = potentialRoleMappings.concat(roleMappings).map((roleMapping:AminoRoleMapping) => ({
+          principalType: RM.USER,
+          principalId: updatedUserInfo.id,
+          roleId: roleMapping.id,
+          potentialRoleId: roleMapping.potentialRoleId
+        }));
+        RM.create(allRoleMappings, cb);
+      }
+    ], cb);
+  }
+
+  private afterUserAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
+    const me = this;
+    const {ctx, next} = data;
+    return me.updateAminoUser({updatedUserInfo: ctx.instance.toObject(), cb: next});
+  }
+
   private afterRoleMappingAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
+    return data.next();
     const me = this;
     const {ctx, next} = data;
     const ctxRoleMapping:{principalId:string} = ctx.instance.toObject();

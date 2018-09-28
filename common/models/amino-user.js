@@ -1,4 +1,24 @@
+'use strict';
+
+function afterUserAddRemoveToDatabase(ctx, next) {
+  global.postal.publish({
+    channel: 'PostalChannel-Authentication',
+    topic: 'AfterUserAddRemoveToDatabase',
+    data: {
+      ctx,
+      next
+    }
+  });
+}
+
 module.exports = function (AminoUser) {
+  //Observe DB events
+  AminoUser.observe('after save', (ctx, next) => {
+    afterUserAddRemoveToDatabase(ctx, next);
+  });
+  AminoUser.observe('after delete', (ctx, next) => {
+    afterUserAddRemoveToDatabase(ctx, next);
+  });
   //updateUser
   AminoUser.updateUser = function (updatedUserInfo, cb) {
     global.postal.publish({
