@@ -83,7 +83,12 @@ export class ElasticsearchImpl extends BaseServiceImpl {
             elasticsearchUrl = undefined;
             return false;
           }
-          elasticsearchUrl = new URL(`/${dataSets}/${eq.esVerb}`, normalizedUrl);
+          let doctypes = '';
+          if(_.has(eq,'esDoctypes') && (typeof eq.esDoctypes!='undefined' && eq.esDoctypes)){
+            doctypes = '/'+ eq.esDoctypes
+          }
+
+          elasticsearchUrl = new URL(`/${dataSets}${doctypes}/${eq.esVerb}`, normalizedUrl);
         } catch (err) {
           elasticsearchUrl = undefined;
           return false;
@@ -182,6 +187,48 @@ export class ElasticsearchImpl extends BaseServiceImpl {
           });
         }
       });
+
+    me.postal
+      .subscribe({
+        channel: 'Elasticsearch',
+        topic: 'IndicesDoctypesVerb',
+        callback: (eq: ElasticsearchQuery) => {
+          async.waterfall([
+            //find User from access token including AminoRoles
+            (cb)=>{me.findUserFromAccessToken.bind(me)(eq,cb);},
+            //Convert AminoRoles to a list of DataSet Ids
+            ElasticsearchImpl.convertRolesToDatasetIds,
+            //Find all DataSets with UIDs contained within our data set id list
+            me.getDatasetsFromIds.bind(me),
+            //Convert the resulting DataSet list into a unique list of data set names
+            ElasticsearchImpl.convertDatasetToIndiceNames,
+            //Create the ES url using approved DataSet names and verb
+            me.createESUrl
+          ], (err:Error,uri)=>{
+            if(err){
+              return eq.res.status(400).end(err.message);
+            }
+
+            const requestOptions = {
+              uri,
+              method: eq.req.method,
+              json: eq.req.body
+            };
+
+            const requestStream = request(requestOptions);
+
+            function streamErrorHandler(err: Error) {
+              eq.res.status(400).end(err.message);
+            }
+
+            requestStream
+              .on('error', streamErrorHandler)
+              .pipe(eq.res)
+              .on('error', streamErrorHandler);
+          });
+        }
+      });
+
     cb(null, {message: 'Initialized Elasticsearch Subscriptions'});
   }
 
