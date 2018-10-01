@@ -190,7 +190,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
     //Assume the roles in updatedUserInfo are "ground truth" and adjust DB to reflect that
     if(me.updateAminoUserRolesBusy) {
       return setImmediate(() => {
-        me.log.critical(`Re-spewing updateAminoUserRoles for user '${updatedUserInfo.id}'`);
         me.updateAminoUserRoles(data);
       });
     }
@@ -198,7 +197,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
     async.waterfall([
       (cb) => {
         //Start with a clean RoleMapping slate
-        me.log.critical(`Destroying all role mappings for user: '${updatedUserInfo.id}'`);
         RM.destroyAll({principalId: updatedUserInfo.id, principalType: RM.USER}, cb);
       },
       (result:{count:number}, cb) => {
@@ -219,7 +217,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
           roleId: roleMapping.roleId,
           potentialRoleId: roleMapping.potentialRoleId
         }));
-        me.log.critical(`Creating all role mappings for user: '${updatedUserInfo.id}'`);
         RM.create(allRoleMappings, cb);
       }
     ], (err:Error) => {
