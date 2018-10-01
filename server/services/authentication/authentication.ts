@@ -5,7 +5,6 @@ import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 import {Globals} from '../../globals';
 import * as _ from 'lodash';
-import {RoleMapping} from "loopback";
 
 interface AminoRoleMapping {
   id?:any,
@@ -62,6 +61,8 @@ export class AuthenticationImpl extends BaseServiceImpl {
     }
   ];
 
+  private updateAminoUserRolesBusy = false;
+
   constructor(@inject('Logger') private log:Logger,
               @inject('IPostal') private postal:IPostal) {
     super();
@@ -76,18 +77,18 @@ export class AuthenticationImpl extends BaseServiceImpl {
 
     me.postal.subscribe({
       channel: me.servicePostalChannel,
+      topic: 'AfterRoleAddRemoveToDatabase',
+      callback: me.afterRoleAddRemoveToDatabase.bind(me)
+    });
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
       topic: 'AfterUserAddRemoveToDatabase',
       callback: me.afterUserAddRemoveToDatabase.bind(me)
     });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'UpdateAminoUser',
-      callback: me.updateAminoUser.bind(me)
-    });
-    me.postal.subscribe({
-      channel: me.servicePostalChannel,
-      topic: 'AfterRoleMappingAddRemoveToDatabase',
-      callback: me.afterRoleMappingAddRemoveToDatabase.bind(me)
+      callback: me.updateAminoUserRoles.bind(me)
     });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
@@ -176,18 +177,28 @@ export class AuthenticationImpl extends BaseServiceImpl {
         ];
         me.appendAcls(acls, cb);
       }
-    ], cb);
+    ], (err:Error) => {
+      me.updateAllUsersRolesAndPotentialRoles(cb);
+    });
   }
 
-  private updateAminoUser(data:{updatedUserInfo:AminoUser, cb:(err:Error) => void}) {
+  private updateAminoUserRoles(data:{updatedUserInfo:AminoUser, cb:(err:Error) => void}) {
     const me = this;
     const R = me.app.models.AminoRole;
     const RM = me.app.models.AminoRoleMapping;
     const {updatedUserInfo, cb} = data;
     //Assume the roles in updatedUserInfo are "ground truth" and adjust DB to reflect that
+    if(me.updateAminoUserRolesBusy) {
+      return setImmediate(() => {
+        me.log.critical(`Re-spewing updateAminoUserRoles for user '${updatedUserInfo.id}'`);
+        me.updateAminoUserRoles(data);
+      });
+    }
+    me.updateAminoUserRolesBusy = true;
     async.waterfall([
       (cb) => {
         //Start with a clean RoleMapping slate
+        me.log.critical(`Destroying all role mappings for user: '${updatedUserInfo.id}'`);
         RM.destroyAll({principalId: updatedUserInfo.id, principalType: RM.USER}, cb);
       },
       (result:{count:number}, cb) => {
@@ -205,59 +216,48 @@ export class AuthenticationImpl extends BaseServiceImpl {
         const allRoleMappings = potentialRoleMappings.concat(roleMappings).map((roleMapping:AminoRoleMapping) => ({
           principalType: RM.USER,
           principalId: updatedUserInfo.id,
-          roleId: roleMapping.id,
+          roleId: roleMapping.roleId,
           potentialRoleId: roleMapping.potentialRoleId
         }));
+        me.log.critical(`Creating all role mappings for user: '${updatedUserInfo.id}'`);
         RM.create(allRoleMappings, cb);
       }
-    ], cb);
+    ], (err:Error) => {
+      me.updateAminoUserRolesBusy = false;
+      cb(err);
+    });
+  }
+
+  private afterRoleAddRemoveToDatabase(data:{next:() => void}) {
+    const me = this;
+    me.updateAllUsersRolesAndPotentialRoles((err:Error) => {
+      me.log.logIfError(err);
+      data.next();
+    });
+  }
+
+  private updateAllUsersRolesAndPotentialRoles(cb:(err:Error) => void) {
+    const me = this;
+    const U = me.app.models.AminoUser;
+    //Update roles for all users
+    async.waterfall([
+      (cb) => {
+        U.find({include: 'roles'}, cb);
+      },
+      (users:any[], cb) => {
+        async.each(users, (user, cb) => {
+          me.updateAminoUserRoles({updatedUserInfo: user.toObject(), cb});
+        }, cb);
+      }
+    ], (err:Error) => {
+      cb(err);
+    });
   }
 
   private afterUserAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
     const me = this;
     const {ctx, next} = data;
-    return me.updateAminoUser({updatedUserInfo: ctx.instance.toObject(), cb: next});
-  }
-
-  private afterRoleMappingAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
-    return data.next();
-    const me = this;
-    const {ctx, next} = data;
-    const ctxRoleMapping:{principalId:string} = ctx.instance.toObject();
-    const R = me.app.models.AminoRole;
-    const RM = me.app.models.AminoRoleMapping;
-    async.waterfall([
-      (cb) => {
-        R.find((err, roles) => {
-          cb(err, roles.map((role) => role.toObject()));
-        });
-      },
-      (roles, cb) => {
-        RM.find({where: {principalId: ctxRoleMapping.principalId}}, (err, roleMappings) => {
-          cb(err, roles, roleMappings.map((roleMapping) => roleMapping.toObject()));
-        });
-      },
-      (roles:any[], roleMappings:any[], cb) => {
-        async.filter(roles, (role, cb) => {
-          const realRoleMapping = roleMappings.filter((roleMapping) => role.id === roleMapping.roleId);
-          cb(null, realRoleMapping.length === 0);
-        }, (err, potentialRoles) => {
-          async.series([(cb) => {
-            //Blast all potentialRoles for this user
-            RM.destroyAll({where: {principalId: ctxRoleMapping.principalId}}, cb);
-          }, (cb) => {
-            return cb();
-            async.each(potentialRoles, (potentialRole, cb) => {
-              RM.findOrCreate({
-                principalType: RM.USER,
-                principalId: ctxRoleMapping.principalId,
-                potentialRoleId: potentialRole.id
-              }, cb);
-            }, cb);
-          }], cb);
-        });
-      }
-    ], next);
+    return me.updateAminoUserRoles({updatedUserInfo: ctx.instance.toObject(), cb: next});
   }
 
   private appendAcls(acls:any[], cb:(err:Error) => void) {
@@ -283,25 +283,13 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
-  private associateUserWithRole(user:{id:any}, role:{id:any}, ignoreDbTriggers:boolean, cb:(err:Error) => void) {
-    this.addRoleOrPotentialRoleMapping({user, role}, cb);
-  }
-
-  private associateUserWithPotentialRole(user:{id:any}, potentialRole:{id:any}, ignoreDbTriggers:boolean, cb:(err:Error) => void) {
-    this.addRoleOrPotentialRoleMapping({user, potentialRole}, cb);
-  }
-
-  private addRoleOrPotentialRoleMapping(roleMappingFragment:{
-    user:{id:any}, role?:{id:any}, potentialRole?:{id:any}, ignoreDbTriggers?:boolean
-  }, cb:(err:Error) => void) {
+  private associateUserWithRole(user:{id:any}, role:{id:any}, cb:(err:Error) => void) {
     const me = this;
     const RM = me.app.models.AminoRoleMapping;
     const newRoleMapping = {
-      ignoreDbTriggers: roleMappingFragment.ignoreDbTriggers,
       principalType: RM.USER,
-      principalId: roleMappingFragment.user.id,
-      roleId: roleMappingFragment.role? roleMappingFragment.role.id: undefined,
-      potentialRoleId: roleMappingFragment.potentialRole? roleMappingFragment.potentialRole.id: undefined
+      principalId: user.id,
+      roleId: role.id
     };
     RM.findOrCreate(newRoleMapping, cb);
   }
@@ -318,7 +306,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
         });
       },
       (user, role, cb) => {
-        me.associateUserWithRole(user, role, false, (err:Error) => {
+        me.associateUserWithRole(user, role, (err:Error) => {
           cb(err);
         });
       }

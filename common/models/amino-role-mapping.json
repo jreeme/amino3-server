@@ -2,10 +2,6 @@
   "name": "AminoRoleMapping",
   "base": "RoleMapping",
   "properties": {
-    "ignoreDbTriggers": {
-      "type": "boolean",
-      "default": false
-    }
   },
   "relations": {
     "role": {

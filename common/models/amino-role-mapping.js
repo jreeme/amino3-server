@@ -1,6 +1,6 @@
 'use strict';
 
-function afterRoleMappingAddRemoveToDatabase(ctx, next) {
+/*function afterRoleMappingAddRemoveToDatabase(ctx, next) {
   global.postal.publish({
     channel: 'PostalChannel-Authentication',
     topic: 'AfterRoleMappingAddRemoveToDatabase',
@@ -9,7 +9,7 @@ function afterRoleMappingAddRemoveToDatabase(ctx, next) {
       next
     }
   });
-}
+}*/
 
 module.exports = function (AminoRoleMapping) {
   //Observe DB events
