@@ -5,7 +5,7 @@
     "logLevel": "debug",
     "logToFile": true,
     "logFileFolder": "/tmp/amino3-logs",
-    "elasticsearchUrl": "http://192.168.104.34:9200",
+    "elasticsearchUrl": "http://192.168.104.77:9200",
     "suppressServerHeartbeat": false,
     "replaceBadDataSourceWithMemoryDataSource": true,
     "suppressedServices": [
@@ -14,7 +14,7 @@
       "FolderMonitor",
       "_InitializeDatabase",
       "PluginManager",
-      "RebuildClient",
+      "_RebuildClient",
       "_RemoteLogging",
       "StaticService",
       "ServerServicesManager",
