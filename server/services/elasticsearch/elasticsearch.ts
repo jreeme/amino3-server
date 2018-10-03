@@ -136,7 +136,7 @@ export class ElasticsearchImpl extends BaseServiceImpl {
     cb(null, elasticsearchUrl.toString());
   }
 
-  private elasticsearchQuery(eq:ElasticsearchQuery, envelope:any, excludeDataSetIds:Array<string> = [], foundErrors=true) {
+  private elasticsearchQuery(eq:ElasticsearchQuery, envelope:any, excludeDataSetIds:Array<string> = [], foundErrors = true) {
     const me = this;
     async.waterfall([
       (cb) => cb(null, eq, excludeDataSetIds),
@@ -166,7 +166,6 @@ export class ElasticsearchImpl extends BaseServiceImpl {
       function streamErrorHandler(err:Error) {
         eq.res.status(400).end(err.message);
       }
-
 
       //Keep is simple & streams for now. Might be cool to look at:
       //https://www.npmjs.com/package/stream-json if we work with BIG responses from ES
