@@ -149,12 +149,25 @@ export class BootManagerImpl implements BootManager {
             //Adding a column to a table with ' NOT NULL' requires a default value or column will
             //not be added.
             dataSource.connector.addPropertyToActual = (model, propName) => {
+              let defaultProperty:any;
+              const xx = me.app.models[model].getPropertyType(propName);
+              switch(me.app.models[model].getPropertyType(propName)) {
+                case 'String':
+                  defaultProperty = '';
+                  break;
+                case 'Number':
+                  defaultProperty = 0;
+                  break;
+                case 'Date':
+                  defaultProperty = '1900-01-01';
+                  break;
+              }
               const self = dataSource.connector;
               let sqlCommand = self.columnEscaped(model, propName);
               sqlCommand += ' ' + self.columnDataType(model, propName);
               sqlCommand += (self.isNullable(self.getPropertyDefinition(model, propName))
                 ? ''
-                : ` NOT NULL DEFAULT 0`);
+                : ` NOT NULL DEFAULT '${defaultProperty}'`);
               return sqlCommand;
             };
           }

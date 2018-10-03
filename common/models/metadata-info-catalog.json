@@ -118,7 +118,7 @@
     },
     "dateCreated": {
       "type": "date",
-      "required": false,
+      "required": true,
       "description": "date instance was created in data source; stored as timestamp in GMT",
       "defaultFn": "now"
     }
