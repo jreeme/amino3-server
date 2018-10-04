@@ -1,2 +1,6 @@
 {
+  "ModelDefinition": {
+    "dataSource": "model_definition",
+    "public": true
+  }
 }

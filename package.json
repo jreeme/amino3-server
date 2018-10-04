@@ -27,6 +27,7 @@
     "js-logging": "^0.1.0",
     "jsonfile": "^3.0.0",
     "jsonwebtoken": "^7.2.1",
+    "just-diff": "^2.2.0",
     "line-driver": "^1.1.9",
     "lodash": "^4.17.4",
     "loopback": "^3.0.0",

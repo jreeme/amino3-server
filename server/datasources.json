@@ -2,5 +2,11 @@
   "amino_admin_mem": {
     "name": "amino_admin_mem",
     "connector": "memory"
+  },
+  "model_definition": {
+    "name": "model_definition",
+    "connector": "loopback-component-storage",
+    "provider": "filesystem",
+    "root": "../common"
   }
 }

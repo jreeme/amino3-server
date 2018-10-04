@@ -65,6 +65,10 @@ export class BootManagerImpl implements BootManager {
         me.allDataSources.push(ds);
         async.waterfall([
           (cb) => {
+            if(ds.settings.connector === 'loopback-component-storage') {
+              me.log.notice(`Not PINGING DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
+              return cb(null, true);
+            }
             me.log.notice(`PINGING DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
             ds.ping((err:Error) => {
               me.log.debug(`DataSource '${dataSourceName}' PING ` + (!err? 'SUCCESS': 'FAIL'));
