@@ -148,10 +148,10 @@ export class BootManagerImpl implements BootManager {
             //HACK: Need to monkey-patch SQLConnector.prototype.addPropertyToActual due to error.
             //Adding a column to a table with ' NOT NULL' requires a default value or column will
             //not be added.
-            dataSource.connector.addPropertyToActual = (model, propName) => {
+            dataSource.connector.addPropertyToActual = (model, propertyName) => {
+              const propertyType = me.app.models[model].getPropertyType(propertyName);
               let defaultProperty:any;
-              const xx = me.app.models[model].getPropertyType(propName);
-              switch(me.app.models[model].getPropertyType(propName)) {
+              switch(propertyType) {
                 case 'String':
                   defaultProperty = '';
                   break;
@@ -161,13 +161,18 @@ export class BootManagerImpl implements BootManager {
                 case 'Date':
                   defaultProperty = '1900-01-01';
                   break;
+                default:
+                  me.log.error(`Unknown property type '${propertyType}' encountered while auto-updating model '${model}'`);
+                  break;
               }
               const self = dataSource.connector;
-              let sqlCommand = self.columnEscaped(model, propName);
-              sqlCommand += ' ' + self.columnDataType(model, propName);
-              sqlCommand += (self.isNullable(self.getPropertyDefinition(model, propName))
-                ? ''
-                : ` NOT NULL DEFAULT '${defaultProperty}'`);
+              let sqlCommand = self.columnEscaped(model, propertyName);
+              sqlCommand += ' ' + self.columnDataType(model, propertyName);
+              const required = !self.isNullable(self.getPropertyDefinition(model, propertyName));
+              sqlCommand += required
+                ? ` NOT NULL DEFAULT '${defaultProperty}'`
+                : '';
+              me.log.warning(`Creating column '${propertyName}' in model '${model}' - Required: '${required}'`);
               return sqlCommand;
             };
           }
