@@ -1,9 +1,9 @@
 module.exports = function (ModelDefinition) {
   //https://stackoverflow.com/questions/28885282/how-to-store-files-with-meta-data-in-loopback
-  ModelDefinition.tmpCompareLoopbackModels = function (info, cb) {
+  ModelDefinition.compareLoopbackModels = function (info, cb) {
     global.postal.publish({
       channel: 'PostalChannel-FileUpload',
-      topic: 'TmpCompareLoopbackModels',
+      topic: 'CompareLoopbackModels',
       data: {
         info,
         cb
@@ -11,13 +11,13 @@ module.exports = function (ModelDefinition) {
     });
   };
 
-  ModelDefinition.remoteMethod('tmpCompareLoopbackModels', {
+  ModelDefinition.remoteMethod('compareLoopbackModels', {
       accepts: [
         {
           arg: 'info',
           type: 'object',
           required: true,
-          description: 'JSON object info',
+          description: '{sourceModels,targetModels: http://lh:3000/amino-api/ModelDefinitions/models/files}',
           http: {source: 'body'}
         }
       ],
@@ -26,10 +26,10 @@ module.exports = function (ModelDefinition) {
           arg: 'info',
           type: 'object',
           root: true,
-          description: 'info'
+          description: 'Model comparison object'
         }
       ],
-      http: {path: '/tmp', verb: 'post'}
+      http: {path: '/compare-loopback-models', verb: 'post'}
     }
   );
 };
