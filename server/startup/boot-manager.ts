@@ -70,6 +70,8 @@ export class BootManagerImpl implements BootManager {
               return cb(null, true);
             }
             me.log.notice(`PINGING DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
+            //TODO: Add timeout to ping in case the machine is unreachable. This works OK if machine is reachable
+            //but no server is listening on the specified port
             ds.ping((err:Error) => {
               me.log.debug(`DataSource '${dataSourceName}' PING ` + (!err? 'SUCCESS': 'FAIL'));
               cb(null, !err);
