@@ -142,5 +142,6 @@ export class Globals {
     static uploadFilePostUrl = '/upload-files';*/
   static serverServiceUploadFileUrl = '/server-service-upload-files';
   static elasticsearchUrl = 'http://elasticsearch:9200';
+  static testAuthenticationServer = false;
 }
 
