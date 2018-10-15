@@ -64,9 +64,14 @@ export class AuthenticationImpl extends BaseServiceImpl {
     }
   ];
 
+  private timer = Timer.get('AuthenticationImplTimer');
+  private roleMappingsToAdd:AminoRoleMapping[] = [];
+  private roleMappingsToRemove:AminoRoleMapping[] = [];
+
   constructor(@inject('Logger') private log:Logger,
               @inject('IPostal') private postal:IPostal) {
     super();
+    this.timer.start();
   }
 
   initSubscriptions(cb:(err:Error, result?:any) => void) {
@@ -112,9 +117,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
               me.loadTest();
             }
           }
-          setInterval(() => {
-            me.processUpdateRoleQueue();
-          }, 3000);
         }
       }
     });
@@ -136,20 +138,20 @@ export class AuthenticationImpl extends BaseServiceImpl {
       timer.start();
       setInterval(() => {
         const startTime = timer.time();
-        //const role = roles.length < 90? null: roles.pop();
-        const role = roles.pop();
+        const role = roles.length < 90? null: roles.pop();
+        //const role = roles.pop();
         role && me.findOrCreateRole(role, (err, newRole) => {
           const stopTime = timer.time();
-          me.log.info(`Creating role '${newRole.name}' took ${stopTime - startTime} ms`);
+          //me.log.info(`Creating role '${newRole.name}' took ${stopTime - startTime} ms`);
         });
       }, 45);
       setInterval(() => {
         const startTime = timer.time();
-        //const user = users.length < 990? null: users.pop();
-        const user = users.pop();
+        const user = users.length < 980? null: users.pop();
+        //const user = users.pop();
         user && me.findOrCreateUser(user, (err, newUser) => {
           const stopTime = timer.time();
-          me.log.notice(`Creating user '${newUser.username}' took ${stopTime - startTime} ms`);
+          //me.log.notice(`Creating user '${newUser.username}' took ${stopTime - startTime} ms`);
         });
       }, 50);
     });
@@ -221,41 +223,118 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
-  private usersToUpdateRolesFor = {};
-  private processing = false;
-
   private processUpdateRoleQueue() {
     const me = this;
-    if(me.processing) {
-      return;
-    }
-    const keys = Object.keys(me.usersToUpdateRolesFor);
-    if(keys.length) {
-      me.processing = true;
-      const key = keys[0];
-      me.log.warning(`Updating roles for user '${key}'`);
-      const updatedUserInfo = me.usersToUpdateRolesFor[key];
-      delete me.usersToUpdateRolesFor[key];
-      me.updateAminoUserRolesWorker({
-        updatedUserInfo, cb: (err) => {
-          if(err) {
-            me.log.error(err.message);
-          } else {
-            me.log.info(`Successfully updated roles for user '${key}'`);
-          }
-          me.processing = false;
+    const RM = me.app.models.AminoRoleMapping;
+    me.app.models.AminoRoleMapping.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
+      if(err) {
+        return me.log.logIfError(err);
+      }
+      RM.destroyAll({}, {transaction}, ()=>{});
+      async.parallel([
+        (cb) => {
+          async.each(me.roleMappingsToRemove, (roleMapping, cb) => {
+            RM.destroyAll(roleMapping, {transaction}, cb);
+          }, cb);
+        },
+        (cb) => {
+          async.each(me.roleMappingsToAdd, (roleMapping, cb) => {
+            //RM.findOrCreate(roleMapping, {transaction}, cb);
+          }, cb);
         }
+      ], (err:Error, results) => {
+        transaction.commit((err)=>{
+          const e = err;
+        });
       });
-    }
+    });
+    /*    if(me.processing) {
+          return;
+        }
+        const keys = Object.keys(me.usersToUpdateRolesFor);
+        if(keys.length) {
+          me.processing = true;
+          const key = keys[0];
+          me.log.warning(`Updating roles for user '${key}'`);
+          const updatedUserInfo = me.usersToUpdateRolesFor[key];
+          delete me.usersToUpdateRolesFor[key];
+          me.updateAminoUserRolesWorker({
+            updatedUserInfo, cb: (err) => {
+              if(err) {
+                me.log.error(err.message);
+              } else {
+                me.log.info(`Successfully updated roles for user '${key}'`);
+              }
+              me.processing = false;
+            }
+          });
+        }*/
   };
 
   private updateAminoUserRoles(data:{updatedUserInfo:AminoUser, cb:(err:Error) => void}) {
     const me = this;
+    const U = me.app.models.AminoUser;
+    const R = me.app.models.AminoRole;
+    const RM = me.app.models.AminoRoleMapping;
     const {updatedUserInfo, cb} = data;
-    me.usersToUpdateRolesFor[updatedUserInfo.username] = updatedUserInfo;
-    const keys = Object.keys(me.usersToUpdateRolesFor);
-    me.log.warning(`Queuing ${updatedUserInfo.username} for role update. Queue is ${keys.length} long.`);
-    cb(null);
+    const startTime = me.timer.time();
+    async.waterfall([
+      (cb) => {
+        async.parallel([
+          (cb) => {
+            U.findById(updatedUserInfo.id, {include: ['roles', 'potentialRoles']}, (err, user) => {
+              user = user.toObject();
+              cb(err, {oldRoles: user.roles, oldPotentialRoles: user.potentialRoles});
+            });
+          },
+          (cb) => {
+            R.find((err, roles) => {
+              cb(err, {allRoles: roles.map((role) => role.toObject())});
+            });
+          }
+        ], (err:Error, results:any) => {
+          const {oldRoles, oldPotentialRoles} = results[0];
+          const {allRoles} = results[1];
+          cb(err, oldRoles, oldPotentialRoles, allRoles);
+        });
+      },
+      (oldRoles:AminoRole[], oldPotentialRoles:AminoRole[], allRoles:AminoRole[], cb) => {
+        const newRoles = updatedUserInfo.roles || [];
+
+        const rolesToRemove = _.differenceWith(oldRoles, newRoles, (a, b) => a.id === b.id);
+        const rolesToAdd = _.differenceWith(newRoles, oldRoles, (a, b) => a.id === b.id);
+
+        const newPotentialRoles = _.differenceWith(allRoles, newRoles, (a, b) => a.id === b.id);
+
+        const potentialRolesToRemove = _.differenceWith(oldPotentialRoles, newPotentialRoles, (a, b) => a.id === b.id);
+        const potentialRolesToAdd = _.differenceWith(newPotentialRoles, oldPotentialRoles, (a, b) => a.id === b.id);
+
+        const roleMappingsToAdd:AminoRoleMapping[] = rolesToAdd.map((role) => ({roleId: role.id}));
+        const roleMappingsToRemove:AminoRoleMapping[] = rolesToRemove.map((role) => ({roleId: role.id}));
+        const potentialRoleMappingsToAdd:AminoRoleMapping[] = potentialRolesToAdd.map((role) => ({potentialRoleId: role.id}));
+        const potentialRoleMappingsToRemove:AminoRoleMapping[] = potentialRolesToRemove.map((role) => ({potentialRoleId: role.id}));
+
+        function createRoleMapping(roleMapping:AminoRoleMapping) {
+          return {
+            principalType: RM.USER,
+            principalId: updatedUserInfo.id,
+            roleId: roleMapping.roleId,
+            potentialRoleId: roleMapping.potentialRoleId
+          };
+        }
+
+        const allRoleMappingsToAdd = potentialRoleMappingsToAdd.concat(roleMappingsToAdd).map(createRoleMapping);
+        const allRoleMappingsToRemove = potentialRoleMappingsToRemove.concat(roleMappingsToRemove).map(createRoleMapping);
+        cb(null, {allRoleMappingsToAdd, allRoleMappingsToRemove});
+      }
+    ], (err:Error, results:any) => {
+      const {allRoleMappingsToAdd, allRoleMappingsToRemove} = results;
+      me.roleMappingsToAdd.push(...allRoleMappingsToAdd);
+      me.roleMappingsToRemove.push(...allRoleMappingsToRemove);
+      me.log.warning(`Calculating RoleMapping updates took ${me.timer.time() - startTime} ms`);
+      me.processUpdateRoleQueue();
+      cb(err);
+    });
   }
 
   private updateAminoUserRolesWorker(data:{updatedUserInfo:AminoUser, cb:(err:Error) => void}) {
@@ -370,20 +449,13 @@ export class AuthenticationImpl extends BaseServiceImpl {
   }
 
   private findOrCreateRole(role:AminoRole, cb:(err:Error, role:any, created:boolean) => void) {
-    const me = this;
-    const R = me.app.models.AminoRole;
-    R.findOrCreate({where: {name: role.name}}, <any>role,
-      ((err:Error, role:any, created:boolean) => {
-        cb(err, role, created);
-      }));
+    const R = this.app.models.AminoRole;
+    R.findOrCreate({where: {name: role.name}}, <any>role, cb);
   }
 
   private findOrCreateUser(user:AminoUser, cb:(err:Error, user:any, created:boolean) => void) {
-    const me = this;
-    const U = me.app.models.AminoUser;
-    U.findOrCreate({where: {username: user.username}}, <any>user, (error:Error, user:any, created:boolean) => {
-      cb(error, user, created);
-    });
+    const U = this.app.models.AminoUser;
+    U.findOrCreate({where: {username: user.username}}, <any>user, cb);
   }
 
   private associateUserWithRole(user:{id:any}, role:{id:any}, cb:(err:Error) => void) {
@@ -409,9 +481,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
         });
       },
       (user, role, cb) => {
-        me.associateUserWithRole(user, role, (err:Error) => {
-          cb(err);
-        });
+        me.associateUserWithRole(user, role, cb);
       }
     ], cb);
   }
