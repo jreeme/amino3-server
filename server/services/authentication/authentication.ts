@@ -35,35 +35,49 @@ interface AminoUser {
   potentialRoles?:AminoRole[]
 }
 
+let U:any;
+let R:any;
+let RM:any;
+
+const GlobalAdminUsers = [
+  {
+    user: {
+      username: Globals.adminUserName,
+      firstname: Globals.adminUserName,
+      lastname: Globals.adminUserName,
+      email: Globals.adminUserEmail,
+      password: Globals.adminUserDefaultPassword
+    },
+    roles: [
+      {
+        name: Globals.adminRoleName
+      },
+      {
+        name: 'hooligans'
+      }
+    ]
+  },
+  {
+    user: {
+      username: Globals.elasticsearchUserName,
+      firstname: Globals.elasticsearchUserName,
+      lastname: Globals.elasticsearchUserName,
+      email: Globals.elasticsearchUserEmail,
+      password: Globals.elasticsearchUserDefaultPassword
+    },
+    roles: [
+      {
+        name: Globals.elasticsearchRoleName
+      },
+      {
+        name: 'shinanigins'
+      }
+    ]
+  }
+];
+
 @injectable()
 export class AuthenticationImpl extends BaseServiceImpl {
-  static GlobalAdminUsers = [
-    {
-      user: {
-        username: Globals.adminUserName,
-        firstname: Globals.adminUserName,
-        lastname: Globals.adminUserName,
-        email: Globals.adminUserEmail,
-        password: Globals.adminUserDefaultPassword
-      },
-      primaryRole: {
-        name: Globals.adminRoleName
-      }
-    },
-    {
-      user: {
-        username: Globals.elasticsearchUserName,
-        firstname: Globals.elasticsearchUserName,
-        lastname: Globals.elasticsearchUserName,
-        email: Globals.elasticsearchUserEmail,
-        password: Globals.elasticsearchUserDefaultPassword
-      },
-      primaryRole: {
-        name: Globals.elasticsearchRoleName
-      }
-    }
-  ];
-
   private timer = Timer.get('AuthenticationImplTimer');
   private roleMappingsToAdd:AminoRoleMapping[] = [];
   private roleMappingsToRemove:AminoRoleMapping[] = [];
@@ -77,6 +91,10 @@ export class AuthenticationImpl extends BaseServiceImpl {
   initSubscriptions(cb:(err:Error, result?:any) => void) {
     super.initSubscriptions();
     const me = this;
+
+    U = this.app.models.AminoUser;
+    R = this.app.models.AminoRole;
+    RM = this.app.models.AminoRoleMapping;
 
     //Required to enable LoopBack authentication
     me.app.enableAuth();
@@ -114,7 +132,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
           cb(err, {message: 'Initialized Authentication'});
           if(Globals.node_env === 'development') {
             if(Globals.testAuthenticationServer) {
-              me.loadTest();
+              //me.loadTest();
             }
           }
         }
@@ -138,21 +156,21 @@ export class AuthenticationImpl extends BaseServiceImpl {
       timer.start();
       setInterval(() => {
         const startTime = timer.time();
-        const role = roles.length < 90? null: roles.pop();
+        const role = roles.length < 90 ? null : roles.pop();
         //const role = roles.pop();
-        role && me.findOrCreateRole(role, (err, newRole) => {
-          const stopTime = timer.time();
-          //me.log.info(`Creating role '${newRole.name}' took ${stopTime - startTime} ms`);
-        });
+        /*        role && me.findOrCreateRole(role, (err, newRole) => {
+                  const stopTime = timer.time();
+                  //me.log.info(`Creating role '${newRole.name}' took ${stopTime - startTime} ms`);
+                });*/
       }, 45);
       setInterval(() => {
         const startTime = timer.time();
-        const user = users.length < 980? null: users.pop();
+        const user = users.length < 980 ? null : users.pop();
         //const user = users.pop();
-        user && me.findOrCreateUser(user, (err, newUser) => {
-          const stopTime = timer.time();
-          //me.log.notice(`Creating user '${newUser.username}' took ${stopTime - startTime} ms`);
-        });
+        /*        user && me.findOrCreateUser(user, (err, newUser) => {
+                  const stopTime = timer.time();
+                  //me.log.notice(`Creating user '${newUser.username}' took ${stopTime - startTime} ms`);
+                });*/
       }, 50);
     });
   }
@@ -172,9 +190,23 @@ export class AuthenticationImpl extends BaseServiceImpl {
         cb();
       },
       (cb) => {
-        //Add 'permanent' users + primaryRole
-        async.each(AuthenticationImpl.GlobalAdminUsers, (globalAdminUser, cb) => {
-          me.createUserWithRole(globalAdminUser.user, globalAdminUser.primaryRole, cb);
+        //Add 'permanent' users
+        async.each(GlobalAdminUsers, (globalAdminUser, cb) => {
+          async.waterfall([
+            (cb:(err:Error, roles:AminoRole[]) => void) => {
+              AuthenticationImpl.findOrCreateEntities(R, globalAdminUser.roles, cb);
+            },
+            (roles, cb:(err:Error, roles:AminoRole[], user:AminoUser) => void) => {
+              AuthenticationImpl.findOrCreateEntities(U, [globalAdminUser.user], (err, users) => {
+                cb(err, roles, users[0]);
+              });
+            },
+            (roles, user, cb) => {
+              AuthenticationImpl.associateUserWithRoles(user, roles, cb);
+            }
+          ], (err:Error, roleMappings:AminoRoleMapping[]) => {
+            cb(err);
+          });
         }, cb);
       },
       (cb) => {
@@ -194,9 +226,10 @@ export class AuthenticationImpl extends BaseServiceImpl {
             });
           }
         });
-        me.appendAcls(acls, cb);
+        //me.appendAcls(acls, cb);
       },
       (cb) => {
+        return cb();
         //Now open up a few routes, carefully
         const acls = [
           {
@@ -216,7 +249,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
             permission: 'ALLOW'
           }
         ];
-        me.appendAcls(acls, cb);
+        //me.appendAcls(acls, cb);
       }
     ], (err:Error) => {
       me.updateAllUsersRolesAndPotentialRoles(cb);
@@ -225,12 +258,10 @@ export class AuthenticationImpl extends BaseServiceImpl {
 
   private processUpdateRoleQueue() {
     const me = this;
-    const RM = me.app.models.AminoRoleMapping;
     me.app.models.AminoRoleMapping.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
       if(err) {
         return me.log.logIfError(err);
       }
-      RM.destroyAll({}, {transaction}, ()=>{});
       async.parallel([
         (cb) => {
           async.each(me.roleMappingsToRemove, (roleMapping, cb) => {
@@ -239,43 +270,24 @@ export class AuthenticationImpl extends BaseServiceImpl {
         },
         (cb) => {
           async.each(me.roleMappingsToAdd, (roleMapping, cb) => {
-            //RM.findOrCreate(roleMapping, {transaction}, cb);
+            RM.findOrCreate({where: roleMapping}, roleMapping, {transaction}, cb);
           }, cb);
         }
-      ], (err:Error, results) => {
-        transaction.commit((err)=>{
-          const e = err;
+      ], (err:Error) => {
+        if(err) {
+          return transaction.rollback(() => {
+            me.log.logIfError(err);
+          });
+        }
+        transaction.commit((err) => {
+          me.log.logIfError(err);
         });
       });
     });
-    /*    if(me.processing) {
-          return;
-        }
-        const keys = Object.keys(me.usersToUpdateRolesFor);
-        if(keys.length) {
-          me.processing = true;
-          const key = keys[0];
-          me.log.warning(`Updating roles for user '${key}'`);
-          const updatedUserInfo = me.usersToUpdateRolesFor[key];
-          delete me.usersToUpdateRolesFor[key];
-          me.updateAminoUserRolesWorker({
-            updatedUserInfo, cb: (err) => {
-              if(err) {
-                me.log.error(err.message);
-              } else {
-                me.log.info(`Successfully updated roles for user '${key}'`);
-              }
-              me.processing = false;
-            }
-          });
-        }*/
   };
 
   private updateAminoUserRoles(data:{updatedUserInfo:AminoUser, cb:(err:Error) => void}) {
     const me = this;
-    const U = me.app.models.AminoUser;
-    const R = me.app.models.AminoRole;
-    const RM = me.app.models.AminoRoleMapping;
     const {updatedUserInfo, cb} = data;
     const startTime = me.timer.time();
     async.waterfall([
@@ -337,91 +349,11 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
-  private updateAminoUserRolesWorker(data:{updatedUserInfo:AminoUser, cb:(err:Error) => void}) {
-    const me = this;
-    const U = me.app.models.AminoUser;
-    const R = me.app.models.AminoRole;
-    const RM = me.app.models.AminoRoleMapping;
-    const {updatedUserInfo, cb} = data;
-
-    const timer = Timer.get('updateAminoUserRoles');
-    timer.start();
-    //Assume the roles in updatedUserInfo are "ground truth" and adjust DB to reflect that
-    const startTime = timer.time();
-    async.waterfall([
-      (cb) => {
-        U.findById(updatedUserInfo.id, {include: ['roles', 'potentialRoles']}, (err, user) => {
-          user = user.toObject();
-          cb(err, user.roles, user.potentialRoles);
-        });
-      },
-      (oldRoles:any, oldPotentialRoles:any, cb) => {
-        R.find((err, roles) => {
-          cb(err, oldRoles, oldPotentialRoles, roles.map((role) => role.toObject()));
-        });
-      },
-      (oldRoles:AminoRole[], oldPotentialRoles:AminoRole[], allRoles:AminoRole[], cb) => {
-        const newRoles = updatedUserInfo.roles || [];
-
-        const rolesToRemove = _.differenceWith(oldRoles, newRoles, (a, b) => a.id === b.id);
-        const rolesToAdd = _.differenceWith(newRoles, oldRoles, (a, b) => a.id === b.id);
-
-        const newPotentialRoles = _.differenceWith(allRoles, newRoles, (a, b) => a.id === b.id);
-
-        const potentialRolesToRemove = _.differenceWith(oldPotentialRoles, newPotentialRoles, (a, b) => a.id === b.id);
-        const potentialRolesToAdd = _.differenceWith(newPotentialRoles, oldPotentialRoles, (a, b) => a.id === b.id);
-
-        const roleMappingsToAdd:AminoRoleMapping[] = rolesToAdd.map((role) => ({roleId: role.id}));
-        const roleMappingsToRemove:AminoRoleMapping[] = rolesToRemove.map((role) => ({roleId: role.id}));
-        const potentialRoleMappingsToAdd:AminoRoleMapping[] = potentialRolesToAdd.map((role) => ({potentialRoleId: role.id}));
-        const potentialRoleMappingsToRemove:AminoRoleMapping[] = potentialRolesToRemove.map((role) => ({potentialRoleId: role.id}));
-
-        function createRoleMapping(roleMapping:AminoRoleMapping) {
-          return {
-            principalType: RM.USER,
-            principalId: updatedUserInfo.id,
-            roleId: roleMapping.roleId,
-            potentialRoleId: roleMapping.potentialRoleId
-          };
-        }
-
-        const allRoleMappingsToAdd = potentialRoleMappingsToAdd.concat(roleMappingsToAdd).map(createRoleMapping);
-        const allRoleMappingsToRemove = potentialRoleMappingsToRemove.concat(roleMappingsToRemove).map(createRoleMapping);
-
-        async.parallel([
-          (cb) => {
-            async.each(allRoleMappingsToRemove, (roleMapping, cb) => {
-              RM.destroyAll(roleMapping, cb);
-            }, cb);
-          },
-          (cb) => {
-            async.each(allRoleMappingsToAdd, (roleMapping, cb) => {
-              RM.findOrCreate(roleMapping, cb);
-            }, cb);
-          }
-        ], cb);
-      }
-    ], (err:Error) => {
-      const stopTime = timer.time();
-      me.log.notice(`Updating RoleMappings took ${stopTime - startTime} ms`);
-      cb(err);
-    });
-  }
-
-  private afterRoleAddRemoveToDatabase(data:{next:() => void}) {
-    const me = this;
-    me.updateAllUsersRolesAndPotentialRoles((err:Error) => {
-      me.log.logIfError(err);
-      data.next();
-    });
-  }
-
   private updateAllUsersRolesAndPotentialRoles(cb:(err:Error) => void) {
     const me = this;
-    const U = me.app.models.AminoUser;
     //Update roles for all users
-    me.log.critical(`Request to update all user roles received (not doing it)`);
-    return cb(null);
+    //me.log.critical(`Request to update all user roles received (not doing it)`);
+    //return cb(null);
     async.waterfall([
       (cb) => {
         U.find({include: 'roles'}, cb);
@@ -436,53 +368,92 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
+  private afterRoleAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
+    const me = this;
+    const {next} = data;
+    me.updateAllUsersRolesAndPotentialRoles((err:Error) => {
+      me.log.logIfError(err);
+      next();
+    });
+  }
+
   private afterUserAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
     const me = this;
     const {ctx, next} = data;
-    return me.updateAminoUserRoles({updatedUserInfo: ctx.instance.toObject(), cb: next});
+    const updatedUserInfo = (ctx.instance) ? ctx.instance.toObject() : null;
+    if(updatedUserInfo) {
+      return me.updateAminoUserRoles({updatedUserInfo, cb: next});
+    }
+    me.updateAllUsersRolesAndPotentialRoles((err) => {
+      me.log.logIfError(err);
+      next();
+    });
   }
 
-  private appendAcls(acls:any[], cb:(err:Error) => void) {
-    const me = this;
-    const ACL = me.app.models.ACL;
-    async.each(acls, ACL.findOrCreate.bind(ACL), cb);
-  }
+  /*  private appendAcls(acls:any[], cb:(err:Error) => void) {
+      const me = this;
+      const ACL = me.app.models.ACL;
+      async.each(acls, ACL.findOrCreate.bind(ACL), cb);
+    }*/
 
-  private findOrCreateRole(role:AminoRole, cb:(err:Error, role:any, created:boolean) => void) {
-    const R = this.app.models.AminoRole;
-    R.findOrCreate({where: {name: role.name}}, <any>role, cb);
-  }
-
-  private findOrCreateUser(user:AminoUser, cb:(err:Error, user:any, created:boolean) => void) {
-    const U = this.app.models.AminoUser;
-    U.findOrCreate({where: {username: user.username}}, <any>user, cb);
-  }
-
-  private associateUserWithRole(user:{id:any}, role:{id:any}, cb:(err:Error) => void) {
-    const me = this;
-    const RM = me.app.models.AminoRoleMapping;
-    const newRoleMapping = {
+  private static associateUserWithRoles(user:AminoUser, roles:AminoRole[], cb:(err:Error, roleMappings:AminoRoleMapping[]) => void) {
+    const newRoleMappings = roles.map((role) => ({
       principalType: RM.USER,
       principalId: user.id,
       roleId: role.id
-    };
-    RM.findOrCreate(newRoleMapping, cb);
+    }));
+    AuthenticationImpl.findOrCreateEntities(RM, newRoleMappings, cb);
   }
 
-  private createUserWithRole(user:{username:string}, role:{name:string}, cb:(err:Error) => void) {
-    const me = this;
-    async.waterfall([
-      (cb) => {
-        me.findOrCreateUser(user, cb);
-      },
-      (user, created, cb) => {
-        me.findOrCreateRole(role, (err:Error, role:any/*, created: boolean*/) => {
-          cb(err, user, role);
-        });
-      },
-      (user, role, cb) => {
-        me.associateUserWithRole(user, role, cb);
+  private static findOrCreateEntities<T>(Model:any, entities:T[], cb:(err:Error, entities?:T[]) => void) {
+    Model.beginTransaction({isolationLevel: RM.Transaction.SERIALIZABLE}, (err, transaction) => {
+      const entitiesFoundOrCreated:T[] = [];
+      if(err) {
+        return cb(err);
       }
-    ], cb);
+      async.each(entities, (entity:T, cb:(err:Error) => void) => {
+        switch(Model) {
+          case(U):
+            AuthenticationImpl.findOrCreateUser(entity, {transaction}, (err, entity:T/*, created*/) => {
+              entitiesFoundOrCreated.push(entity);
+              cb(err);
+            });
+            break;
+          case(R):
+            AuthenticationImpl.findOrCreateRole(entity, {transaction}, (err, entity:T/*, created*/) => {
+              entitiesFoundOrCreated.push(entity);
+              cb(err);
+            });
+            break;
+          case(RM):
+            AuthenticationImpl.findOrCreateRoleMapping(entity, {transaction}, (err, entity:T/*, created*/) => {
+              entitiesFoundOrCreated.push(entity);
+              cb(err);
+            });
+            break;
+        }
+      }, (err) => {
+        if(err) {
+          return transaction.rollback(() => {
+            cb(err, []);
+          });
+        }
+        transaction.commit(() => {
+          cb(err, entitiesFoundOrCreated);
+        });
+      });
+    });
+  }
+
+  private static findOrCreateRole(role:AminoRole, transaction, cb:(err:Error, role:AminoRole, created:boolean) => void) {
+    R.findOrCreate({where: {name: role.name}}, role, {transaction}, cb);
+  }
+
+  private static findOrCreateUser(user:AminoUser, transaction, cb:(err:Error, user:AminoUser, created:boolean) => void) {
+    U.findOrCreate({where: {username: user.username}}, user, {transaction}, cb);
+  }
+
+  private static findOrCreateRoleMapping(roleMapping:AminoRoleMapping, transaction, cb:(err:Error, roleMapping:AminoRoleMapping, created:boolean) => void) {
+    RM.findOrCreate({where: roleMapping}, roleMapping, {transaction}, cb);
   }
 }
