@@ -12,7 +12,7 @@ export class Globals {
     const amino3Config = app.get('amino3Config');
     //Override Global properties with loopback config values
     const sourceOfGlobalValueMessage:string[] = [];
-    Object.keys(Globals).forEach((key)=>{
+    Object.keys(Globals).forEach((key) => {
       if(typeof Globals[key] === 'function') {
         return;
       }
@@ -50,10 +50,11 @@ export class Globals {
     //Order of class init makes this HACK necessary
     log.setCallerFilenamesToIgnore(Globals.loggerCallerFilenamesToIgnore);
     //Now that log callers are set let's log the Global's sources
-    sourceOfGlobalValueMessage.forEach((message)=>{
+    sourceOfGlobalValueMessage.forEach((message) => {
       log.debug(message);
     });
   }
+
   static jwtSecret = 'irJ8EZnmUtliF9dFjL5g';
   static suppressServerHeartbeat:boolean = false;
   static suppressedServices:string[] = [];
@@ -143,5 +144,42 @@ export class Globals {
   static serverServiceUploadFileUrl = '/server-service-upload-files';
   static elasticsearchUrl = 'http://elasticsearch:9200';
   static testAuthenticationServer = false;
+  static defaultUsers = [];
+  /*    [
+        {
+          user: {
+            username: Globals.adminUserName,
+            firstname: Globals.adminUserName,
+            lastname: Globals.adminUserName,
+            email: Globals.adminUserEmail,
+            password: Globals.adminUserDefaultPassword
+          },
+          roles: [
+            {
+              name: Globals.adminRoleName
+            },
+            {
+              name: 'hooligans'
+            }
+          ]
+        },
+        {
+          user: {
+            username: Globals.elasticsearchUserName,
+            firstname: Globals.elasticsearchUserName,
+            lastname: Globals.elasticsearchUserName,
+            email: Globals.elasticsearchUserEmail,
+            password: Globals.elasticsearchUserDefaultPassword
+          },
+          roles: [
+            {
+              name: Globals.elasticsearchRoleName
+            },
+            {
+              name: 'shinanigins'
+            }
+          ]
+        }
+      ];*/
 }
 

@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as jsonfile from 'jsonfile';
 import * as Timer from 'timer-machine';
+import {PersistedModel} from "loopback-datasource-juggler";
 
 interface AminoRoleMapping {
   id?:any,
@@ -39,43 +40,6 @@ let U:any;
 let R:any;
 let RM:any;
 
-const GlobalAdminUsers = [
-  {
-    user: {
-      username: Globals.adminUserName,
-      firstname: Globals.adminUserName,
-      lastname: Globals.adminUserName,
-      email: Globals.adminUserEmail,
-      password: Globals.adminUserDefaultPassword
-    },
-    roles: [
-      {
-        name: Globals.adminRoleName
-      },
-      {
-        name: 'hooligans'
-      }
-    ]
-  },
-  {
-    user: {
-      username: Globals.elasticsearchUserName,
-      firstname: Globals.elasticsearchUserName,
-      lastname: Globals.elasticsearchUserName,
-      email: Globals.elasticsearchUserEmail,
-      password: Globals.elasticsearchUserDefaultPassword
-    },
-    roles: [
-      {
-        name: Globals.elasticsearchRoleName
-      },
-      {
-        name: 'shinanigins'
-      }
-    ]
-  }
-];
-
 @injectable()
 export class AuthenticationImpl extends BaseServiceImpl {
   private timer = Timer.get('AuthenticationImplTimer');
@@ -101,13 +65,23 @@ export class AuthenticationImpl extends BaseServiceImpl {
 
     me.postal.subscribe({
       channel: me.servicePostalChannel,
-      topic: 'AfterRoleAddRemoveToDatabase',
-      callback: me.afterRoleAddRemoveToDatabase.bind(me)
+      topic: 'AfterUserAddToDatabase',
+      callback: me.afterUserAddToDatabase.bind(me)
     });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
-      topic: 'AfterUserAddRemoveToDatabase',
-      callback: me.afterUserAddRemoveToDatabase.bind(me)
+      topic: 'BeforeUserRemoveFromDatabase',
+      callback: me.beforeUserRemoveFromDatabase.bind(me)
+    });
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'AfterRoleAddToDatabase',
+      callback: me.afterRoleAddToDatabase.bind(me)
+    });
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'BeforeRoleRemoveFromDatabase',
+      callback: me.beforeRoleRemoveFromDatabase.bind(me)
     });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
@@ -132,7 +106,32 @@ export class AuthenticationImpl extends BaseServiceImpl {
           cb(err, {message: 'Initialized Authentication'});
           if(Globals.node_env === 'development') {
             if(Globals.testAuthenticationServer) {
-              //me.loadTest();
+              //return;
+              /*              setTimeout(() => {
+                              R.destroyAll({name: 'role2'}, (err, result) => {
+                                const e = err;
+                              });
+                            }, 15000);*/
+              me.loadTest();
+              /*              const users = [
+                              {
+                                username: 'user1',
+                                firstname: 'user1',
+                                lastname: 'user1',
+                                email: 'user1@user1.com',
+                                password: 'password'
+                              },
+                              {
+                                username: 'user2',
+                                firstname: 'user2',
+                                lastname: 'user2',
+                                email: 'user2@user1.com',
+                                password: 'password'
+                              }
+                            ];
+                            U.create(users, (err, users) => {
+                              const e = err;
+                            });*/
             }
           }
         }
@@ -156,16 +155,20 @@ export class AuthenticationImpl extends BaseServiceImpl {
       timer.start();
       setInterval(() => {
         const startTime = timer.time();
-        const role = roles.length < 90 ? null : roles.pop();
+        //const role = roles.length < 90 ? null : roles.pop();
         //const role = roles.pop();
-        /*        role && me.findOrCreateRole(role, (err, newRole) => {
-                  const stopTime = timer.time();
-                  //me.log.info(`Creating role '${newRole.name}' took ${stopTime - startTime} ms`);
-                });*/
+        AuthenticationImpl.findOrCreateEntities(R, roles, (err, newRoles) => {
+          const stopTime = timer.time();
+          me.log.info(`Creating roles took ${stopTime - startTime} ms`);
+        });
       }, 45);
       setInterval(() => {
         const startTime = timer.time();
-        const user = users.length < 980 ? null : users.pop();
+        //const user = users.length < 980 ? null : users.pop();
+        AuthenticationImpl.findOrCreateEntities(U, users, (err, newUsers) => {
+          const stopTime = timer.time();
+          me.log.info(`Creating users took ${stopTime - startTime} ms`);
+        });
         //const user = users.pop();
         /*        user && me.findOrCreateUser(user, (err, newUser) => {
                   const stopTime = timer.time();
@@ -191,7 +194,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
       },
       (cb) => {
         //Add 'permanent' users
-        async.each(GlobalAdminUsers, (globalAdminUser, cb) => {
+        async.each(Globals.defaultUsers, (globalAdminUser, cb) => {
           async.waterfall([
             (cb:(err:Error, roles:AminoRole[]) => void) => {
               AuthenticationImpl.findOrCreateEntities(R, globalAdminUser.roles, cb);
@@ -256,34 +259,18 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
-  private processUpdateRoleQueue() {
+  private processUpdateRoleQueue(cb:(err) => void) {
     const me = this;
-    me.app.models.AminoRoleMapping.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
-      if(err) {
-        return me.log.logIfError(err);
+    async.parallel([
+      (cb) => {
+        const roleMappingsToRemove = me.roleMappingsToRemove.splice(0, me.roleMappingsToRemove.length);
+        AuthenticationImpl.destroyAllEntities(RM, roleMappingsToRemove, cb);
+      },
+      (cb) => {
+        const roleMappingsToAdd = me.roleMappingsToAdd.splice(0, me.roleMappingsToAdd.length);
+        AuthenticationImpl.findOrCreateEntities(RM, roleMappingsToAdd, cb);
       }
-      async.parallel([
-        (cb) => {
-          async.each(me.roleMappingsToRemove, (roleMapping, cb) => {
-            RM.destroyAll(roleMapping, {transaction}, cb);
-          }, cb);
-        },
-        (cb) => {
-          async.each(me.roleMappingsToAdd, (roleMapping, cb) => {
-            RM.findOrCreate({where: roleMapping}, roleMapping, {transaction}, cb);
-          }, cb);
-        }
-      ], (err:Error) => {
-        if(err) {
-          return transaction.rollback(() => {
-            me.log.logIfError(err);
-          });
-        }
-        transaction.commit((err) => {
-          me.log.logIfError(err);
-        });
-      });
-    });
+    ], cb);
   };
 
   private updateAminoUserRoles(data:{updatedUserInfo:AminoUser, cb:(err:Error) => void}) {
@@ -344,8 +331,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
       me.roleMappingsToAdd.push(...allRoleMappingsToAdd);
       me.roleMappingsToRemove.push(...allRoleMappingsToRemove);
       me.log.warning(`Calculating RoleMapping updates took ${me.timer.time() - startTime} ms`);
-      me.processUpdateRoleQueue();
-      cb(err);
+      me.processUpdateRoleQueue(cb);
     });
   }
 
@@ -358,7 +344,8 @@ export class AuthenticationImpl extends BaseServiceImpl {
       (cb) => {
         U.find({include: 'roles'}, cb);
       },
-      (users:any[], cb) => {
+      (users:PersistedModel[], cb) => {
+        me.log.warning(`Updating all user roles + potential roles for ${users.length} users`);
         async.each(users, (user, cb) => {
           me.updateAminoUserRoles({updatedUserInfo: user.toObject(), cb});
         }, cb);
@@ -368,26 +355,87 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
-  private afterRoleAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
-    const me = this;
-    const {next} = data;
-    me.updateAllUsersRolesAndPotentialRoles((err:Error) => {
-      me.log.logIfError(err);
-      next();
+  private beforeRoleRemoveFromDatabase(data:{ctx:{where:any}, next:(err?:Error) => void}) {
+    const {ctx, next} = data;
+    R.find({where: ctx.where}, (err:Error, roles:AminoRole[]) => {
+      RM.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
+        if(err) {
+          return next(err);
+        }
+        //Remove roleMappings with role ids in roleId or potentialRoleId property
+        const destroyedRoleIds = roles.map((role) => role.id);
+        RM.destroyAll(
+          {
+            or: [
+              {roleId: {inq: destroyedRoleIds}},
+              {potentialRoleId: {inq: destroyedRoleIds}}
+            ]
+          },
+          {
+            transaction
+          },
+          (err/*, results*/) => {
+            if(err) {
+              return transaction.rollback(() => {
+                next(err);
+              });
+            }
+            transaction.commit(() => {
+              next();
+            });
+          });
+      });
     });
   }
 
-  private afterUserAddRemoveToDatabase(data:{ctx:any, next:() => void}) {
+  private afterRoleAddToDatabase(data:{ctx:any, next:() => void}) {
+    const me = this;
+    const {next} = data;
+    try {
+      me.updateAllUsersRolesAndPotentialRoles((err:Error) => {
+        me.log.logIfError(err);
+        next();
+      });
+    } catch(err) {
+      next();
+    }
+  }
+
+  private beforeUserRemoveFromDatabase(data:{ctx:{where:any}, next:(err?:Error) => void}) {
+    const {ctx, next} = data;
+    U.find({where: ctx.where}, (err:Error, users:AminoUser[]) => {
+      RM.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
+        if(err) {
+          return next(err);
+        }
+        //Remove roleMappings with user ids in principalId property
+        const destroyedUserIds = users.map((user) => user.id);
+        RM.destroyAll(
+          {
+            principalId: {inq: destroyedUserIds}
+          },
+          {
+            transaction
+          },
+          (err/*, results*/) => {
+            if(err) {
+              return transaction.rollback(() => {
+                next(err);
+              });
+            }
+            transaction.commit(() => {
+              next();
+            });
+          });
+      });
+    });
+  }
+
+  private afterUserAddToDatabase(data:{ctx:any, next:() => void}) {
     const me = this;
     const {ctx, next} = data;
-    const updatedUserInfo = (ctx.instance) ? ctx.instance.toObject() : null;
-    if(updatedUserInfo) {
-      return me.updateAminoUserRoles({updatedUserInfo, cb: next});
-    }
-    me.updateAllUsersRolesAndPotentialRoles((err) => {
-      me.log.logIfError(err);
-      next();
-    });
+    const updatedUserInfo = ctx.instance.toObject();
+    me.updateAminoUserRoles({updatedUserInfo, cb: next});
   }
 
   /*  private appendAcls(acls:any[], cb:(err:Error) => void) {
@@ -405,8 +453,28 @@ export class AuthenticationImpl extends BaseServiceImpl {
     AuthenticationImpl.findOrCreateEntities(RM, newRoleMappings, cb);
   }
 
+  private static destroyAllEntities<T>(Model:any, entities:T[], cb:(err:Error, entitiesDestroyed?:T[]) => void) {
+    Model.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
+      if(err) {
+        return cb(err);
+      }
+      async.each(entities, (entity:T, cb:(err:Error) => void) => {
+        Model.destroyAll(entity, {transaction}, cb);
+      }, (err) => {
+        if(err) {
+          return transaction.rollback(() => {
+            cb(err, []);
+          });
+        }
+        transaction.commit(() => {
+          cb(err, entities);
+        });
+      });
+    });
+  }
+
   private static findOrCreateEntities<T>(Model:any, entities:T[], cb:(err:Error, entities?:T[]) => void) {
-    Model.beginTransaction({isolationLevel: RM.Transaction.SERIALIZABLE}, (err, transaction) => {
+    Model.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
       const entitiesFoundOrCreated:T[] = [];
       if(err) {
         return cb(err);
