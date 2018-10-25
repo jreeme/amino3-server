@@ -5,10 +5,10 @@ import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 import {Globals} from '../../globals';
 import * as _ from 'lodash';
+import * as Timer from 'timer-machine';
 import * as path from 'path';
 import * as jsonfile from 'jsonfile';
-import * as Timer from 'timer-machine';
-import {PersistedModel} from "loopback-datasource-juggler";
+import {PersistedData} from 'loopback-datasource-juggler';
 
 interface AminoRoleMapping {
   id?:any,
@@ -104,32 +104,7 @@ export class AuthenticationImpl extends BaseServiceImpl {
           cb(err, {message: 'Initialized Authentication'});
           if(Globals.node_env === 'development') {
             if(Globals.testAuthenticationServer) {
-              //return;
-              /*              setTimeout(() => {
-                              R.destroyAll({name: 'role2'}, (err, result) => {
-                                const e = err;
-                              });
-                            }, 15000);*/
-              me.loadTest();
-              /*              const users = [
-                              {
-                                username: 'user1',
-                                firstname: 'user1',
-                                lastname: 'user1',
-                                email: 'user1@user1.com',
-                                password: 'password'
-                              },
-                              {
-                                username: 'user2',
-                                firstname: 'user2',
-                                lastname: 'user2',
-                                email: 'user2@user1.com',
-                                password: 'password'
-                              }
-                            ];
-                            U.create(users, (err, users) => {
-                              const e = err;
-                            });*/
+              //me.loadTest();
             }
           }
         }
@@ -138,7 +113,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
   }
 
   private loadTest() {
-    //return;
     const me = this;
     async.parallel([
       (cb) => {
@@ -150,30 +124,30 @@ export class AuthenticationImpl extends BaseServiceImpl {
     ], (err, results) => {
       const allTestUsers = <AminoRole[]>results[0];
       const allTestRoles = <AminoUser[]>results[1];
-      const timer = Timer.get('loadTest');
-      timer.start();
+      me.timer.start();
       setInterval(() => {
-        const startTime = timer.time();
-        const roles = allTestRoles.splice(0, 5);
+        const startTime = me.timer.time();
+        const roles = allTestRoles.splice(0, 1);
         if(roles.length < 1) {
           return;
         }
-        AuthenticationImpl.findOrCreateEntities(R, roles, (err, newRoles) => {
-          const stopTime = timer.time();
+        me.findOrCreateEntities(R, roles, (err, newRoles) => {
+          const stopTime = me.timer.time();
+          me.log.logIfError(err);
           me.log.info(`Creating roles took ${stopTime - startTime} ms`);
         });
-      }, 2000);
+      }, 13500);
       setInterval(() => {
-        const startTime = timer.time();
-        const users = allTestUsers.splice(0, 5);
+        const startTime = me.timer.time();
+        const users = allTestUsers.splice(0, 2);
         if(users.length < 1) {
           return;
         }
-        AuthenticationImpl.findOrCreateEntities(U, users, (err, newUsers) => {
-          const stopTime = timer.time();
+        me.findOrCreateEntities(U, users, (err, newUsers) => {
+          const stopTime = me.timer.time();
           me.log.info(`Creating users took ${stopTime - startTime} ms`);
         });
-      }, 3000);
+      }, 17500);
     });
   }
 
@@ -196,19 +170,17 @@ export class AuthenticationImpl extends BaseServiceImpl {
         async.each(Globals.defaultUsers, (globalAdminUser, cb) => {
           async.waterfall([
             (cb:(err:Error, roles:AminoRole[]) => void) => {
-              AuthenticationImpl.findOrCreateEntities(R, globalAdminUser.roles, cb);
+              me.findOrCreateEntities(R, globalAdminUser.roles, cb);
             },
             (roles, cb:(err:Error, roles:AminoRole[], user:AminoUser) => void) => {
-              AuthenticationImpl.findOrCreateEntities(U, [globalAdminUser.user], (err, users) => {
+              me.findOrCreateEntities(U, [globalAdminUser.user], (err, users) => {
                 cb(err, roles, users[0]);
               });
             },
             (roles, user, cb) => {
-              AuthenticationImpl.associateUserWithRoles(user, roles, cb);
+              me.associateUserWithRoles(user, roles, cb);
             }
-          ], (err:Error, roleMappings:AminoRoleMapping[]) => {
-            cb(err);
-          });
+          ], cb);
         }, cb);
       },
       (cb) => {
@@ -231,7 +203,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
         //me.appendAcls(acls, cb);
       },
       (cb) => {
-        return cb();
         //Now open up a few routes, carefully
         const acls = [
           {
@@ -251,22 +222,27 @@ export class AuthenticationImpl extends BaseServiceImpl {
             permission: 'ALLOW'
           }
         ];
-        //me.appendAcls(acls, cb);
+        me.appendAcls(acls, cb);
+      },
+      (cb) => {
+        U.find({include: ['roles', 'potentialRoles']}, (err, users) => {
+          const userObjects = users.map(user => user.toObject());
+          async.eachLimit(userObjects, 3, (user, cb) => {
+            me.updateAminoUserRoles({updatedUserInfo: user, cb})
+          }, cb);
+        });
       }
-    ], (err:Error) => {
-      cb(err);
-      //me.updateAllUsersRolesAndPotentialRoles(cb);
-    });
+    ], cb);
   }
 
   private processUpdateRoleQueue(roleMappingsToAdd:AminoRoleMapping[], roleMappingsToRemove:AminoRoleMapping[], cb:(err) => void) {
     const me = this;
     async.series([
       (cb) => {
-        AuthenticationImpl.destroyAllEntities(RM, roleMappingsToRemove, cb);
+        AuthenticationImpl.destroyEntities(RM, roleMappingsToRemove, cb);
       },
       (cb) => {
-        AuthenticationImpl.findOrCreateEntities(RM, roleMappingsToAdd, cb);
+        me.findOrCreateEntities(RM, roleMappingsToAdd, cb);
       }
     ], cb);
   };
@@ -344,26 +320,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
-  private _updateAllUsersRolesAndPotentialRoles(cb:(err:Error) => void) {
-    const me = this;
-    //Update roles for all users
-    //me.log.critical(`Request to update all user roles received (not doing it)`);
-    //return cb(null);
-    async.waterfall([
-      (cb) => {
-        U.find({include: 'roles'}, cb);
-      },
-      (users:PersistedModel[], cb) => {
-        me.log.warning(`Updating all user roles + potential roles for ${users.length} users`);
-        async.eachLimit(users, 4, (user, cb) => {
-          me.updateAminoUserRoles({updatedUserInfo: user.toObject(), cb});
-        }, cb);
-      }
-    ], (err:Error) => {
-      cb(err);
-    });
-  }
-
   private beforeRoleRemoveFromDatabase(data:{ctx:{where:any}, next:(err?:Error) => void}) {
     const {ctx, next} = data;
     R.find({where: ctx.where}, (err:Error, roles:AminoRole[]) => {
@@ -397,36 +353,6 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
-  private afterRoleAddToDatabase(data:{ctx:any, next:() => void}) {
-    const me = this;
-    const {ctx, next} = data;
-    try {
-      async.waterfall([
-        (cb) => {
-          U.find(cb);
-        },
-        (users:any[], cb) => {
-          try {
-            const newRoleMappings = users.map((user) => ({
-              principalType: RM.USER,
-              principalId: user.id,
-              potentialRoleId: ctx.instance.id
-            }));
-            me.log.warning(`Creating RoleMappings for role: '${ctx.instance.name}' for ${users.length} users`);
-            AuthenticationImpl.findOrCreateEntities(RM, newRoleMappings, cb);
-          } catch(err) {
-            cb(err);
-          }
-        }
-      ], (err:Error) => {
-        me.log.logIfError(err);
-        next();
-      });
-    } catch(err) {
-      next();
-    }
-  }
-
   private beforeUserRemoveFromDatabase(data:{ctx:{where:any}, next:(err?:Error) => void}) {
     const {ctx, next} = data;
     U.find({where: ctx.where}, (err:Error, users:AminoUser[]) => {
@@ -458,28 +384,88 @@ export class AuthenticationImpl extends BaseServiceImpl {
   }
 
   private afterUserAddToDatabase(data:{ctx:any, next:() => void}) {
+    //After a new user is added to AminoUser table we need to add each role to its potential roles
+    //This means we have to add a number of RoleMappings equal to the number of roles
     const me = this;
     const {ctx, next} = data;
-    const updatedUserInfo = ctx.instance.toObject();
-    me.updateAminoUserRoles({updatedUserInfo, cb: next});
+    try {
+      async.waterfall([
+        (cb) => {
+          R.find(cb);
+        },
+        (roles:any[], cb) => {
+          try {
+            const newRoleMappings = roles.map((role) => ({
+              principalType: RM.USER,
+              principalId: ctx.instance.id,
+              potentialRoleId: role.id
+            }));
+            me.log.warning(`Creating RoleMappings for ${roles.length} roles for user: '${ctx.instance.username}'`);
+            me.findOrCreateEntities(RM, newRoleMappings, cb);
+          } catch(err) {
+            cb(err);
+          }
+        }
+      ], (err:Error) => {
+        me.log.logIfError(err);
+        next();
+      });
+    } catch(err) {
+      me.log.logIfError(err);
+      next();
+    }
   }
 
-  /*  private appendAcls(acls:any[], cb:(err:Error) => void) {
-      const me = this;
-      const ACL = me.app.models.ACL;
-      async.each(acls, ACL.findOrCreate.bind(ACL), cb);
-    }*/
+  private afterRoleAddToDatabase(data:{ctx:any, next:() => void}) {
+    //After a new role is added to the AminoRole table we need to add it to the potential roles of each user.
+    //This means we have to add a number of RoleMappings equal to the number of users
+    const me = this;
+    const {ctx, next} = data;
+    try {
+      async.waterfall([
+        (cb) => {
+          U.find(cb);
+        },
+        (users:any[], cb) => {
+          try {
+            const newRoleMappings = users.map((user) => ({
+              principalType: RM.USER,
+              principalId: user.id,
+              potentialRoleId: ctx.instance.id
+            }));
+            me.log.warning(`Creating RoleMappings for role: '${ctx.instance.name}' for ${users.length} users`);
+            me.findOrCreateEntities(RM, newRoleMappings, cb);
+          } catch(err) {
+            cb(err);
+          }
+        }
+      ], (err:Error) => {
+        me.log.logIfError(err);
+        next();
+      });
+    } catch(err) {
+      me.log.logIfError(err);
+      next();
+    }
+  }
 
-  private static associateUserWithRoles(user:AminoUser, roles:AminoRole[], cb:(err:Error, roleMappings:AminoRoleMapping[]) => void) {
+  private appendAcls(acls:any[], cb:(err:Error) => void) {
+    const me = this;
+    const ACL = me.app.models.ACL;
+    async.each(acls, ACL.findOrCreate.bind(ACL), cb);
+  }
+
+  private associateUserWithRoles(user:AminoUser, roles:AminoRole[], cb:(err:Error, roleMappings:AminoRoleMapping[]) => void) {
+    const me = this;
     const newRoleMappings = roles.map((role) => ({
       principalType: RM.USER,
       principalId: user.id,
       roleId: role.id
     }));
-    AuthenticationImpl.findOrCreateEntities(RM, newRoleMappings, cb);
+    me.findOrCreateEntities(RM, newRoleMappings, cb);
   }
 
-  private static destroyAllEntities<T>(Model:any, entities:T[], cb:(err:Error, entitiesDestroyed?:T[]) => void) {
+  private static destroyEntities<T>(Model:any, entities:T[], cb:(err:Error, entitiesDestroyed?:T[]) => void) {
     Model.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
       if(err) {
         return cb(err);
@@ -499,12 +485,18 @@ export class AuthenticationImpl extends BaseServiceImpl {
     });
   }
 
-  private static findOrCreateEntities<T>(Model:any, entities:T[], cb:(err:Error, entities?:T[]) => void) {
+  private findOrCreateEntities<T>(Model:any, entities:T[], cb:(err:Error, entities?:T[]) => void) {
+    const me = this;
+    //let startTime = me.timer.time();
     Model.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
+      //const stopTime = me.timer.time();
+      //me.log.info(`Opening findOrCreateEntities transaction took ${stopTime - startTime} ms`);
       if(err) {
+        me.log.logIfError(err);
         return cb(err);
       }
       const entitiesFoundOrCreated:T[] = [];
+      //startTime = me.timer.time();
       async.eachLimit(entities, 2, (entity:T, cb:(err:Error) => void) => {
         switch(Model) {
           case(U):
@@ -526,8 +518,11 @@ export class AuthenticationImpl extends BaseServiceImpl {
             });
             break;
         }
-      }, (err) => {
+      }, (err:any) => {
+        const stopTime = me.timer.time();
+        //me.log.info(`Async operation for findOrCreateEntities transaction took ${stopTime - startTime} ms`);
         if(err) {
+          me.log.error(err);
           return transaction.rollback(() => {
             cb(err, []);
           });
@@ -540,14 +535,14 @@ export class AuthenticationImpl extends BaseServiceImpl {
   }
 
   private static findOrCreateRole(role:AminoRole, transaction, cb:(err:Error, role:AminoRole, created:boolean) => void) {
-    R.findOrCreate({where: {name: role.name}}, role, {transaction}, cb);
+    R.findOrCreate({where: {name: role.name}}, <PersistedData>role, {transaction}, cb);
   }
 
   private static findOrCreateUser(user:AminoUser, transaction, cb:(err:Error, user:AminoUser, created:boolean) => void) {
-    U.findOrCreate({where: {username: user.username}}, user, {transaction}, cb);
+    U.findOrCreate({where: {username: user.username}}, <PersistedData>user, {transaction}, cb);
   }
 
   private static findOrCreateRoleMapping(roleMapping:AminoRoleMapping, transaction, cb:(err:Error, roleMapping:AminoRoleMapping, created:boolean) => void) {
-    RM.findOrCreate({where: roleMapping}, roleMapping, {transaction}, cb);
+    RM.findOrCreate({where: roleMapping}, <PersistedData>roleMapping, {transaction}, cb);
   }
 }

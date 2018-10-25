@@ -144,42 +144,36 @@ export class Globals {
   static serverServiceUploadFileUrl = '/server-service-upload-files';
   static elasticsearchUrl = 'http://elasticsearch:9200';
   static testAuthenticationServer = false;
-  static defaultUsers = [];
-  /*    [
-        {
-          user: {
-            username: Globals.adminUserName,
-            firstname: Globals.adminUserName,
-            lastname: Globals.adminUserName,
-            email: Globals.adminUserEmail,
-            password: Globals.adminUserDefaultPassword
-          },
-          roles: [
-            {
-              name: Globals.adminRoleName
-            },
-            {
-              name: 'hooligans'
-            }
-          ]
+  static defaultUsers =
+    [
+      {
+        user: {
+          username: Globals.adminUserName,
+          firstname: Globals.adminUserName,
+          lastname: Globals.adminUserName,
+          email: Globals.adminUserEmail,
+          password: Globals.adminUserDefaultPassword
         },
-        {
-          user: {
-            username: Globals.elasticsearchUserName,
-            firstname: Globals.elasticsearchUserName,
-            lastname: Globals.elasticsearchUserName,
-            email: Globals.elasticsearchUserEmail,
-            password: Globals.elasticsearchUserDefaultPassword
-          },
-          roles: [
-            {
-              name: Globals.elasticsearchRoleName
-            },
-            {
-              name: 'shinanigins'
-            }
-          ]
-        }
-      ];*/
+        roles: [
+          {
+            name: Globals.adminRoleName
+          }
+        ]
+      },
+      {
+        user: {
+          username: Globals.elasticsearchUserName,
+          firstname: Globals.elasticsearchUserName,
+          lastname: Globals.elasticsearchUserName,
+          email: Globals.elasticsearchUserEmail,
+          password: Globals.elasticsearchUserDefaultPassword
+        },
+        roles: [
+          {
+            name: Globals.elasticsearchRoleName
+          }
+        ]
+      }
+    ];
 }
 
