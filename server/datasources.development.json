@@ -1,7 +1,8 @@
 {
   "amino_admin_pg": {
     "name": "amino_admin_pg",
-    "host": "localhost",
+    "host": "192.168.104.18",
+    "_host": "localhost",
     "port": 5432,
     "connector": "postgresql",
     "database": "amino_admin",

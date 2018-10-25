@@ -10,7 +10,7 @@
     "build": "npm install && tsc --project server/tsconfig.json",
     "build_no_npm_install": "tsc --project server/tsconfig.json",
     "test": "mocha --timeout 10000",
-    "build:sdk": "AMINO3_NO_LISTEN=TRUE AMINO3_NO_SERVICES=TRUE lb-sdk server-dist/server.js client/src/lb-sdk -i enabled -w enabled"
+    "build:sdk": "cd server-dist && AMINO3_NO_LISTEN=TRUE AMINO3_NO_SERVICES=TRUE lb-sdk server.js ../client/src/lb-sdk -i enabled -w enabled"
   },
   "dependencies": {
     "boolify-string": "^2.0.2",
@@ -54,6 +54,7 @@
     "stream-json": "^1.1.1",
     "strong-error-handler": "^2.0.0",
     "tar-pack": "^3.4.1",
+    "timer-machine": "^1.1.0",
     "tmp": "^0.0.33",
     "typescript": "^2.9.2"
   },

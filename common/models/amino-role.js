@@ -1,9 +1,9 @@
 'use strict';
 
-function afterRoleAddRemoveToDatabase(ctx, next) {
+function addRemoveRole(topic, ctx, next) {
   global.postal.publish({
     channel: 'PostalChannel-Authentication',
-    topic: 'AfterRoleAddRemoveToDatabase',
+    topic,
     data: {
       ctx,
       next
@@ -11,12 +11,12 @@ function afterRoleAddRemoveToDatabase(ctx, next) {
   });
 }
 
-module.exports = function(AminoRole) {
+module.exports = function (AminoRole) {
   //Observe DB events
   AminoRole.observe('after save', (ctx, next) => {
-    afterRoleAddRemoveToDatabase(ctx, next);
+    addRemoveRole('AfterRoleAddToDatabase', ctx, next);
   });
-  AminoRole.observe('after delete', (ctx, next) => {
-    afterRoleAddRemoveToDatabase(ctx, next);
+  AminoRole.observe('before delete', (ctx, next) => {
+    addRemoveRole('BeforeRoleRemoveFromDatabase', ctx, next);
   });
 };
