@@ -1,6 +1,16 @@
 'use strict';
 
 module.exports = function (DataSet) {
+  DataSet.observe('after save', (ctx, next) => {
+    global.postal.publish({
+      channel: 'PostalChannel-DataSetLaunchEtl',
+      topic:'AfterDataSetUpdate',
+      data: {
+        ctx,
+        next
+      }
+    });
+  });
   {
     //>>>upload
     DataSet.upload = function (req, res) {
