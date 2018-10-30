@@ -323,6 +323,17 @@ export class AuthenticationImpl extends BaseServiceImpl {
   private beforeRoleRemoveFromDatabase(data:{ctx:{where:any}, next:(err?:Error) => void}) {
     const {ctx, next} = data;
     R.find({where: ctx.where}, (err:Error, roles:AminoRole[]) => {
+      if(Globals.badDataSourceReplacedWithMemoryDataSource) {
+        const destroyedRoleIds = roles.map((role) => role.id);
+        return RM.destroyAll(
+          {
+            or: [
+              {roleId: {inq: destroyedRoleIds}},
+              {potentialRoleId: {inq: destroyedRoleIds}}
+            ]
+          },
+          next);
+      }
       RM.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
         if(err) {
           return next(err);
@@ -356,6 +367,14 @@ export class AuthenticationImpl extends BaseServiceImpl {
   private beforeUserRemoveFromDatabase(data:{ctx:{where:any}, next:(err?:Error) => void}) {
     const {ctx, next} = data;
     U.find({where: ctx.where}, (err:Error, users:AminoUser[]) => {
+      if(Globals.badDataSourceReplacedWithMemoryDataSource) {
+        const destroyedUserIds = users.map((user) => user.id);
+        return RM.destroyAll(
+          {
+            principalId: {inq: destroyedUserIds}
+          },
+          next);
+      }
       RM.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
         if(err) {
           return next(err);
@@ -466,6 +485,12 @@ export class AuthenticationImpl extends BaseServiceImpl {
   }
 
   private static destroyEntities<T>(Model:any, entities:T[], cb:(err:Error, entitiesDestroyed?:T[]) => void) {
+    if(Globals.badDataSourceReplacedWithMemoryDataSource) {
+      return async.eachLimit(entities, 2, (entity:T, cb:(err:Error) => void) => {
+          Model.destroyAll(entity, cb);
+        },
+        cb);
+    }
     Model.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
       if(err) {
         return cb(err);
@@ -488,6 +513,35 @@ export class AuthenticationImpl extends BaseServiceImpl {
   private findOrCreateEntities<T>(Model:any, entities:T[], cb:(err:Error, entities?:T[]) => void) {
     const me = this;
     //let startTime = me.timer.time();
+    if(Globals.badDataSourceReplacedWithMemoryDataSource) {
+      const entitiesFoundOrCreated:T[] = [];
+      //startTime = me.timer.time();
+      return async.eachLimit(entities, 2, (entity:T, cb:(err:Error) => void) => {
+          switch(Model) {
+            case(U):
+              AuthenticationImpl.findOrCreateUser(entity, null, (err, entity:T/*, created*/) => {
+                entitiesFoundOrCreated.push(entity);
+                cb(err);
+              });
+              break;
+            case(R):
+              AuthenticationImpl.findOrCreateRole(entity, null, (err, entity:T/*, created*/) => {
+                entitiesFoundOrCreated.push(entity);
+                cb(err);
+              });
+              break;
+            case(RM):
+              AuthenticationImpl.findOrCreateRoleMapping(entity, null, (err, entity:T/*, created*/) => {
+                entitiesFoundOrCreated.push(entity);
+                cb(err);
+              });
+              break;
+          }
+        },
+        (err:Error) => {
+          cb(err, entitiesFoundOrCreated);
+        });
+    }
     Model.beginTransaction({isolationLevel: RM.Transaction.READ_COMMITTED}, (err, transaction) => {
       //const stopTime = me.timer.time();
       //me.log.info(`Opening findOrCreateEntities transaction took ${stopTime - startTime} ms`);
@@ -535,14 +589,32 @@ export class AuthenticationImpl extends BaseServiceImpl {
   }
 
   private static findOrCreateRole(role:AminoRole, transaction, cb:(err:Error, role:AminoRole, created:boolean) => void) {
-    R.findOrCreate({where: {name: role.name}}, <PersistedData>role, {transaction}, cb);
+    if(transaction) {
+      R.findOrCreate({where: {name: role.name}}, <PersistedData>role, {transaction}, cb);
+    } else {
+      R.findOrCreate({where: {name: role.name}}, <PersistedData>role, (err, role, created) => {
+        cb(err, role, created);
+      });
+    }
   }
 
   private static findOrCreateUser(user:AminoUser, transaction, cb:(err:Error, user:AminoUser, created:boolean) => void) {
-    U.findOrCreate({where: {username: user.username}}, <PersistedData>user, {transaction}, cb);
+    if(transaction) {
+      U.findOrCreate({where: {username: user.username}}, <PersistedData>user, {transaction}, cb);
+    } else {
+      U.findOrCreate({where: {username: user.username}}, <PersistedData>user, (err, user, created) => {
+        cb(err, user, created);
+      });
+    }
   }
 
   private static findOrCreateRoleMapping(roleMapping:AminoRoleMapping, transaction, cb:(err:Error, roleMapping:AminoRoleMapping, created:boolean) => void) {
-    RM.findOrCreate({where: roleMapping}, <PersistedData>roleMapping, {transaction}, cb);
+    if(transaction) {
+      RM.findOrCreate({where: roleMapping}, <PersistedData>roleMapping, {transaction}, cb);
+    } else {
+      RM.findOrCreate({where: roleMapping}, <PersistedData>roleMapping, (err, roleMapping, created) => {
+        cb(err, roleMapping, created);
+      });
+    }
   }
 }

@@ -91,6 +91,7 @@ export class Globals {
 
   static memoryDataSourceName = 'amino_admin_mem';
   static replaceBadDataSourceWithMemoryDataSource = true;
+  static badDataSourceReplacedWithMemoryDataSource = false;
 
   static serverChannel = 'server-channel';
 

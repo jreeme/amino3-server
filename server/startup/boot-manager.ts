@@ -73,7 +73,7 @@ export class BootManagerImpl implements BootManager {
             //TODO: Add timeout to ping in case the machine is unreachable. This works OK if machine is reachable
             //but no server is listening on the specified port
             ds.ping((err:Error) => {
-              me.log.debug(`DataSource '${dataSourceName}' PING ` + (!err? 'SUCCESS': 'FAIL'));
+              me.log.debug(`DataSource '${dataSourceName}' PING ` + (!err ? 'SUCCESS' : 'FAIL'));
               cb(null, !err);
             });
           },
@@ -89,7 +89,7 @@ export class BootManagerImpl implements BootManager {
             }
             me.log.debug(`Running helper for DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
             fdbh[0].configure(ds, (err:Error) => {
-              me.log.debug(`DataSource helper config for '${dataSourceName}' ` + (!err? 'SUCCESS': 'FAIL'));
+              me.log.debug(`DataSource helper config for '${dataSourceName}' ` + (!err ? 'SUCCESS' : 'FAIL'));
               cb(null, false);
             });
           },
@@ -98,7 +98,7 @@ export class BootManagerImpl implements BootManager {
               return cb(null, true);
             }
             ds.ping((err) => {
-              me.log.debug(`DataSource '${dataSourceName}' (after config) PING ` + (!err? 'SUCCESS': 'FAIL'));
+              me.log.debug(`DataSource '${dataSourceName}' (after config) PING ` + (!err ? 'SUCCESS' : 'FAIL'));
               !err && me.dataSourcesToAutoMigrate.push(ds);
               err && me.log.warning(err.message);
               cb(null, !err);
@@ -117,6 +117,7 @@ export class BootManagerImpl implements BootManager {
               message += ` (Models: '${modelNames}')`;
               throw new Error(message);
             }
+            Globals.badDataSourceReplacedWithMemoryDataSource = true;
             me.log.warning(`Replacing bad DataSource '${ds.name}' with '${Globals.memoryDataSourceName}' on models '${modelNames}'`);
             modelsUsingThisBadDataSource.forEach((model) => {
               model.config.dataSource = Globals.memoryDataSourceName;
