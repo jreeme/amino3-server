@@ -62,6 +62,14 @@
     "dataSource": "amino_admin_pg",
     "public": true
   },
+  "MetadataInfoCatalogTag": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
+  "MetadataInfoCatalogPedigree": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
   "Elasticsearch": {
     "dataSource": "amino_admin_pg",
     "public": true

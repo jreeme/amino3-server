@@ -1,0 +1,17 @@
+{
+  "name": "MetadataInfoCatalogPedigree",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "fileHash": {
+      "type": "string",
+      "required": true
+    }  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
