@@ -124,7 +124,20 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "tags": {
+      "type": "hasMany",
+      "model": "MetadataInfoCatalogTag",
+      "foreignKey": "tagId",
+      "primaryKey": "id"
+    },
+    "pedigrees": {
+      "type": "hasMany",
+      "model": "MetadataInfoCatalogPedigree",
+      "foreignKey": "pedigreeId",
+      "primaryKey": "id"
+    }
+  },
   "acls": [],
   "methods": {}
 }
