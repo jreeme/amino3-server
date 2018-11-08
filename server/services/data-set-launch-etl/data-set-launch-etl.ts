@@ -15,6 +15,11 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     const me = this;
     me.postal.subscribe({
       channel: me.servicePostalChannel,
+      topic:'BeforeMetadataInfoCatalogDelete',
+      callback: me.beforeMetadataInfoCatalogDelete.bind(me)
+    });
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
       topic:'AfterDataSetUpdate',
       callback: me.afterDataSetUpdate.bind(me)
     });
@@ -23,6 +28,18 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
 
   init(cb:(err:Error, result:any) => void) {
     cb(null, {message: 'Initialized DataSetLaunchEtl'});
+  }
+
+  private beforeMetadataInfoCatalogDelete(data:{ctx:any, next:() => void}) {
+    const me = this;
+    const {ctx, next} = data;
+    try {
+      const dataSet = ctx.instance.toObject();
+      next();
+    } catch(err) {
+      me.log.logIfError(err);
+      next();
+    }
   }
 
   private afterDataSetUpdate(data:{ctx:any, next:() => void}) {

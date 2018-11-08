@@ -2,6 +2,18 @@
 
 module.exports = function(MetadataInfoCatalog) {
 
+
+  MetadataInfoCatalog.observe('before delete', (ctx, next) => {
+    global.postal.publish({
+      channel: 'PostalChannel-DataSetLaunchEtl',
+      topic: 'BeforeMetadataInfoCatalogDelete',
+      data: {
+        ctx,
+        next
+      }
+    });
+  });
+
   MetadataInfoCatalog.remoteMethod('deleteAll', {
     isStatic: true,
     description: 'Delete all instances from the data source based on where criteria',
