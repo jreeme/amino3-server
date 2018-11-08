@@ -1,8 +1,6 @@
 'use strict';
 
 module.exports = function(MetadataInfoCatalog) {
-
-
   MetadataInfoCatalog.observe('before delete', (ctx, next) => {
     global.postal.publish({
       channel: 'PostalChannel-DataSetLaunchEtl',
