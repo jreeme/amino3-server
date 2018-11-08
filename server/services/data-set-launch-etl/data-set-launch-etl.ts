@@ -50,14 +50,14 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
         const destroyedMicEntryIds = micEntries.map((micEntry) => micEntry.id);
         async.parallel([
           (cb) => {
-            MICP.destroyAll(
+            MICT.destroyAll(
               {
-                pedigreeId: {inq: destroyedMicEntryIds}
+                tagId: {inq: destroyedMicEntryIds}
               },
               cb);
           },
           (cb) => {
-            MICT.destroyAll(
+            MICP.destroyAll(
               {
                 pedigreeId: {inq: destroyedMicEntryIds}
               },
