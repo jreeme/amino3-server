@@ -11,7 +11,13 @@
       "required": true
     }  },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "metadatainfocatalog": {
+      "type": "hasOne",
+      "model": "MetadataInfoCatalog",
+      "foreignKey": "id"
+    }
+  },
   "acls": [],
   "methods": {}
 }
