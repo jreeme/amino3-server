@@ -12,7 +12,7 @@
     }  },
   "validations": [],
   "relations": {
-    "metadatainfocatalog": {
+    "metadataInfoCatalog": {
       "type": "hasOne",
       "model": "MetadataInfoCatalog",
       "foreignKey": "id"
