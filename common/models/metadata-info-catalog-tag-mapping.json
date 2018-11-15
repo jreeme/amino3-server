@@ -1,7 +1,7 @@
 {
   "name": "MetadataInfoCatalogTagMapping",
   "base": "PersistedModel",
-  "description": "Map catalog to roles",
+  "description": "Map catalog to tags",
   "properties": {
     "id": {
       "type": "string",

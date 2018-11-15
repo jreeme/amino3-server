@@ -130,7 +130,7 @@
     "pedigrees": {
       "type": "hasMany",
       "model": "MetadataInfoCatalogPedigree",
-      "foreignKey": "pedigreeId",
+      "foreignKey": "catalogId",
       "primaryKey": "id"
     },
     "tags": {
