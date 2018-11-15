@@ -1,0 +1,23 @@
+{
+  "name": "MetadataInfoCatalogTagMapping",
+  "base": "PersistedModel",
+  "description": "Map catalog to roles",
+  "properties": {
+    "id": {
+      "type": "string",
+      "id": true,
+      "generated": true
+    },
+    "catalogId": {
+      "type": "string",
+      "index": true
+    }
+  },
+  "relations": {
+    "role": {
+      "type": "belongsTo",
+      "model": "MetadataInfoCatalogTag",
+      "foreignKey": "tagId"
+    }
+  }
+}

@@ -66,6 +66,10 @@
     "dataSource": "amino_admin_pg",
     "public": true
   },
+  "MetadataInfoCatalogTagMapping": {
+    "dataSource": "amino_admin_pg",
+    "public": true
+  },
   "MetadataInfoCatalogPedigree": {
     "dataSource": "amino_admin_pg",
     "public": true

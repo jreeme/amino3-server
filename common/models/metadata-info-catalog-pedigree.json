@@ -6,23 +6,12 @@
     "validateUpsert": true
   },
   "properties": {
-    "datasetUID": {
-      "type": "string",
-      "required": true,
-      "description": "dataset unique identifier"
-    },
     "fileHash": {
       "type": "string",
       "required": false
     }  },
   "validations": [],
-  "relations": {
-    "metadataInfoCatalog": {
-      "type": "hasOne",
-      "model": "MetadataInfoCatalog",
-      "foreignKey": "id"
-    }
-  },
+  "relations": {},
   "acls": [],
   "methods": {}
 }
