@@ -13,7 +13,7 @@
     },
     "fileHash": {
       "type": "string",
-      "required": true
+      "required": false
     }  },
   "validations": [],
   "relations": {
