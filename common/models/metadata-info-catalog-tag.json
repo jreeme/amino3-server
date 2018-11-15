@@ -6,6 +6,11 @@
     "validateUpsert": true
   },
   "properties": {
+    "datasetUID": {
+      "type": "string",
+      "required": true,
+      "description": "dataset unique identifier"
+    },
     "term": {
       "type": "string",
       "required": true
