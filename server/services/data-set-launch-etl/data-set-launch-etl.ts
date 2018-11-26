@@ -21,7 +21,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
 
     MIC = me.app.models.MetadataInfoCatalog;
     MICP = me.app.models.MetadataInfoCatalogPedigree;
-    MICT = me.app.models.MetadataInfoCatalogTag;
+    MICT = me.app.models.MetadataInfoCatalogTagMapping;
 
     me.postal.subscribe({
       channel: me.servicePostalChannel,
@@ -52,14 +52,14 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
           (cb) => {
             MICT.destroyAll(
               {
-                tagId: {inq: destroyedMicEntryIds}
+                catalogId: {inq: destroyedMicEntryIds}
               },
               cb);
           },
           (cb) => {
             MICP.destroyAll(
               {
-                pedigreeId: {inq: destroyedMicEntryIds}
+                catalogId: {inq: destroyedMicEntryIds}
               },
               cb);
           }
