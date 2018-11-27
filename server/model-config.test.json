@@ -62,14 +62,6 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
-  "MetadataInfoCatalogTag": {
-    "dataSource": "amino_admin_mem",
-    "public": true
-  },
-  "MetadataInfoCatalogTagMapping": {
-    "dataSource": "amino_admin_mem",
-    "public": true
-  },
   "MetadataInfoCatalogPedigree": {
     "dataSource": "amino_admin_mem",
     "public": true

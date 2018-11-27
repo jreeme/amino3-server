@@ -87,6 +87,36 @@
       "description": "boolean indicating whether the file is encrypted",
       "default": false
     },
+    "financial": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file contains financial data",
+      "default": false
+    },
+    "macroEnabled": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file is macro enabled",
+      "default": false
+    },
+    "addinEnabled": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file is addin enabled",
+      "default": false
+    },
+    "passport": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file is a passport",
+      "default": false
+    },
+    "highsideEligible": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file should be transferred",
+      "default": false
+    },
     "quarantined": {
       "type": "boolean",
       "required": false,
@@ -132,13 +162,6 @@
       "model": "MetadataInfoCatalogPedigree",
       "foreignKey": "catalogId",
       "primaryKey": "id"
-    },
-    "tags": {
-      "type": "hasMany",
-      "model": "MetadataInfoCatalogTag",
-      "foreignKey": "catalogId",
-      "keyThrough": "tagId",
-      "through": "MetadataInfoCatalogTagMapping"
     }
   },
   "acls": [],
