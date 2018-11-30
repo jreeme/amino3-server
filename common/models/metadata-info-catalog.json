@@ -43,9 +43,11 @@
       "description": "file category; usually the file extension"
     },
     "fileContent": {
-      "type": ["string"],
-      "description": "array of file content values; e.g. if file contains currency text then content contains 'currency'",
-      "required": false
+      "type": [
+        "string"
+      ],
+      "required": false,
+      "description": "array of file content values; e.g. if file contains currency text then content contains 'currency'"
     },
     "fileMimeType": {
       "type": "string",
@@ -62,8 +64,8 @@
       "required": false,
       "description": "file size (in bytes)",
       "default": 0,
-      "postgresql":{
-        "dataType":"bigint"
+      "postgresql": {
+        "dataType": "bigint"
       }
     },
     "fileHash": {
@@ -83,6 +85,36 @@
       "type": "boolean",
       "required": false,
       "description": "boolean indicating whether the file is encrypted",
+      "default": false
+    },
+    "financial": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file contains financial data",
+      "default": false
+    },
+    "macroEnabled": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file is macro enabled",
+      "default": false
+    },
+    "addinEnabled": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file is addin enabled",
+      "default": false
+    },
+    "passport": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file is a passport",
+      "default": false
+    },
+    "highsideEligible": {
+      "type": "boolean",
+      "required": false,
+      "description": "boolean indicating whether the file should be transferred",
       "default": false
     },
     "quarantined": {
@@ -124,7 +156,14 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "pedigrees": {
+      "type": "hasMany",
+      "model": "MetadataInfoCatalogPedigree",
+      "foreignKey": "catalogId",
+      "primaryKey": "id"
+    }
+  },
   "acls": [],
   "methods": {}
 }

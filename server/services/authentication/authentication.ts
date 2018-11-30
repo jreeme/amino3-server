@@ -54,9 +54,9 @@ export class AuthenticationImpl extends BaseServiceImpl {
     super.initSubscriptions();
     const me = this;
 
-    U = this.app.models.AminoUser;
-    R = this.app.models.AminoRole;
-    RM = this.app.models.AminoRoleMapping;
+    U = me.app.models.AminoUser;
+    R = me.app.models.AminoRole;
+    RM = me.app.models.AminoRoleMapping;
 
     //Required to enable LoopBack authentication
     me.app.enableAuth();

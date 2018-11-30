@@ -58,6 +58,10 @@
     "dataSource": "amino_admin_mem",
     "public": true
   },
+  "MetadataInfoCatalogPedigree": {
+    "dataSource": "amino_admin_mem",
+    "public": true
+  },
   "Elasticsearch": {
     "dataSource": "amino_admin_mem",
     "public": true
