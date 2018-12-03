@@ -3,14 +3,18 @@ import {IPostal} from 'firmament-yargs';
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 import async = require('async');
+import {Globals} from '../../globals';
+import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
+import {ExecutionGraphResolver} from 'firmament-bash/js/interfaces/execution-graph-resolver';
 
 let MIC: any;
 let MICP: any;
-let MICT: any;
 
 @injectable()
 export class DataSetLaunchEtlImpl extends BaseServiceImpl {
   constructor(@inject('Logger') private log: Logger,
+              @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
+              @inject('ExecutionGraphResolver') private executionGraphResolver: ExecutionGraphResolver,
               @inject('IPostal') private postal: IPostal) {
     super();
   }
@@ -67,7 +71,16 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     const {ctx, next} = data;
     try {
       const dataSet = ctx.instance.toObject();
-      next();
+      async.waterfall([
+        (cb) => {
+          me.processCommandJson.processAbsoluteUrl(Globals.gitCloneClientExecutionGraph, cb);
+        },
+        (result, cb) => {
+          cb(null);
+        }
+      ], (err, result) => {
+        next();
+      });
     } catch(err) {
       me.log.logIfError(err);
       next();

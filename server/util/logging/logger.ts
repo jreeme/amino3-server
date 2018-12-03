@@ -27,7 +27,7 @@ export interface Logger {
   alert(msg: string);
   emergency(msg: string);
   initSubscriptions(app: LoopBackApplication2): void;
-  logIfError(err: Error): void;
+  logIfError(err: Error): boolean;
   logFromRemoteClient(remoteLoggingMessage: RemoteLoggingMessage): void;
   setCallerFilenamesToIgnore(callerFilenamesToIgnore: string[]);
 }

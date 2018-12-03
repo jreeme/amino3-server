@@ -4,7 +4,7 @@ module.exports = function (DataSet) {
   DataSet.observe('after save', (ctx, next) => {
     global.postal.publish({
       channel: 'PostalChannel-DataSetLaunchEtl',
-      topic:'AfterDataSetUpdate',
+      topic: 'AfterDataSetUpdate',
       data: {
         ctx,
         next
@@ -139,7 +139,7 @@ module.exports = function (DataSet) {
 
   DataSet.observe('before save', function initializeDataSetName(ctx, next) {
     ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
-    switch(ctx.instance.status){
+    switch (ctx.instance.status) {
       case('submitted'):
         ctx.instance.etlControlButtonIcon = 'fa fa-play';
         ctx.instance.etlControlButtonLabel = 'Process Dataset';
