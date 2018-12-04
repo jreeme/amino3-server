@@ -134,6 +134,7 @@ export class Globals {
     static pagesMenuTemplatePath = path.resolve(Globals.clientFolder, 'src/app/pages/pages.menu.template.ts');
     static pagesMenuPath = path.resolve(Globals.clientFolder, 'src/app/pages/pages.menu.ts');*/
   //
+  static remoteEtlCallExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/remote-etl-call.json');
   static gitCloneClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/git-clone-client.json');
   static npmInstallClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/npm-install-client.json');
   static ngBuildClientExecutionGraph = path.resolve(Globals.serverFolder, 'firmament-bash/ng-build-client.json');

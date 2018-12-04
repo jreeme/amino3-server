@@ -1,0 +1,21 @@
+{
+  "description": "Remote ETL Call to staging server",
+  "options": {
+    "displayExecutionGraphDescription": true
+  },
+  "asynchronousCommands": [
+  ],
+  "serialSynchronizedCommands": [
+    {
+      "description": "run-etl <data_set_id> <executors>",
+      "suppressOutput": false,
+      "showDiagnostics": false,
+      "showPreAndPostSpawnMessages": false,
+      "outputColor": "",
+      "useSudo": false,
+      "workingDirectory": "/mnt/merlin/merlin-etl/share/bin",
+      "command": "run-etl",
+      "args": []
+    }
+  ]
+}

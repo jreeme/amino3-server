@@ -73,7 +73,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
       const dataSet = ctx.instance.toObject();
       async.waterfall([
         (cb) => {
-          me.processCommandJson.processAbsoluteUrl(Globals.gitCloneClientExecutionGraph, cb);
+          me.executionGraphResolver.resolveExecutionGraph(Globals.remoteEtlCallExecutionGraph, cb);
         },
         (result, cb) => {
           cb(null);
