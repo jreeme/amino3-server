@@ -1,8 +1,8 @@
 import {injectable, inject} from 'inversify';
 import {IConnectionConfig2, MysqlHelper} from '../interfaces/mysql-helper';
 import {IMySql, IConnection} from 'mysql';
-import {CommandUtil} from "firmament-yargs";
-import {Logger} from "../../logging/logger";
+import {CommandUtil} from 'firmament-yargs';
+import {Logger} from '../../logging/logger';
 
 //const async = require('async');
 const mysql: IMySql = require('mysql');
@@ -20,32 +20,32 @@ export class MysqlHelperImpl implements MysqlHelper {
 
   configure(dataSource: any, cb: (err?: Error) => void) {
     const me = this;
-    const cnxOptions = <IConnectionConfig2> dataSource.settings;
+    const cnxOptions = <IConnectionConfig2>dataSource.settings;
     let cnx = MysqlHelperImpl.createConnection(cnxOptions, false, true);
 
     cnx.connect((err) => {
-      if (err) {
-        if (err.code === 'ER_ACCESS_DENIED_ERROR') {
+      if(err) {
+        if(err.code === 'ER_ACCESS_DENIED_ERROR') {
           cnx.destroy();
           cnx = MysqlHelperImpl.createConnection(cnxOptions, true);
           cnx.connect((err) => {
-            if (me.commandUtil.callbackIfError(cb, err)) {
+            if(me.commandUtil.callbackIfError(cb, err)) {
               return;
             }
             MysqlHelperImpl.createUser(cnx, cnxOptions.user, cnxOptions.password, (err) => {
               cnx.destroy();
-              if (me.commandUtil.callbackIfError(cb, err)) {
+              if(me.commandUtil.callbackIfError(cb, err)) {
                 return;
               }
               me.configure(dataSource, cb);
             });
           });
-        } else if (err.code === 'ER_DBACCESS_DENIED_ERROR') {
+        } else if(err.code === 'ER_DBACCESS_DENIED_ERROR') {
           cnx.destroy();
           cnx = MysqlHelperImpl.createConnection(cnxOptions, true);
           me.createDatabase(cnx, cnxOptions.database, cnxOptions.user, (err) => {
             cnx.destroy();
-            if (me.commandUtil.callbackIfError(cb, err)) {
+            if(me.commandUtil.callbackIfError(cb, err)) {
               return;
             }
             me.configure(dataSource, cb);
@@ -56,11 +56,11 @@ export class MysqlHelperImpl implements MysqlHelper {
         return;
       }
       cnx.destroy();
-      dataSource.connect((err)=>{
-        if (me.commandUtil.callbackIfError(cb, err)) {
+      dataSource.connect((err) => {
+        if(me.commandUtil.callbackIfError(cb, err)) {
           return;
         }
-        dataSource.automigrate((err)=>{
+        dataSource.automigrate((err) => {
           cb(err);
         });
       });
@@ -71,7 +71,7 @@ export class MysqlHelperImpl implements MysqlHelper {
     const me = this;
     const sql = `create database ${database};`;
     cnx.query(sql, (err) => {
-      if (me.commandUtil.callbackIfError(cb, err)) {
+      if(me.commandUtil.callbackIfError(cb, err)) {
         return;
       }
       const sql = `grant all on ${database}.* to '${user}';`;

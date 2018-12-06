@@ -6,6 +6,8 @@ import async = require('async');
 import {Globals} from '../../globals';
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
 import {ExecutionGraphResolver} from 'firmament-bash/js/interfaces/execution-graph-resolver';
+import {ExecutionGraph} from "firmament-bash/js/custom-typings";
+import {DataSetModel} from "../../../client/src/app/redux/data-sets/data-sets.model";
 
 let MIC: any;
 let MICP: any;
@@ -70,17 +72,21 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     const me = this;
     const {ctx, next} = data;
     try {
-      const dataSet = ctx.instance.toObject();
-      async.waterfall([
-        (cb) => {
-          me.executionGraphResolver.resolveExecutionGraph(Globals.remoteEtlCallExecutionGraph, cb);
-        },
-        (result, cb) => {
-          cb(null);
-        }
-      ], (err, result) => {
-        next();
-      });
+      const dataSet: DataSetModel = ctx.instance.toObject();
+      if(dataSet.status === 'queued') {
+        async.waterfall([
+          (cb) => {
+            me.executionGraphResolver.resolveExecutionGraph(Globals.remoteEtlCallExecutionGraph, cb);
+          },
+          (executionGraph: ExecutionGraph, cb) => {
+            me.processCommandJson.processExecutionGraph(executionGraph, cb);
+          }
+        ], (err: Error, result: string) => {
+          me.log.logIfError(err);
+          me.log.notice(result);
+        });
+      }
+      next();
     } catch(err) {
       me.log.logIfError(err);
       next();

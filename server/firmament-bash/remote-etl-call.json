@@ -13,9 +13,15 @@
       "showPreAndPostSpawnMessages": false,
       "outputColor": "",
       "useSudo": false,
-      "workingDirectory": "/mnt/merlin/merlin-etl/share/bin",
-      "command": "run-etl",
-      "args": []
+      "remoteHost": "192.168.99.100",
+      "remoteUser": "hadoop",
+      "remoteSshPort": 2200,
+      "remoteSshKeyPath": "/home/jreeme/.ssh/parrot",
+      "command": "run-etl2",
+      "args": [
+        "1",
+        "4"
+      ]
     }
   ]
 }

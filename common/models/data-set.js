@@ -145,6 +145,11 @@ module.exports = function (DataSet) {
         ctx.instance.etlControlButtonLabel = 'Process Dataset';
         ctx.instance.etlControlButtonClass = 'ui-button';
         break;
+      case('archived'):
+        ctx.instance.etlControlButtonIcon = 'fa fa-play';
+        ctx.instance.etlControlButtonLabel = 'Process Dataset';
+        ctx.instance.etlControlButtonClass = 'ui-button';
+        break;
       case('queued'):
         ctx.instance.etlControlButtonIcon = 'fa fa-stop';
         ctx.instance.etlControlButtonLabel = 'Stop Processing';
