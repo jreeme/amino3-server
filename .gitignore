@@ -20,3 +20,18 @@ client
 server/ssl-certs
 npm-debug.log
 
+server-dist/globals\.d\.ts
+server-dist/globals\.js
+server-dist/globals\.js\.map
+server-dist/inversify\.config\.d\.ts
+server-dist/inversify\.config\.js
+server-dist/inversify\.config\.js\.map
+server-dist/server\.d\.ts
+server-dist/server\.js
+server-dist/server\.js\.map
+
+server-dist/custom-typings/
+server-dist/services/
+server-dist/startup/
+server-dist/test/
+server-dist/util/

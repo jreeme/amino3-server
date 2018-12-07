@@ -6,8 +6,7 @@ import async = require('async');
 import {Globals} from '../../globals';
 import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-json';
 import {ExecutionGraphResolver} from 'firmament-bash/js/interfaces/execution-graph-resolver';
-import {ExecutionGraph} from "firmament-bash/js/custom-typings";
-import {DataSetModel} from "../../../client/src/app/redux/data-sets/data-sets.model";
+import {ExecutionGraph} from 'firmament-bash/js/custom-typings';
 
 let MIC: any;
 let MICP: any;
@@ -72,7 +71,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     const me = this;
     const {ctx, next} = data;
     try {
-      const dataSet: DataSetModel = ctx.instance.toObject();
+      const dataSet = ctx.instance.toObject();
       if(dataSet.status === 'queued') {
         async.waterfall([
           (cb) => {
