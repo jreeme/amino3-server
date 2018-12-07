@@ -34,8 +34,13 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
-      topic: 'AfterDataSetUpdate',
-      callback: me.afterDataSetUpdate.bind(me)
+      topic: 'BeforeDataSetSave',
+      callback: me.beforeDataSetSave.bind(me)
+    });
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'AfterDataSetSave',
+      callback: me.afterDataSetSave.bind(me)
     });
     cb(null, {message: 'Initialized DataSetLaunchEtl Subscriptions'});
   }
@@ -67,11 +72,39 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     });
   }
 
-  private afterDataSetUpdate(data: {ctx: any, next: () => void}) {
+  private beforeDataSetSave(data: {ctx: any, next: () => void}) {
+    const me = this;
+    const {ctx, next} = data;
+    const dataSet: {status: string, id: any} = ctx.instance.toObject();
+    ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
+    switch(dataSet.status) {
+      case('submitted'):
+        ctx.instance.etlControlButtonIcon = 'fa fa-play';
+        ctx.instance.etlControlButtonLabel = 'Process Dataset';
+        ctx.instance.etlControlButtonClass = 'ui-button';
+        ctx.instance.etlControlButtonDisabled = true;
+        break;
+      case('archived'):
+        ctx.instance.etlControlButtonIcon = 'fa fa-play';
+        ctx.instance.etlControlButtonLabel = 'Process Dataset';
+        ctx.instance.etlControlButtonClass = 'ui-button';
+        ctx.instance.etlControlButtonDisabled = false;
+        break;
+      case('queued'):
+        ctx.instance.etlControlButtonIcon = 'fa fa-stop';
+        ctx.instance.etlControlButtonLabel = 'Stop Processing';
+        ctx.instance.etlControlButtonClass = 'ui-button-danger';
+        ctx.instance.status = 'processing';
+        break;
+    }
+    next();
+  };
+
+  private afterDataSetSave(data: {ctx: any, next: () => void}) {
     const me = this;
     const {ctx, next} = data;
     try {
-      const dataSet = ctx.instance.toObject();
+      const dataSet: {status: string, id: any} = ctx.instance.toObject();
       if(dataSet.status === 'queued') {
         async.waterfall([
           (cb) => {

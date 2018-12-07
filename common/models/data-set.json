@@ -129,6 +129,12 @@
       "description": "ETL Status",
       "default": "submitted"
     },
+    "etlControlButtonDisabled": {
+      "type": "boolean",
+      "required": false,
+      "description": "If 'Process ETL' button on data set is disabled",
+      "default": false
+    },
     "etlControlButtonIcon": {
       "type": "string",
       "required": false,

@@ -1,10 +1,20 @@
 'use strict';
 
 module.exports = function (DataSet) {
+  DataSet.observe('before save', function initializeDataSetName(ctx, next) {
+    global.postal.publish({
+      channel: 'PostalChannel-DataSetLaunchEtl',
+      topic: 'BeforeDataSetSave',
+      data: {
+        ctx,
+        next
+      }
+    });
+  });
   DataSet.observe('after save', (ctx, next) => {
     global.postal.publish({
       channel: 'PostalChannel-DataSetLaunchEtl',
-      topic: 'AfterDataSetUpdate',
+      topic: 'AfterDataSetSave',
       data: {
         ctx,
         next
@@ -136,26 +146,4 @@ module.exports = function (DataSet) {
       http: {path: '/create-dataset', verb: 'post'}
     }
   );
-
-  DataSet.observe('before save', function initializeDataSetName(ctx, next) {
-    ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
-    switch (ctx.instance.status) {
-      case('submitted'):
-        ctx.instance.etlControlButtonIcon = 'fa fa-play';
-        ctx.instance.etlControlButtonLabel = 'Process Dataset';
-        ctx.instance.etlControlButtonClass = 'ui-button';
-        break;
-      case('archived'):
-        ctx.instance.etlControlButtonIcon = 'fa fa-play';
-        ctx.instance.etlControlButtonLabel = 'Process Dataset';
-        ctx.instance.etlControlButtonClass = 'ui-button';
-        break;
-      case('queued'):
-        ctx.instance.etlControlButtonIcon = 'fa fa-stop';
-        ctx.instance.etlControlButtonLabel = 'Stop Processing';
-        ctx.instance.etlControlButtonClass = 'ui-button-danger';
-        break;
-    }
-    next();
-  });
 };
