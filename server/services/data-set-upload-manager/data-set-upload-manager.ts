@@ -48,24 +48,30 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           type: file.type
         }
       });
+
       async.each(aminoFiles, (file, cb) => {
-          const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(file.path));
-          fs.copy(file.path, targetPath, (err) => {
+        const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(file.path));
+        fs.mkdir(targetPath, (err) => {
+          if (err) {
+            me.log.error(JSON.stringify(err));
+            return cb(err);
+          }
+          fs.copy(file.path, path.resolve(targetPath, file.name), (err) => {
             file.path = targetPath;
             cb(err);
           });
-        },
-        (err: Error) => {
-          if(err) {
-            return cb(err);
-          }
-          me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
-            if(!dataSet) {
-              return cb(new Error(`Unable to find DataSet with Id: ${fields.dataSetId}`));
-            }
-            dataSet.files.create(aminoFiles, cb);
-          });
         });
+      },(err: Error) => {
+        if(err) {
+          return cb(err);
+        }
+        me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
+          if(!dataSet) {
+            return cb(new Error(`Unable to find DataSet with Id: ${fields.dataSetId}`));
+          }
+          dataSet.files.create(aminoFiles, cb);
+        });
+      });
     };
     me.postal.publish({
       channel: 'PostalChannel-FileUpload',
