@@ -48,27 +48,31 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           type: file.type
         }
       });
-      async.each(aminoFiles, (aminoFile, cb) => {
-          me.log.debug(`Attempting to write file '${aminoFile.path}'`);
-          const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(aminoFile.path));
-          fs.copy(aminoFile.path, targetPath, (err) => {
-            aminoFile.path = targetPath;
-            cb(err);
-          });
-        },
-        (err: Error) => {
-          if(err) {
+
+      async.each(aminoFiles, (file, cb) => {
+        const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(file.path));
+        fs.mkdir(targetPath, (err) => {
+          if (err) {
+            me.log.error(JSON.stringify(err));
             return cb(err);
           }
-          me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
-            if(!dataSet) {
-              return cb(new Error(`Unable to find DataSet with Id: ${fields.dataSetId}`));
-            }
-            dataSet.files.create(aminoFiles, cb);
+          fs.copy(file.path, path.resolve(targetPath, file.name), (err) => {
+            file.path = targetPath;
+            cb(err);
           });
         });
+      },(err: Error) => {
+        if(err) {
+          return cb(err);
+        }
+        me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
+          if(!dataSet) {
+            return cb(new Error(`Unable to find DataSet with Id: ${fields.dataSetId}`));
+          }
+          dataSet.files.create(aminoFiles, cb);
+        });
+      });
     };
-    me.log.critical('About to post PostalChannel-FileUpload:Upload');
     me.postal.publish({
       channel: 'PostalChannel-FileUpload',
       topic: 'Upload',
