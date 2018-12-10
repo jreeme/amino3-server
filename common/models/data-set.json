@@ -102,7 +102,7 @@
     },
     "uploadUrl": {
       "type": "string",
-      "default": "http://localhost:3000/amino-api/DataSets/upload?maxSingleFileUploadSizeBytes=67108864",
+      "default": "amino-api/DataSets/upload?maxSingleFileUploadSizeBytes=67108864",
       "required": false,
       "description": "Server URL to use to upload files to this dataset"
     },
