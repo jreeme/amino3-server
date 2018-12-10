@@ -26,7 +26,7 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
     super.initSubscriptions();
     me.postal.subscribe({
       channel: me.servicePostalChannel,
-      topic: 'Upload',
+      topic: 'UploadFiles',
       callback: me.handleUploadRequest.bind(me)
     });
     cb(null, {message: 'Initialized DataSetUploadManager Subscriptions'});
@@ -39,7 +39,7 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
   // noinspection JSUnusedLocalSymbols
   private handleUploadRequest(data, env) {
     const me = this;
-    data.cb = (fields: { dataSetId: number }, files: AminoFile[], cb: (err?: Error) => void) => {
+    data.cb = (fields: {dataSetId: any}, files: AminoFile[], cb: (err?: Error) => void) => {
       const aminoFiles: AminoFile[] = files.map((file) => {
         return {
           name: file.name,
@@ -56,13 +56,14 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           });
         },
         (err: Error) => {
-          if (err) {
+          if(err) {
             return cb(err);
           }
           me.app.models.DataSet.findById(fields.dataSetId, (err: Error, dataSet: any) => {
-            dataSet.files.create(aminoFiles, (err: Error, result: any) => {
-              cb(err);
-            });
+            if(!dataSet) {
+              return cb(new Error(`Unable to find DataSet with Id: ${fields.dataSetId}`));
+            }
+            dataSet.files.create(aminoFiles, cb);
           });
         });
     };

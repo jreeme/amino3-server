@@ -26,7 +26,7 @@ module.exports = function (DataSet) {
     DataSet.upload = function (req, res) {
       global.postal.publish({
         channel: 'PostalChannel-DataSetUploadManager',
-        topic: 'Upload',
+        topic: 'UploadFiles',
         data: {req, res}
       });
     };
