@@ -39,6 +39,7 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
   // noinspection JSUnusedLocalSymbols
   private handleUploadRequest(data, env) {
     const me = this;
+    me.log.critical('Entering handleUploadRequest()');
     data.cb = (fields: {dataSetId: any}, files: AminoFile[], cb: (err?: Error) => void) => {
       const aminoFiles: AminoFile[] = files.map((file) => {
         return {
@@ -48,11 +49,10 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           type: file.type
         }
       });
-
       async.each(aminoFiles, (file, cb) => {
         const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(file.path));
         fs.mkdir(targetPath, (err) => {
-          if (err) {
+          if(err) {
             me.log.error(JSON.stringify(err));
             return cb(err);
           }
@@ -61,7 +61,7 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
             cb(err);
           });
         });
-      },(err: Error) => {
+      }, (err: Error) => {
         if(err) {
           return cb(err);
         }
