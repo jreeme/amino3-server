@@ -48,10 +48,11 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           type: file.type
         }
       });
-      async.each(aminoFiles, (file, cb) => {
-          const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(file.path));
-          fs.copy(file.path, targetPath, (err) => {
-            file.path = targetPath;
+      async.each(aminoFiles, (aminoFile, cb) => {
+          me.log.debug(`Attempting to write file '${aminoFile.path}'`);
+          const targetPath = path.resolve(Globals.dataSetFileUploadPath, path.basename(aminoFile.path));
+          fs.copy(aminoFile.path, targetPath, (err) => {
+            aminoFile.path = targetPath;
             cb(err);
           });
         },
@@ -67,6 +68,7 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           });
         });
     };
+    me.log.critical('About to post PostalChannel-FileUpload:Upload');
     me.postal.publish({
       channel: 'PostalChannel-FileUpload',
       topic: 'Upload',
