@@ -4,6 +4,7 @@
     "noServices": false,
     "logLevel": "debug",
     "replaceBadDataSourceWithMemoryDataSource": false,
+    "suppressServerHeartbeatBroadcastToClients": false,
     "suppressedServices": [
       "_Authentication",
       "_FileUpload",

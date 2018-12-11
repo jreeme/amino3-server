@@ -53,7 +53,7 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
                 clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
               };
             res.status(200).send(s);
-          } catch (err) {
+          } catch(err) {
             res.status(500).send(err);
           }
         }
@@ -99,7 +99,7 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
     try {
       me.postalSocketConnections.delete(postalSocketConnection);
       me.log.notice(`Removing PostalSocketConnection'${postalSocketConnection.id}' from WebSocketManager`)
-    } catch (err) {
+    } catch(err) {
       me.log.error(`ERROR Removing PostalSocketConnection'${postalSocketConnection.id}'`);
     }
   }
@@ -111,7 +111,7 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
       postalSocketConnection.init(socket);
       me.log.notice(`Created PostalSocketConnection '${postalSocketConnection.id}'`);
       me.postalSocketConnections.add(postalSocketConnection);
-    } catch (err) {
+    } catch(err) {
       me.log.error(`ERROR creating/adding PostalSocketConnection`);
     }
   }
@@ -121,8 +121,17 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
     Rx
       .Observable
       .interval(1000)
-      .subscribe((/*ticks*/) => {
-        if (Globals.suppressServerHeartbeat) {
+      .subscribe((ticks) => {
+        const data = {
+          ticks,
+          serverTime: Date.now()
+        };
+        me.postal.publish({
+          channel: 'ServiceBus',
+          topic: 'ServerHeartbeat',
+          data
+        });
+        if(Globals.suppressServerHeartbeatBroadcastToClients) {
           return;
         }
         me.postal.publish({
@@ -130,7 +139,7 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
           topic: 'BroadcastToClients',
           data: {
             topic: 'ServerHeartbeat',
-            data: {serverTime: Date.now()}
+            data
           }
         });
       })

@@ -106,7 +106,6 @@ export class FileUploadImpl extends BaseServiceImpl {
   // noinspection JSUnusedLocalSymbols
   private handleUploadRequest(data, env) {
     const me = this;
-    me.log.critical('Entering: handleUploadRequest()');
     const {req, res, cb} = data;
     const form = new formidable.IncomingForm();
     (<any>form).maxFileSize = parseInt(req.query.maxSingleFileUploadSizeBytes || 16 * 1024 * 1024);
@@ -123,7 +122,6 @@ export class FileUploadImpl extends BaseServiceImpl {
     });
     form.on('end', () => {
       try {
-        me.log.critical('Leaving: handleUploadRequest()');
         cb(fields, files, (err:Error) => {
           if(err) {
             return res.status(417).send({status: err.message});

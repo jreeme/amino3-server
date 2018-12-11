@@ -6,7 +6,7 @@
     "logToFile": true,
     "logFileFolder": "/tmp/amino3-logs",
     "elasticsearchUrl": "http://192.168.104.77:9200",
-    "suppressServerHeartbeat": false,
+    "suppressServerHeartbeatBroadcastToClients": true,
     "replaceBadDataSourceWithMemoryDataSource": true,
     "testAuthenticationServer": false,
     "suppressedServices": [

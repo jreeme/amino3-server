@@ -56,7 +56,7 @@ export class Globals {
   }
 
   static jwtSecret = 'irJ8EZnmUtliF9dFjL5g';
-  static suppressServerHeartbeat:boolean = false;
+  static suppressServerHeartbeatBroadcastToClients:boolean = false;
   static suppressedServices:string[] = [];
   static loggerCallerFilenamesToIgnore:string[] = [];
   static postalPublishToClientTopicSuppressList:string[] = [];

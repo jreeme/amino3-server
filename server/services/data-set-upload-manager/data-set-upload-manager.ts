@@ -39,7 +39,6 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
   // noinspection JSUnusedLocalSymbols
   private handleUploadRequest(data, env) {
     const me = this;
-    me.log.critical('Entering handleUploadRequest()');
     data.cb = (fields: {dataSetId: any}, files: AminoFile[], cb: (err?: Error) => void) => {
       const aminoFiles: AminoFile[] = files.map((file) => {
         return {
