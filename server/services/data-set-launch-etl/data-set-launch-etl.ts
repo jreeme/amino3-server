@@ -103,10 +103,9 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     next();
   };
 
-  private afterDataSetSave(data: {ctx: any, next: () => void}) {
+  private afterDataSetSave(data: {ctx: any}) {
     const me = this;
-    const {ctx, next} = data;
-    next();
+    const {ctx} = data;
 
     DS.find((err: Error, dataSets: any[]) => {
       me.postal.publish({
