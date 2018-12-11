@@ -12,6 +12,20 @@ module.exports = function (DataSet) {
     });
   });
   DataSet.observe('after save', (ctx, next) => {
+    DataSet.find({include: 'files'},(err, dataSets) => {
+      if(err)
+        return;
+      global.postal.publish({
+        channel: 'ServiceBus',
+        topic: 'BroadcastToClients',
+        data: {
+          topic: 'DatasetSaved',
+          data: dataSets
+        }
+      });
+
+    });
+
     global.postal.publish({
       channel: 'PostalChannel-DataSetLaunchEtl',
       topic: 'AfterDataSetSave',
