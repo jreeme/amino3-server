@@ -5,7 +5,7 @@ const MD5 = require('md5.js');
 module.exports = function (AminoAccessToken) {
   AminoAccessToken.observe('before save', (ctx, cb) => {
     // Invoke custom id function
-    ctx.Model.app.models.AminoUser.findById(ctx.instance.userId, (err, aminoUser) => {
+    ctx.Model.app.models.AminoUser.findById(ctx.instance.userId, {include: 'roles'}, (err, aminoUser) => {
       if (err) {
         return cb(err);
       }
