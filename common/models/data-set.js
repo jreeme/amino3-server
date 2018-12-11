@@ -16,10 +16,10 @@ module.exports = function (DataSet) {
       channel: 'PostalChannel-DataSetLaunchEtl',
       topic: 'AfterDataSetSave',
       data: {
-        ctx,
-        next
+        ctx
       }
     });
+    next();
   });
   {
     //>>>upload

@@ -8,6 +8,7 @@ import {ProcessCommandJson} from 'firmament-bash/js/interfaces/process-command-j
 import {ExecutionGraphResolver} from 'firmament-bash/js/interfaces/execution-graph-resolver';
 import {ExecutionGraph} from 'firmament-bash/js/custom-typings';
 
+let DS: any;
 let MIC: any;
 let MICP: any;
 
@@ -24,6 +25,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     super.initSubscriptions();
     const me = this;
 
+    DS = me.app.models.DataSet;
     MIC = me.app.models.MetadataInfoCatalog;
     MICP = me.app.models.MetadataInfoCatalogPedigree;
 
@@ -67,13 +69,14 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
           }
         ], cb);
       }
-    ], (err, result) => {
+    ], (err) => {
       next(err);
     });
   }
 
   private beforeDataSetSave(data: {ctx: any, next: () => void}) {
     const me = this;
+    me.log.info('DataSet:BeforeDataSetSave');
     const {ctx, next} = data;
     const dataSet: {status: string, id: any} = ctx.instance.toObject();
     ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
@@ -103,6 +106,18 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
   private afterDataSetSave(data: {ctx: any, next: () => void}) {
     const me = this;
     const {ctx, next} = data;
+    next();
+
+    DS.find((err: Error, dataSets: any[]) => {
+      me.postal.publish({
+        channel: 'ServiceBus',
+        topic: 'BroadcastToClients',
+        data: {
+          topic: 'SyncDataSets',
+          data: dataSets
+        }
+      });
+    });
     try {
       const dataSet: {status: string, id: any} = ctx.instance.toObject();
       if(dataSet.status === 'queued') {
@@ -118,10 +133,8 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
           me.log.notice(result);
         });
       }
-      next();
     } catch(err) {
       me.log.logIfError(err);
-      next();
     }
   }
 }
