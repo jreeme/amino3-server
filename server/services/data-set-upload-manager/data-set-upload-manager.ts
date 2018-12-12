@@ -68,7 +68,18 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           if(!dataSet) {
             return cb(new Error(`Unable to find DataSet with Id: ${fields.dataSetId}`));
           }
-          dataSet.files.create(aminoFiles, cb);
+          if(dataSet.status.toLowerCase() == "submitted") {
+            try {
+              const ds = dataSet.toObject();
+              ds.status = 'archived';
+              me.app.models.DataSet.replaceById(ds.id, ds, (err, newVal) => {
+                //dataSet.updateAttributes(ds, (err, newVal) => {
+                dataSet.files.create(aminoFiles, cb);
+              });
+            } catch(e) {
+              me.log.error(JSON.stringify(e));
+            }
+          }
         });
       });
     };
