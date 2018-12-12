@@ -32,6 +32,6 @@
       "logger",
       "_boot-manager"
     ],
-    "dataSetFileUploadPath": "/mnt/data"
+    "dataSetFileUploadPath": "/home/jreeme/tmp"
   }
 }
