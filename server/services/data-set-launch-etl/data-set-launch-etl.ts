@@ -144,6 +144,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
             me.executionGraphResolver.resolveExecutionGraph(Globals.remoteEtlCallExecutionGraph, cb);
           },
           (executionGraph: ExecutionGraph, cb) => {
+            executionGraph.serialSynchronizedCommands[0].args[0] = dataSet.id.toString();
             me.processCommandJson.processExecutionGraph(executionGraph, cb);
           }
         ], (err: Error, result: string) => {
