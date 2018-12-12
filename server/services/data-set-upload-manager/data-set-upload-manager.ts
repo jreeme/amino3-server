@@ -6,7 +6,6 @@ import {Globals} from '../../globals';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as async from 'async';
-import {DataSet} from "../../../client/src/lb-sdk/models/DataSet";
 
 interface AminoFile {
   name: string,
@@ -71,7 +70,9 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           }
           if(dataSet.status.toLowerCase() == "submitted"){
             try{
-              dataSet.updateAttributes({status:'archived'});
+              dataSet.updateAttributes({status:'archived'},(err: Error, dataSet: any) => {
+                const e = err;
+              });
             }
             catch(e){
               me.log.error(JSON.stringify(e));
