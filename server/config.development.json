@@ -15,7 +15,7 @@
       "FolderMonitor",
       "_InitializeDatabase",
       "PluginManager",
-      "_RebuildClient",
+      "RebuildClient",
       "_RemoteLogging",
       "StaticService",
       "ServerServicesManager",
@@ -32,6 +32,6 @@
       "logger",
       "_boot-manager"
     ],
-    "dataSetFileUploadPath": "/home/jreeme/tmp"
+    "dataSetFileUploadPath": "/mnt/data"
   }
 }

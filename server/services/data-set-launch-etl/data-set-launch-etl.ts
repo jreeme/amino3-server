@@ -80,7 +80,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     const {ctx, next} = data;
     const dataSet: {status: string, id: any} = ctx.instance.toObject();
     ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
-    switch(dataSet.status) {
+    switch(dataSet.status.toLowerCase()) {
       case('submitted'):
         ctx.instance.etlControlButtonIcon = 'fa fa-play';
         ctx.instance.etlControlButtonLabel = 'Process Dataset';
@@ -93,11 +93,23 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
         ctx.instance.etlControlButtonClass = 'ui-button';
         ctx.instance.etlControlButtonDisabled = false;
         break;
-      case('queued'):
+      case('processing'):
         ctx.instance.etlControlButtonIcon = 'fa fa-stop';
-        ctx.instance.etlControlButtonLabel = 'Stop Processing';
+        ctx.instance.etlControlButtonLabel = 'Processing';
         ctx.instance.etlControlButtonClass = 'ui-button-danger';
-        ctx.instance.status = 'processing';
+        ctx.instance.etlControlButtonDisabled = true;
+        break;
+      case('processed'):
+        ctx.instance.etlControlButtonIcon = 'fa fa-play';
+        ctx.instance.etlControlButtonLabel = 'Process Dataset';
+        ctx.instance.etlControlButtonClass = 'ui-button';
+        ctx.instance.etlControlButtonDisabled = false;
+        break;
+      case('failed'):
+        ctx.instance.etlControlButtonIcon = 'fa fa-play';
+        ctx.instance.etlControlButtonLabel = 'Process Dataset';
+        ctx.instance.etlControlButtonClass = 'ui-button';
+        ctx.instance.etlControlButtonDisabled = false;
         break;
     }
     next();
