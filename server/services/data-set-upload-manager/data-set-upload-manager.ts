@@ -73,12 +73,14 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
               const ds = dataSet.toObject();
               ds.status = 'archived';
               me.app.models.DataSet.replaceById(ds.id, ds, (err, newVal) => {
-                //dataSet.updateAttributes(ds, (err, newVal) => {
                 dataSet.files.create(aminoFiles, cb);
               });
             } catch(e) {
               me.log.error(JSON.stringify(e));
             }
+          }
+          else{
+            dataSet.files.create(aminoFiles, cb);
           }
         });
       });
