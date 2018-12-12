@@ -70,8 +70,10 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
           }
           if(dataSet.status.toLowerCase() == "submitted"){
             try{
-              dataSet.updateAttributes({status:'archived'},(err: Error, dataSet: any) => {
-                const e = err;
+              let newDataSet = dataSet.toObject();
+              newDataSet.status = 'archived';
+              me.app.models.DataSet.replaceById(dataSet.id,newDataSet,(err: Error, dataSet: any) => {
+                dataSet.files.create(aminoFiles, cb);
               });
             }
             catch(e){
@@ -79,8 +81,8 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
             }
 
           }
-
-          dataSet.files.create(aminoFiles, cb);
+          else
+            dataSet.files.create(aminoFiles, cb);
         });
       });
     };
