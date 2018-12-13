@@ -9,28 +9,28 @@ import * as async from 'async';
 import {BaseDatabaseHelper} from '../util/database-helpers/interfaces/base-database-helper';
 
 export interface BootManager {
-  start(loopback:any, loopbackApplication:LoopBackApplication2, applicationFolder:string, startListening:boolean);
+  start(loopback: any, loopbackApplication: LoopBackApplication2, applicationFolder: string, startListening: boolean);
 }
 
 @injectable()
 export class BootManagerImpl implements BootManager {
-  private loopback:any;
-  private app:LoopBackApplication2;
-  private startListening:boolean;
-  private allDataSources:any = [];
-  private dataSourcesToAutoMigrate:any = [];
+  private loopback: any;
+  private app: LoopBackApplication2;
+  private startListening: boolean;
+  private allDataSources: any = [];
+  private dataSourcesToAutoMigrate: any = [];
 
-  constructor(@inject('Logger') private log:Logger,
-              @inject('ServiceManager') private serviceManager:ServiceManager,
-              @multiInject('BaseDatabaseHelper') private databaseHelpers:BaseDatabaseHelper[],
-              @inject('IPostal') private postal:IPostal) {
+  constructor(@inject('Logger') private log: Logger,
+              @inject('ServiceManager') private serviceManager: ServiceManager,
+              @multiInject('BaseDatabaseHelper') private databaseHelpers: BaseDatabaseHelper[],
+              @inject('IPostal') private postal: IPostal) {
     this.log.debug(`Creating ${this.constructor.name}`);
   }
 
-  start(_loopback:any,
-        _app:LoopBackApplication2,
-        _applicationFolder:string,
-        _startListening:boolean) {
+  start(_loopback: any,
+        _app: LoopBackApplication2,
+        _applicationFolder: string,
+        _startListening: boolean) {
     const me = this;
     me.loopback = _loopback;
     me.app = _app;
@@ -47,7 +47,7 @@ export class BootManagerImpl implements BootManager {
     execute(app, instructions, callback, me.verifyDataSources.bind(me));
   };
 
-  private verifyDataSources(instructions:any, cb:() => void) {
+  private verifyDataSources(instructions: any, cb: () => void) {
     const me = this;
 
     me.log.notice('>>>> Entering verifyDataSources');
@@ -72,12 +72,12 @@ export class BootManagerImpl implements BootManager {
             me.log.notice(`PINGING DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
             //TODO: Add timeout to ping in case the machine is unreachable. This works OK if machine is reachable
             //but no server is listening on the specified port
-            ds.ping((err:Error) => {
+            ds.ping((err: Error) => {
               me.log.debug(`DataSource '${dataSourceName}' PING ` + (!err ? 'SUCCESS' : 'FAIL'));
               cb(null, !err);
             });
           },
-          (pingDataSourceSucceeded:boolean, cb) => {
+          (pingDataSourceSucceeded: boolean, cb) => {
             if(pingDataSourceSucceeded) {
               return cb(null, true);
             }
@@ -88,12 +88,12 @@ export class BootManagerImpl implements BootManager {
               return cb(null, false);
             }
             me.log.debug(`Running helper for DataSource '${dataSourceName}' [Connector: '${ds.settings.connector}']`);
-            fdbh[0].configure(ds, (err:Error) => {
+            fdbh[0].configure(ds, (err: Error) => {
               me.log.debug(`DataSource helper config for '${dataSourceName}' ` + (!err ? 'SUCCESS' : 'FAIL'));
               cb(null, false);
             });
           },
-          (databaseHelperSucceeded:boolean, cb) => {
+          (databaseHelperSucceeded: boolean, cb) => {
             if(databaseHelperSucceeded) {
               return cb(null, true);
             }
@@ -104,7 +104,7 @@ export class BootManagerImpl implements BootManager {
               cb(null, !err);
             });
           },
-          (dataSourceIsGood:boolean, cb) => {
+          (dataSourceIsGood: boolean, cb) => {
             if(dataSourceIsGood) {
               return cb();
             }
@@ -131,7 +131,7 @@ export class BootManagerImpl implements BootManager {
       });
   }
 
-  private bootCallback(err:Error) {
+  private bootCallback(err: Error) {
     const me = this;
     if(err) {
       const errorMsg = `Error booting loopback application: ${err.message}`;
@@ -142,14 +142,14 @@ export class BootManagerImpl implements BootManager {
     async.series([
       (cb) => {
         //AutoMigrate any dataSources (models, really) that require it
-        async.each(me.dataSourcesToAutoMigrate, (dataSource:any, cb) => {
+        async.each(me.dataSourcesToAutoMigrate, (dataSource: any, cb) => {
           me.log.notice(`Automigrating models attached to DataSource: '${dataSource.name}'`);
           dataSource.automigrate(cb);
         }, cb);
       },
       (cb) => {
         //AutoUpdate datasources
-        async.each(me.allDataSources, (dataSource:any, cb) => {
+        async.each(me.allDataSources, (dataSource: any, cb) => {
           me.log.info(`AutoUpdating models attached to DataSource: '${dataSource.name}'`);
           if(dataSource.connector.name === 'postgresql') {
             //HACK: Need to monkey-patch SQLConnector.prototype.addPropertyToActual due to error.
@@ -157,7 +157,7 @@ export class BootManagerImpl implements BootManager {
             //not be added.
             dataSource.connector.addPropertyToActual = (model, propertyName) => {
               const propertyType = me.app.models[model].getPropertyType(propertyName);
-              let defaultProperty:any;
+              let defaultProperty: any;
               switch(propertyType) {
                 case 'String':
                   defaultProperty = '';
@@ -225,7 +225,7 @@ export class BootManagerImpl implements BootManager {
 
         //Bring ServiceManager to life
         me.log.debug('Initializing ServiceManager subscriptions');
-        me.serviceManager.initSubscriptions(me.app, (err:Error) => {
+        me.serviceManager.initSubscriptions(me.app, (err: Error) => {
           if(err) {
             const errorMsg = `Failed to initialize 'ServiceManager': ${err.message}`;
             me.log.error(errorMsg);
@@ -240,7 +240,7 @@ export class BootManagerImpl implements BootManager {
           cb();
         });
       }
-    ], (err:Error) => {
+    ], (err: Error) => {
       me.log.logIfError(err);
       me.log.info(`Loopback boot process COMPLETED`);
     });
@@ -280,6 +280,11 @@ export class BootManagerImpl implements BootManager {
           */
         }
       }
+
+      //Little hack so client can know if it's connected to a production server
+      me.app.get('/node-env', (req, res) => {
+        res.status(200).send({node_env: Globals.node_env});
+      });
 
       //Log endpoints of loopback services we expose
       const baseUrl = ourLoopbackUrl.href.replace(/\/$/, '');
