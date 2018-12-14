@@ -12,6 +12,8 @@ import {Globals} from "../../globals";
 export class WebSocketManagerImpl extends BaseServiceImpl {
   private socketIo: SocketIO.Server;
   private postalSocketConnections: Set<PostalSocketConnection> = new Set();
+  private serverHeartbeatIntervalMS = 10000;
+  private lastHeartbeatTimeBroadcast = 0;
 
   constructor(@inject('Logger') private log: Logger,
               @inject('IPostal') private postal: IPostal) {
@@ -47,12 +49,12 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
         callback: (data) => {
           const {res, req} = data;
           try {
-            const s =
+            res.status(200).send(
               {
                 serverWebSocketPath: Globals.serverWebSocketPath,
                 clientUrl: `http://${req.connection.remoteAddress}:${req.connection.remotePort}`
-              };
-            res.status(200).send(s);
+              }
+            );
           } catch(err) {
             res.status(500).send(err);
           }
@@ -122,9 +124,14 @@ export class WebSocketManagerImpl extends BaseServiceImpl {
       .Observable
       .interval(1000)
       .subscribe((ticks) => {
+        const serverTime = Date.now();
+        if(serverTime < (me.lastHeartbeatTimeBroadcast + me.serverHeartbeatIntervalMS)) {
+          return;
+        }
+        me.lastHeartbeatTimeBroadcast = serverTime;
         const data = {
           ticks,
-          serverTime: Date.now()
+          serverTime
         };
         me.postal.publish({
           channel: 'ServiceBus',
