@@ -96,13 +96,13 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
       case('queued'):
         ctx.instance.etlControlButtonIcon = 'fa fa-play';
         ctx.instance.etlControlButtonLabel = 'Dataset Queued';
-        ctx.instance.etlControlButtonClass = 'ui-button-danger';
+        ctx.instance.etlControlButtonClass = 'ui-button-warning';
         ctx.instance.etlControlButtonDisabled = true;
         break;
       case('processing'):
         ctx.instance.etlControlButtonIcon = 'fa fa-stop';
         ctx.instance.etlControlButtonLabel = 'Processing';
-        ctx.instance.etlControlButtonClass = 'ui-button-danger';
+        ctx.instance.etlControlButtonClass = 'ui-button-warning';
         ctx.instance.etlControlButtonDisabled = true;
         break;
       case('processed'):
