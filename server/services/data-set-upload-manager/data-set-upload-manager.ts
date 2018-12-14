@@ -78,8 +78,7 @@ export class DataSetUploadManagerImpl extends BaseServiceImpl {
             } catch(e) {
               me.log.error(JSON.stringify(e));
             }
-          }
-          else{
+          } else {
             dataSet.files.create(aminoFiles, cb);
           }
         });

@@ -2,6 +2,10 @@
 
 module.exports = function (DataSet) {
   DataSet.observe('before save', function initializeDataSetName(ctx, next) {
+    if(!ctx.instance){
+      global.logger.debug(`DataSet 'before save' operation hook short circuited because 'ctx.instance === null'`);
+      return next();
+    }
     global.postal.publish({
       channel: 'PostalChannel-DataSetLaunchEtl',
       topic: 'BeforeDataSetSave',
