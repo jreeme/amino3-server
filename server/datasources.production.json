@@ -8,7 +8,7 @@
     "database": "amino_admin",
     "user": "amino_admin_user",
     "min": 5,
-    "max": 200,
+    "max": 70,
     "idleTimeoutMillis": 60000,
     "password": "password",
     "admin_user": "postgres",
