@@ -126,7 +126,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     const {ctx, next} = data;
 
     next();
-    DS.find((err: Error, dataSets: any[]) => {
+    DS.find({include: 'files'}, (err: Error, dataSets: any[]) => {
       me.postal.publish({
         channel: 'ServiceBus',
         topic: 'BroadcastToClients',
