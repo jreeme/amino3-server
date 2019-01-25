@@ -55,7 +55,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     const {ctx, next} = data;
     async.waterfall([
       (cb) => {
-        MIC.find({where: ctx.where}, cb);
+        MIC.find(ctx.filter, cb);
       },
       (micEntries, cb) => {
         const destroyedMicEntryIds = micEntries.map((micEntry) => micEntry.id);

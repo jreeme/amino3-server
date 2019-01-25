@@ -16,7 +16,7 @@ module.exports = function(MetadataInfoCatalog) {
     isStatic: true,
     description: 'Delete all instances from the data source based on where criteria',
     accessType: 'WRITE',
-    accepts: {arg: 'where', type: 'object', description: 'Criteria to match model instances'},
+    accepts: {arg: 'filter', type: 'object', description: 'Criteria to match model instances'},
     returns: [
       {
         arg: 'info',
