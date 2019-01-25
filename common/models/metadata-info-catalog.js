@@ -19,7 +19,7 @@ module.exports = function (MetadataInfoCatalog) {
     //delete count of 1000 entries
     let x = 10;
     async.doWhilst((cb) => {
-      MetadataInfoCatalog.find({limit: 3, fields: {id: true}, where: {datasetUID}}, (err, results) => {
+      MetadataInfoCatalog.find({limit: 1000, fields: {id: true}, where: {datasetUID}}, (err, results) => {
         async.each(results, (result,cb) => {
           MetadataInfoCatalog.deleteById(result.id, cb);
         }, (err) => {
