@@ -1,6 +1,7 @@
 'use strict';
+const async = require("async");
 
-module.exports = function(MetadataInfoCatalog) {
+module.exports = function (MetadataInfoCatalog) {
   MetadataInfoCatalog.observe('before delete', (ctx, next) => {
     global.postal.publish({
       channel: 'PostalChannel-DataSetLaunchEtl',
@@ -12,11 +13,34 @@ module.exports = function(MetadataInfoCatalog) {
     });
   });
 
-  MetadataInfoCatalog.remoteMethod('deleteAll', {
+  MetadataInfoCatalog.deleteDatasetInfo = function (datasetUID, cb) {
+    //check the count with limit of 1000
+    //while ( check count limit 1000 > 0)
+    //delete count of 1000 entries
+    let x = 10;
+    async.doWhilst((cb) => {
+      MetadataInfoCatalog.find({limit: 3, fields: {id: true}, where: {datasetUID}}, (err, results) => {
+        async.each(results, (result,cb) => {
+          MetadataInfoCatalog.deleteById(result.id, cb);
+        }, (err) => {
+          if(err) return cb(err);
+          MetadataInfoCatalog.count({datasetUID},(err,result)=>{
+            cb(err,result);
+          });
+        });
+      });
+    }, (count) => {
+      return count > 0;
+    }, (err, results) => {
+      cb(err)
+    });
+  };
+
+  MetadataInfoCatalog.remoteMethod('deleteDatasetInfo', {
     isStatic: true,
-    description: 'Delete all instances from the data source based on where criteria',
+    description: 'Delete all instances from the data source based on filter criteria',
     accessType: 'WRITE',
-    accepts: {arg: 'filter', type: 'object', description: 'Criteria to match model instances'},
+    accepts: {arg: 'datasetUID', type: 'string', required: true, description: 'Criteria to match model instances'},
     returns: [
       {
         arg: 'info',
@@ -25,6 +49,6 @@ module.exports = function(MetadataInfoCatalog) {
         description: 'deleteAll info'
       }
     ],
-    http: {verb: 'del', path: '/deleteAll'}
+    http: {verb: 'del', path: '/deleteDatasetInfo'}
   });
 };
