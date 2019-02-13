@@ -3,10 +3,15 @@ import {CommandUtil, IPostal} from 'firmament-yargs';
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 
+import * as request from 'request';
+
 interface BackdoorPayload {
   jsonObject: Object,
   cb: (err?: Error, result?: any) => void
 }
+
+let MIC: any;
+let MICP: any;
 
 @injectable()
 export class BackdoorImpl extends BaseServiceImpl {
@@ -19,11 +24,32 @@ export class BackdoorImpl extends BaseServiceImpl {
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
     const me = this;
-    me.postal.subscribe({
-      channel: 'Backdoor',
-      topic: 'EvaluateJsonObject',
-      callback: me.handleBackdoorPayload.bind(me)
+    MIC = me.app.models.MetadataInfoCatalog;
+    MICP = me.app.models.MetadataInfoCatalogPedigree;
+    request.post({
+      url: 'https://next.json-generator.com/api/templates',
+      headers: {
+        'X-XSRF-TOKEN': 'nZPnQmgbp4v7CxZ0OHwKmmqRLOAhjwaPYPGiE='
+      },
+      body:
+        `[
+        {
+          'repeat(5, 10)':
+          {
+            _id: '{{objectId()}}',
+            index: '{{index()}}',
+            guid: '{{guid()}}'
+          }
+        }
+      ]`
+    }, (err, res, body) => {
+      const b = body;
     });
+    /*    me.postal.subscribe({
+          channel: 'Backdoor',
+          topic: 'EvaluateJsonObject',
+          callback: me.handleBackdoorPayload.bind(me)
+        });*/
     cb(null, {message: 'Initialized Backdoor Subscriptions'});
   }
 
@@ -50,8 +76,8 @@ export class BackdoorImpl extends BaseServiceImpl {
 
   private getValues(obj, values) {
     const me = this;
-    for (const key in obj) {
-      if (typeof obj[key] === "object") {
+    for(const key in obj) {
+      if(typeof obj[key] === "object") {
         me.getValues(obj[key], values);
       } else {
         values.push(obj[key]);

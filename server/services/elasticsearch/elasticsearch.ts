@@ -16,20 +16,20 @@ const {streamValues} = require('stream-json/streamers/StreamValues');
 const {URL} = require('url');
 
 interface ElasticsearchQuery {
-  esVerb:string,
-  esQueryJson:string,
-  req:{
-    method:string,
-    body:string,
-    query:{
-      access_token:string
+  esVerb: string,
+  esQueryJson: string,
+  req: {
+    method: string,
+    body: string,
+    query: {
+      access_token: string
     }
   },
-  res:{
-    send:(body:string) => void,
-    status:(returnCode:number) => {
-      send:(body:string) => void,
-      end:(body:string) => void
+  res: {
+    send: (body: string) => void,
+    status: (returnCode: number) => {
+      send: (body: string) => void,
+      end: (body: string) => void
     }
   }
 }
@@ -37,12 +37,12 @@ interface ElasticsearchQuery {
 @injectable()
 export class ElasticsearchImpl extends BaseServiceImpl {
 
-  constructor(@inject('Logger') private log:Logger,
-              @inject('IPostal') private postal:IPostal) {
+  constructor(@inject('Logger') private log: Logger,
+              @inject('IPostal') private postal: IPostal) {
     super();
   }
 
-  initSubscriptions(cb:(err:Error, result:any) => void):void {
+  initSubscriptions(cb: (err: Error, result: any) => void): void {
     super.initSubscriptions();
     const me = this;
     me.postal
@@ -66,19 +66,23 @@ export class ElasticsearchImpl extends BaseServiceImpl {
     cb(null, {message: 'Initialized Elasticsearch Subscriptions'});
   }
 
-  init(cb:(err:Error, result:any) => void) {
+  init(cb: (err: Error, result: any) => void) {
     cb(null, {message: 'Initialized Elasticsearch'});
   }
 
-  private findUserFromAccessToken(eq, excludeDataSetIds, cb) {
-    const accessToken = eq.req.query.access_token;
-    const decoded:any = jwt.verify(accessToken, Globals.jwtSecret);
-    this.app.models.AminoUser.findById(decoded.id, {include: 'roles'}, (err, user) => {
-      cb(err, eq, user, excludeDataSetIds)
-    })
+  private findUserFromAccessToken(eq: ElasticsearchQuery, excludeDataSetIds, cb) {
+    try {
+      const accessToken = eq.req.query.access_token;
+      const decoded: any = jwt.verify(accessToken, Globals.jwtSecret);
+      this.app.models.AminoUser.findById(decoded.id, {include: 'roles'}, (err, user) => {
+        cb(err, eq, user, excludeDataSetIds)
+      })
+    } catch(err) {
+      cb(err);
+    }
   }
 
-  private convertRolesToDatasetIds(eq:ElasticsearchQuery, user:{toObject:() => {roles:{datasets:any[]}[]}}, excludeDataSetIds, cb) {
+  private convertRolesToDatasetIds(eq: ElasticsearchQuery, user: {toObject: () => {roles: {datasets: any[]}[]}}, excludeDataSetIds, cb) {
     const roles = user.toObject().roles;
     if(!roles) {
       const msg = 'ERROR: User has no authentication roles.';
@@ -91,7 +95,7 @@ export class ElasticsearchImpl extends BaseServiceImpl {
     cb(null, eq, datasetIds, excludeDataSetIds);
   }
 
-  private getDatasetsFromIds(eq:ElasticsearchQuery, dataSetIds:string[], excludeDataSetIds, cb) {
+  private getDatasetsFromIds(eq: ElasticsearchQuery, dataSetIds: string[], excludeDataSetIds, cb) {
     this.app.models.DataSet.find({'where': {'datasetUID': {'inq': dataSetIds}}}, (err, dataSets) => {
       cb(err, eq, dataSets, excludeDataSetIds,)
     })
@@ -136,7 +140,7 @@ export class ElasticsearchImpl extends BaseServiceImpl {
     cb(null, elasticsearchUrl.toString());
   }
 
-  private elasticsearchQuery(eq:ElasticsearchQuery, envelope:any, excludeDataSetIds:Array<string> = [], foundErrors = true) {
+  private elasticsearchQuery(eq: ElasticsearchQuery, envelope: any, excludeDataSetIds: Array<string> = [], foundErrors = true) {
     const me = this;
     async.waterfall([
       (cb) => cb(null, eq, excludeDataSetIds),
@@ -150,7 +154,7 @@ export class ElasticsearchImpl extends BaseServiceImpl {
       me.convertDatasetToIndexNames.bind(me),
       //Create the ES url using approved DataSet names and verb
       me.createESUrl.bind(me)
-    ], (err:Error, uri) => {
+    ], (err: Error, uri) => {
       if(err) {
         return eq.res.status(400).end(err.message);
       }
@@ -163,7 +167,7 @@ export class ElasticsearchImpl extends BaseServiceImpl {
 
       const requestStream = request(requestOptions);
 
-      function streamErrorHandler(err:Error) {
+      function streamErrorHandler(err: Error) {
         eq.res.status(400).end(err.message);
       }
 
