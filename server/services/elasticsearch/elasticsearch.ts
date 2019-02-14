@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import * as normalizeUrl from 'normalize-url';
 import {Globals} from '../../globals';
 import async = require('async');
+import {TokenExpiredError} from "jsonwebtoken";
 
 const {chain} = require('stream-chain');
 const {parser} = require('stream-json');
@@ -156,7 +157,8 @@ export class ElasticsearchImpl extends BaseServiceImpl {
       me.createESUrl.bind(me)
     ], (err: Error, uri) => {
       if(err) {
-        return eq.res.status(400).end(err.message);
+        const status = (err.constructor.name === 'TokenExpiredError') ? 401 : 400;
+        return eq.res.status(status).end(err.message);
       }
 
       const requestOptions = {
@@ -171,7 +173,7 @@ export class ElasticsearchImpl extends BaseServiceImpl {
         eq.res.status(400).end(err.message);
       }
 
-      //Keep is simple & streams for now. Might be cool to look at:
+      //Keep it simple & streams for now. Might be cool to look at:
       //https://www.npmjs.com/package/stream-json if we work with BIG responses from ES
       const rs = requestStream
         .on('error', streamErrorHandler)
