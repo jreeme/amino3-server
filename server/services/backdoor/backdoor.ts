@@ -4,6 +4,7 @@ import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 
 import * as request from 'request';
+import * as async from 'async';
 
 interface BackdoorPayload {
   jsonObject: Object,
@@ -23,28 +24,60 @@ export class BackdoorImpl extends BaseServiceImpl {
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
-    const me = this;
-    MIC = me.app.models.MetadataInfoCatalog;
-    MICP = me.app.models.MetadataInfoCatalogPedigree;
-    request.post({
-      url: 'https://next.json-generator.com/api/templates',
-      headers: {
-        'X-XSRF-TOKEN': 'nZPnQmgbp4v7CxZ0OHwKmmqRLOAhjwaPYPGiE='
-      },
-      body:
-        `[
-        {
-          'repeat(5, 10)':
-          {
-            _id: '{{objectId()}}',
-            index: '{{index()}}',
-            guid: '{{guid()}}'
-          }
-        }
-      ]`
-    }, (err, res, body) => {
-      const b = body;
-    });
+    /*    const me = this;
+
+        MIC = me.app.models.MetadataInfoCatalog;
+        MICP = me.app.models.MetadataInfoCatalogPedigree;
+
+        const datasetUIDs = [
+          '4c308a71-e060-40de-a9e2-7ca176db24db',
+          'b25ced9b-fb6a-4d52-8b1d-c0ce51b744d8',
+          'f312f750-d13c-4311-8259-42b813af7d8a',
+          '60f0ce88-40ca-4be6-b399-3de2a2831f80'
+        ];
+
+        async.eachLimit(datasetUIDs, 4, (datasetUID, cb) => {
+          let count = 500;
+          /!*      return MIC.destroyAll((err, info) => {
+                  cb();
+                });*!/
+          async.doWhilst((cb) => {
+            const mics = [];
+            for(let i = 0; i < 100; ++i) {
+              mics.push(
+                {
+                  datasetUID,
+                  fileName: `someFileName.txt--${Math.random()}`,
+                  dateCreated: Date.now()
+                }
+              );
+            }
+            MIC.create(mics, (err, newMics) => {
+              async.eachLimit(newMics, 10, (newMic: any, cb) => {
+                let count2 = 10;
+                async.doWhilst((cb) => {
+                  newMic.pedigrees.create({
+                    fileHash: `howNowBrownCow--${Math.random()}`
+                  }, (err, newPedigree) => {
+                    cb(err, --count2);
+                    //me.log.critical(`count2 -- ${count2}`);
+                  });
+                }, (count) => {
+                  return count > 0;
+                }, (err) => {
+                  cb(err);
+                });
+              }, (err) => {
+                cb(err, --count);
+                me.log.critical(`count -- ${count}`);
+              });
+            });
+          }, (count) => {
+            return count > 0;
+          }, cb);
+        }, (err) => {
+          cb(null, {message: 'Initialized Backdoor Subscriptions'});
+        });*/
     /*    me.postal.subscribe({
           channel: 'Backdoor',
           topic: 'EvaluateJsonObject',

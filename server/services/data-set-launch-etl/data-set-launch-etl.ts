@@ -52,26 +52,23 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
   }
 
   private beforeMetadataInfoCatalogDelete(data: {ctx: any, next: (err: any) => void}) {
+    const me = this;
     const {ctx, next} = data;
     async.waterfall([
       (cb) => {
-        let subFilter = {fields:{id:true}, where:ctx.where};
+        let subFilter = {fields: {id: true}, where: ctx.where};
         MIC.find(subFilter, cb);
       },
       (micEntries, cb) => {
         const destroyedMicEntryIds = micEntries.map((micEntry) => micEntry.id);
-        async.parallel([
-          (cb) => {
-            MICP.destroyAll(
-              {
-                catalogId: {inq: destroyedMicEntryIds}
-              },
-              cb);
-          }
-        ], cb);
+        MICP.destroyAll({
+            catalogId: {inq: destroyedMicEntryIds}
+          },
+          cb);
       }
-    ], (err) => {
-      next(err);
+    ], (err: Error) => {
+      me.log.logIfError(err);
+      next(null);
     });
   }
 
