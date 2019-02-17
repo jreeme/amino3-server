@@ -38,9 +38,7 @@ export class BackdoorImpl extends BaseServiceImpl {
 
         async.eachLimit(datasetUIDs, 4, (datasetUID, cb) => {
           let count = 500;
-          /!*      return MIC.destroyAll((err, info) => {
-                  cb();
-                });*!/
+          //for real removed the destroy all..it freaked me out.
           async.doWhilst((cb) => {
             const mics = [];
             for(let i = 0; i < 100; ++i) {
