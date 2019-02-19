@@ -10,6 +10,7 @@ import {ExecutionGraph} from 'firmament-bash/js/custom-typings';
 
 let DS: any;
 let MIC: any;
+let LRT: any;
 let MICP: any;
 
 @injectable()
@@ -27,8 +28,19 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
 
     DS = me.app.models.DataSet;
     MIC = me.app.models.MetadataInfoCatalog;
+    LRT = me.app.models.LongRunningTask;
     MICP = me.app.models.MetadataInfoCatalogPedigree;
 
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'AfterLongRunningTaskSave',
+      callback: me.afterLongRunningTaskSave.bind(me)
+    });
+    me.postal.subscribe({
+      channel: me.servicePostalChannel,
+      topic: 'DeleteDatasetInfo',
+      callback: me.deleteDatasetInfo.bind(me)
+    });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
       topic: 'BeforeMetadataInfoCatalogDelete',
@@ -49,6 +61,44 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
 
   init(cb: (err: Error, result: any) => void) {
     cb(null, {message: 'Initialized DataSetLaunchEtl'});
+  }
+
+  private afterLongRunningTaskSave(data: {ctx: any, next: (err?: any) => void}) {
+    const me = this;
+    const {ctx, next} = data;
+    return next();
+  }
+
+  private deleteDatasetInfo(data: {datasetUID: string, cb: (err: any, info?: any) => void}) {
+    const {datasetUID, cb} = data;
+    return LRT.create({description: 'Hello'}, (err: Error, newLrt) => {
+      cb(err, newLrt);
+    });
+    async.doWhilst((cb) => {
+      MIC.find({
+          limit: 1000,
+          fields: {id: true},
+          where: {datasetUID}
+        },
+        (err, results: {id: any}[]) => {
+          async.eachLimit(
+            results,
+            20,
+            (result, cb) => {
+              MIC.deleteById(result.id, cb);
+            },
+            (err: Error) => {
+              if(err) {
+                return cb(err);
+              }
+              MIC.count({datasetUID}, cb);
+            });
+        });
+    }, (count) => {
+      return count > 0;
+    }, (err: Error) => {
+      cb(err)
+    });
   }
 
   private beforeMetadataInfoCatalogDelete(data: {ctx: any, next: (err: any) => void}) {

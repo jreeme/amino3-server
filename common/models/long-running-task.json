@@ -1,0 +1,20 @@
+{
+  "name": "LongRunningTask",
+  "plural": "LongRunningTasks",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "description": {
+      "type": "string",
+      "required": true,
+      "description": "Long running task description"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

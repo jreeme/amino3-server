@@ -9,32 +9,32 @@
   "properties": {
     "datasetUID": {
       "type": "string",
-      "required": true,
+      "required": false,
       "description": "dataset unique identifier"
     },
     "primeAgency": {
       "type": "string",
-      "required": true,
+      "required": false,
       "description": "agency providing the data"
     },
     "caseName": {
       "type": "string",
-      "required": true,
+      "required": false,
       "description": "agency case name"
     },
     "dateReceived": {
       "type": "date",
-      "required": true,
+      "required": false,
       "description": "date data was received"
     },
     "fileName": {
       "type": "string",
-      "required": true,
+      "required": false,
       "description": "path of the raw data file"
     },
     "fileAlias": {
       "type": "string",
-      "required": true,
+      "required": false,
       "description": "path of the raw data file alias; a copy or symlink of the raw data file with the file hash as the alias basename"
     },
     "fileCategory": {
@@ -150,7 +150,7 @@
     },
     "dateCreated": {
       "type": "date",
-      "required": true,
+      "required": false,
       "description": "date instance was created in data source; stored as timestamp in GMT",
       "defaultFn": "now"
     }

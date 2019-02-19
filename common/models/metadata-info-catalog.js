@@ -3,6 +3,7 @@ const async = require("async");
 
 module.exports = function (MetadataInfoCatalog) {
   MetadataInfoCatalog.observe('before delete', (ctx, next) => {
+    //return next();
     global.postal.publish({
       channel: 'PostalChannel-DataSetLaunchEtl',
       topic: 'BeforeMetadataInfoCatalogDelete',
@@ -14,24 +15,13 @@ module.exports = function (MetadataInfoCatalog) {
   });
 
   MetadataInfoCatalog.deleteDatasetInfo = function (datasetUID, cb) {
-    //check the count with limit of 1000
-    //while ( check count limit 1000 > 0)
-    //delete count of 1000 entries
-    async.doWhilst((cb) => {
-      MetadataInfoCatalog.find({limit: 1000, fields: {id: true}, where: {datasetUID}}, (err, results) => {
-        async.eachLimit(results, 20, (result, cb) => {
-          MetadataInfoCatalog.deleteById(result.id, cb);
-        }, (err) => {
-          if (err) return cb(err);
-          MetadataInfoCatalog.count({datasetUID}, (err, result) => {
-            cb(err, result);
-          });
-        });
-      });
-    }, (count) => {
-      return count > 0;
-    }, (err, results) => {
-      cb(err)
+    global.postal.publish({
+      channel: 'PostalChannel-DataSetLaunchEtl',
+      topic: 'DeleteDatasetInfo',
+      data: {
+        datasetUID,
+        cb
+      }
     });
   };
 
@@ -45,7 +35,7 @@ module.exports = function (MetadataInfoCatalog) {
         arg: 'info',
         type: 'object',
         root: true,
-        description: 'deleteAll info'
+        description: 'deleteDatasetInfo result'
       }
     ],
     http: {verb: 'del', path: '/deleteDatasetInfo'}
