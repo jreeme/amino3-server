@@ -7,10 +7,20 @@
     "validateUpsert": true
   },
   "properties": {
+    "startDate": {
+      "type": "date",
+      "required": false,
+      "description": "Start date of task"
+    },
+    "creationDate": {
+      "type": "date",
+      "required": true,
+      "description": "Creation date of task"
+    },
     "description": {
       "type": "string",
       "required": true,
-      "description": "Long running task description"
+      "description": "Description of task"
     }
   },
   "validations": [],

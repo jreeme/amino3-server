@@ -13,6 +13,12 @@ let MIC: any;
 let LRT: any;
 let MICP: any;
 
+interface LongRunningTask {
+  startDate?: Date,
+  creationDate: Date,
+  description: string
+}
+
 @injectable()
 export class DataSetLaunchEtlImpl extends BaseServiceImpl {
   constructor(@inject('Logger') private log: Logger,
@@ -60,6 +66,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
   }
 
   init(cb: (err: Error, result: any) => void) {
+    LRT.destroyAll();
     cb(null, {message: 'Initialized DataSetLaunchEtl'});
   }
 
@@ -71,9 +78,14 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
 
   private deleteDatasetInfo(data: {datasetUID: string, cb: (err: any, info?: any) => void}) {
     const {datasetUID, cb} = data;
-    return LRT.create({description: 'Hello'}, (err: Error, newLrt) => {
-      cb(err, newLrt);
-    });
+
+    const newLongRunningTask: LongRunningTask = {
+      creationDate: new Date(),
+      description: 'Delete dataSet metadata'
+    };
+
+    return LRT.create(newLongRunningTask, cb);
+
     async.doWhilst((cb) => {
       MIC.find({
           limit: 1000,
