@@ -11,12 +11,12 @@
     "testAuthenticationServer": false,
     "suppressedServices": [
       "_Authentication",
-      "_FileUpload",
+      "FileUpload",
       "FolderMonitor",
       "_InitializeDatabase",
       "PluginManager",
       "RebuildClient",
-      "_RemoteLogging",
+      "RemoteLogging",
       "StaticService",
       "ServerServicesManager",
       "_WebSocketManager"

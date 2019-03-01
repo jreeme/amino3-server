@@ -8,12 +8,12 @@
   },
   "properties": {
     "startDate": {
-      "type": "date",
+      "type": "number",
       "required": false,
       "description": "Start date of task"
     },
     "creationDate": {
-      "type": "date",
+      "type": "number",
       "required": true,
       "description": "Creation date of task"
     },

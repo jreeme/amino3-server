@@ -14,8 +14,8 @@ let LRT: any;
 let MICP: any;
 
 interface LongRunningTask {
-  startDate?: Date,
-  creationDate: Date,
+  startDate?: number,
+  creationDate: number,
   description: string
 }
 
@@ -39,8 +39,8 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
 
     me.postal.subscribe({
       channel: me.servicePostalChannel,
-      topic: 'AfterLongRunningTaskSave',
-      callback: me.afterLongRunningTaskSave.bind(me)
+      topic: 'BeforeLongRunningTaskSave',
+      callback: me.beforeLongRunningTaskSave.bind(me)
     });
     me.postal.subscribe({
       channel: me.servicePostalChannel,
@@ -62,6 +62,11 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
       topic: 'AfterDataSetSave',
       callback: me.afterDataSetSave.bind(me)
     });
+    me.postal.subscribe({
+      channel: 'ServiceBus',
+      topic: 'ServerHeartbeat',
+      callback: me.handleServerHeartbeat.bind(me)
+    });
     cb(null, {message: 'Initialized DataSetLaunchEtl Subscriptions'});
   }
 
@@ -70,17 +75,16 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     cb(null, {message: 'Initialized DataSetLaunchEtl'});
   }
 
-  private afterLongRunningTaskSave(data: {ctx: any, next: (err?: any) => void}) {
-    const me = this;
+  private beforeLongRunningTaskSave(data: { ctx: any, next: (err?: any) => void }) {
     const {ctx, next} = data;
     return next();
   }
 
-  private deleteDatasetInfo(data: {datasetUID: string, cb: (err: any, info?: any) => void}) {
+  private deleteDatasetInfo(data: { datasetUID: string, cb: (err: any, info?: any) => void }) {
     const {datasetUID, cb} = data;
 
     const newLongRunningTask: LongRunningTask = {
-      creationDate: new Date(),
+      creationDate: Date.now(),
       description: 'Delete dataSet metadata'
     };
 
@@ -92,7 +96,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
           fields: {id: true},
           where: {datasetUID}
         },
-        (err, results: {id: any}[]) => {
+        (err, results: { id: any }[]) => {
           async.eachLimit(
             results,
             20,
@@ -100,7 +104,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
               MIC.deleteById(result.id, cb);
             },
             (err: Error) => {
-              if(err) {
+              if (err) {
                 return cb(err);
               }
               MIC.count({datasetUID}, cb);
@@ -113,7 +117,11 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     });
   }
 
-  private beforeMetadataInfoCatalogDelete(data: {ctx: any, next: (err: any) => void}) {
+  private handleServerHeartbeat(data: { ticks: number, servertime: number }) {
+    const d = data;
+  }
+
+  private beforeMetadataInfoCatalogDelete(data: { ctx: any, next: (err: any) => void }) {
     const me = this;
     const {ctx, next} = data;
     async.waterfall([
@@ -134,13 +142,13 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     });
   }
 
-  private beforeDataSetSave(data: {ctx: any, next: () => void}) {
+  private beforeDataSetSave(data: { ctx: any, next: () => void }) {
     const me = this;
     me.log.info('DataSet:BeforeDataSetSave');
     const {ctx, next} = data;
-    const dataSet: {status: string, id: any} = ctx.instance.toObject();
+    const dataSet: { status: string, id: any } = ctx.instance.toObject();
     ctx.instance.datasetName = ctx.instance.primeAgency + '-' + ctx.instance.caseName;
-    switch(dataSet.status.toLowerCase()) {
+    switch (dataSet.status.toLowerCase()) {
       case('submitted'):
         ctx.instance.etlControlButtonIcon = 'fa fa-play';
         ctx.instance.etlControlButtonLabel = 'Process Dataset';
@@ -181,7 +189,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     next();
   };
 
-  private afterDataSetSave(data: {ctx: any, next: () => void}) {
+  private afterDataSetSave(data: { ctx: any, next: () => void }) {
     const me = this;
     const {ctx, next} = data;
 
@@ -197,8 +205,8 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
       });
     });
     try {
-      const dataSet: {status: string, id: any} = ctx.instance.toObject();
-      if(dataSet.status === 'queued') {
+      const dataSet: { status: string, id: any } = ctx.instance.toObject();
+      if (dataSet.status === 'queued') {
         async.waterfall([
           (cb) => {
             me.executionGraphResolver.resolveExecutionGraph(Globals.remoteEtlCallExecutionGraph, cb);
@@ -212,7 +220,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
           me.log.notice(result);
         });
       }
-    } catch(err) {
+    } catch (err) {
       me.log.logIfError(err);
     }
   }

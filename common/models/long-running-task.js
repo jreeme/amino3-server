@@ -1,10 +1,10 @@
 'use strict';
 
 module.exports = function (LongRunningTask) {
-  LongRunningTask.observe('after save', (ctx, next) => {
+  LongRunningTask.observe('before save', (ctx, next) => {
     global.postal.publish({
       channel: 'PostalChannel-DataSetLaunchEtl',
-      topic: 'AfterLongRunningTaskSave',
+      topic: 'BeforeLongRunningTaskSave',
       data: {
         ctx,
         next
