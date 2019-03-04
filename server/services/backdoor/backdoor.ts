@@ -23,7 +23,7 @@ export class BackdoorImpl extends BaseServiceImpl {
 
   initSubscriptions(cb: (err: Error, result: any) => void) {
     super.initSubscriptions();
-    return cb(null, null);
+    //return cb(null, null);
     const me = this;
 
     MIC = me.app.models.MetadataInfoCatalog;
@@ -44,10 +44,12 @@ export class BackdoorImpl extends BaseServiceImpl {
     ];
 
     async.eachLimit(datasetUIDs, 4, (datasetUID, cb) => {
-      let count = 20;
+      //let count = 20;
+      let count = 10;
+      const micCount = 10;
       async.doWhilst((cb) => {
         const mics = [];
-        for(let i = 0; i < 30; ++i) {
+        for(let i = 0; i < micCount; ++i) {
           mics.push(
             {
               datasetUID,
@@ -58,7 +60,8 @@ export class BackdoorImpl extends BaseServiceImpl {
         }
         MIC.create(mics, (err, newMics) => {
           async.eachLimit(newMics, 10, (newMic: any, cb) => {
-            let count2 = 10;
+            //let count2 = 10;
+            let count2 = 5;
             async.doWhilst((cb) => {
               newMic.pedigrees.create({
                 fileHash: `howNowBrownCow--${Math.random()}`

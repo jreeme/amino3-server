@@ -1,5 +1,5 @@
 import {injectable, inject} from 'inversify';
-import {IPostal} from 'firmament-yargs';
+import {IPostal, CommandUtil, IEnvelope} from 'firmament-yargs';
 import {BaseServiceImpl} from '../base-service';
 import {Logger} from '../../util/logging/logger';
 import async = require('async');
@@ -14,15 +14,24 @@ let LRT: any;
 let MICP: any;
 
 interface LongRunningTask {
-  startDate?: number,
-  creationDate: number,
-  description: string
+  id?: any,
+  creationDate?: Date,
+  startDate?: Date,
+  lastUpdate?: Date,
+  status?: string,
+  description?: string,
+  startTaskPostalMessage?: IEnvelope<any>,
+
+  toObject?(): LongRunningTask,
+
+  updateAttributes?(lrt: LongRunningTask, cb: (err, lrt: LongRunningTask) => void)
 }
 
 @injectable()
 export class DataSetLaunchEtlImpl extends BaseServiceImpl {
   constructor(@inject('Logger') private log: Logger,
               @inject('ProcessCommandJson') private processCommandJson: ProcessCommandJson,
+              @inject('CommandUtil') private commandUtil: CommandUtil,
               @inject('ExecutionGraphResolver') private executionGraphResolver: ExecutionGraphResolver,
               @inject('IPostal') private postal: IPostal) {
     super();
@@ -67,11 +76,16 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
       topic: 'ServerHeartbeat',
       callback: me.handleServerHeartbeat.bind(me)
     });
+    me.postal.subscribe({
+      channel: 'LongRunningTask',
+      topic: 'StartDeleteDataSetMetadata',
+      callback: me.startDeleteDataSetMetadata.bind(me)
+    });
     cb(null, {message: 'Initialized DataSetLaunchEtl Subscriptions'});
   }
 
   init(cb: (err: Error, result: any) => void) {
-    LRT.destroyAll();
+    //LRT.destroyAll();
     cb(null, {message: 'Initialized DataSetLaunchEtl'});
   }
 
@@ -80,45 +94,106 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     return next();
   }
 
-  private deleteDatasetInfo(data: { datasetUID: string, cb: (err: any, info?: any) => void }) {
-    const {datasetUID, cb} = data;
+  private setLongRunningTaskToError(data: any) {
+    const me = this;
+    const {err, longRunningTaskId, datasetUID} = data;
+    LRT.findById(longRunningTaskId, (err, longRunningTask) => {
+      if (err) {
+        return me.commandUtil.logError(err);
+      }
+    });
+    /*    longRunningTask.updateAttributes({
+          status: 'started',
+          startDate: now,
+          lastUpdate: now,
+          startTaskPostalMessage
+        }, (err) => {
+          if (err) {
+            me.commandUtil.logError(err);
+            return cb();
+          }
+          me.postal.publish(longRunningTask.startTaskPostalMessage);
+          return cb();
+        });*/
+  }
 
-    const newLongRunningTask: LongRunningTask = {
-      creationDate: Date.now(),
-      description: 'Delete dataSet metadata'
-    };
-
-    return LRT.create(newLongRunningTask, cb);
-
-    async.doWhilst((cb) => {
-      MIC.find({
-          limit: 1000,
-          fields: {id: true},
-          where: {datasetUID}
-        },
-        (err, results: { id: any }[]) => {
-          async.eachLimit(
-            results,
-            20,
-            (result, cb) => {
-              MIC.deleteById(result.id, cb);
-            },
-            (err: Error) => {
-              if (err) {
-                return cb(err);
-              }
-              MIC.count({datasetUID}, cb);
-            });
-        });
-    }, (count) => {
-      return count > 0;
-    }, (err: Error) => {
-      cb(err)
+  private startDeleteDataSetMetadata(data: any) {
+    const me = this;
+    const {datasetUID} = data;
+    MIC.count({datasetUID}, (err, startingMICCount) => {
+      if (true) {
+        data.err = new Error('Bad JuJu');
+        return me.setLongRunningTaskToError(data);
+      }
+      async.doWhilst((cb) => {
+        MIC.find({
+            limit: 1000,
+            fields: {id: true},
+            where: {datasetUID}
+          },
+          (err, results: { id: any }[]) => {
+            async.eachLimit(
+              results,
+              20,
+              (result, cb) => {
+                MIC.deleteById(result.id, cb);
+              },
+              (err: Error) => {
+                if (err) {
+                  return cb(err);
+                }
+                MIC.count({datasetUID}, cb);
+              });
+          });
+      }, (count) => {
+        return count > 0;
+      }, (err: Error) => {
+      });
     });
   }
 
-  private handleServerHeartbeat(data: { ticks: number, servertime: number }) {
-    const d = data;
+  private deleteDatasetInfo(data: { datasetUID: string, cb: (err: any, info?: any) => void }) {
+    const {datasetUID, cb} = data;
+    const newLongRunningTask: LongRunningTask = {
+      creationDate: new Date(),
+      description: 'Delete dataSet metadata',
+      startTaskPostalMessage: {
+        channel: 'LongRunningTask',
+        topic: 'StartDeleteDataSetMetadata',
+        data: {
+          datasetUID
+        }
+      }
+    };
+
+    return LRT.create(newLongRunningTask, cb);
+  }
+
+  private handleServerHeartbeat(data: { ticks: number, serverTime: number }) {
+    const me = this;
+    LRT.find({where: {status: 'notStarted'}}, (err, longRunningTasks: LongRunningTask[]) => {
+      if (err) {
+        return me.commandUtil.logError(err);
+      }
+      async.each(longRunningTasks, (longRunningTask, cb) => {
+        const now = new Date(data.serverTime);
+        const startTaskPostalMessage = longRunningTask.toObject().startTaskPostalMessage;
+        startTaskPostalMessage.data.longRunningTaskId = longRunningTask.id;
+        longRunningTask.updateAttributes({
+          status: 'started',
+          startDate: now,
+          lastUpdate: now,
+          startTaskPostalMessage
+        }, (err) => {
+          if (err) {
+            me.commandUtil.logError(err);
+            return cb();
+          }
+          me.postal.publish(longRunningTask.startTaskPostalMessage);
+          return cb();
+        });
+      });
+    });
   }
 
   private beforeMetadataInfoCatalogDelete(data: { ctx: any, next: (err: any) => void }) {
@@ -187,7 +262,7 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
         break;
     }
     next();
-  };
+  }
 
   private afterDataSetSave(data: { ctx: any, next: () => void }) {
     const me = this;
