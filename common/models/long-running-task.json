@@ -42,7 +42,10 @@
       "type": "number",
       "required": false,
       "default": 0,
-      "description": "Completed factor (0.0 <= x <= 1.0)"
+      "description": "Completed factor (0.0 <= x <= 1.0)",
+      "postgresql": {
+        "dataType": "real"
+      }
     },
     "startTaskPostalMessage": {
       "type": "object",

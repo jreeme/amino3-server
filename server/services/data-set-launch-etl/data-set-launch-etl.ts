@@ -94,60 +94,76 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
     return next();
   }
 
-  private setLongRunningTaskToError(data: any) {
+  private setLongRunningTaskToError(data: { longRunningTaskId: any, datasetUID: string, err: Error }) {
     const me = this;
-    const {err, longRunningTaskId, datasetUID} = data;
-    LRT.findById(longRunningTaskId, (err, longRunningTask) => {
+    LRT.findById(data.longRunningTaskId, (err, longRunningTask) => {
       if (err) {
         return me.commandUtil.logError(err);
       }
+      longRunningTask.updateAttributes({
+        status: 'error',
+        errorMessage: `Error: ${data.err.message} - datasetUID: ${data.datasetUID}`,
+        lastUpdate: new Date()
+      }, (err) => {
+        me.commandUtil.logError(err);
+      });
     });
-    /*    longRunningTask.updateAttributes({
-          status: 'started',
-          startDate: now,
-          lastUpdate: now,
-          startTaskPostalMessage
-        }, (err) => {
-          if (err) {
-            me.commandUtil.logError(err);
-            return cb();
-          }
-          me.postal.publish(longRunningTask.startTaskPostalMessage);
-          return cb();
-        });*/
   }
 
   private startDeleteDataSetMetadata(data: any) {
     const me = this;
-    const {datasetUID} = data;
-    MIC.count({datasetUID}, (err, startingMICCount) => {
-      if (true) {
-        data.err = new Error('Bad JuJu');
-        return me.setLongRunningTaskToError(data);
+    const {datasetUID, longRunningTaskId} = data;
+    LRT.findById(longRunningTaskId, (err, longRunningTask) => {
+      if (err) {
+        return me.commandUtil.logError(err);
       }
-      async.doWhilst((cb) => {
-        MIC.find({
-            limit: 1000,
-            fields: {id: true},
-            where: {datasetUID}
-          },
-          (err, results: { id: any }[]) => {
-            async.eachLimit(
-              results,
-              20,
-              (result, cb) => {
-                MIC.deleteById(result.id, cb);
-              },
-              (err: Error) => {
-                if (err) {
-                  return cb(err);
-                }
-                MIC.count({datasetUID}, cb);
-              });
+      MIC.count({datasetUID}, (err, startingMICCount) => {
+        if (err) {
+          data.err = err;
+          return me.setLongRunningTaskToError(data);
+        }
+        async.doWhilst((cb) => {
+          MIC.find({
+              limit: 10,
+              fields: {id: true},
+              where: {datasetUID}
+            },
+            (err, results: { id: any }[]) => {
+              async.eachLimit(
+                results,
+                5,
+                (result, cb) => {
+                  MIC.deleteById(result.id, cb);
+                },
+                (err: Error) => {
+                  if (err) {
+                    return cb(err);
+                  }
+                  MIC.count({datasetUID}, cb);
+                });
+            });
+        }, (count: number) => {
+          longRunningTask.updateAttributes({
+            fractionComplete: 1.0 - (count / startingMICCount),
+            lastUpdate: new Date()
+          }, (err) => {
+            me.commandUtil.logError(err);
           });
-      }, (count) => {
-        return count > 0;
-      }, (err: Error) => {
+          return count > 0;
+        }, (err: Error) => {
+          const lrt: any = {
+            lastUpdate: new Date()
+          };
+          if (err) {
+            lrt.status = 'error';
+            lrt.errorMessage = err.message;
+          } else {
+            lrt.status = 'finished';
+          }
+          longRunningTask.updateAttributes(lrt, (err) => {
+            me.commandUtil.logError(err);
+          });
+        });
       });
     });
   }
@@ -165,7 +181,6 @@ export class DataSetLaunchEtlImpl extends BaseServiceImpl {
         }
       }
     };
-
     return LRT.create(newLongRunningTask, cb);
   }
 
